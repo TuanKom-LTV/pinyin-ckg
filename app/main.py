@@ -11,6 +11,7 @@ from app.api.ckg_trade import router as ckg_trade_router
 from app.api.ckg_ai import router as ckg_ai_router
 from app.api.ai import router as ai_router
 from app.api.trade import router as trade_router
+from app.api.ckg_auto import router as ckg_auto_router, start as start_auto_bot
 from app.core.auth import auth_middleware
 
 
@@ -35,6 +36,13 @@ app.include_router(ckg_trade_router)
 app.include_router(ckg_ai_router)
 app.include_router(ai_router)
 app.include_router(trade_router)
+app.include_router(ckg_auto_router)
+
+
+@app.on_event("startup")
+def _start_bot():
+    # Bot tự động vàng chạy nền; cài đặt mặc định TẮT, bật trong trang CKG (mục vàng)
+    start_auto_bot()
 
 
 @app.get("/", include_in_schema=False)
