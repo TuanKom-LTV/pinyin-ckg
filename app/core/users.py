@@ -16,6 +16,8 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from app.core import mailer
+
 ROOT = Path(__file__).resolve().parents[2]
 USERS_FILE = ROOT / "data" / "users.json"
 VN = timezone(timedelta(hours=7))
@@ -119,18 +121,87 @@ def register(f, ip):
         return False, "Mật khẩu tối thiểu 6 ký tự."
     if pw != pw2:
         return False, "Hai lần nhập mật khẩu không khớp."
+    ok, err = mailer.domain_ok(email)          # tên miền email có thật, không phải email rác
+    if not ok:
+        return False, err
+    verify = mailer.configured()               # có cấu hình gửi thư → bắt xác nhận email
+    tok = secrets.token_urlsafe(24)
     with _lock:
         data = dict(load())
-        if email in data:
+        if email in data and data[email]["tt"] != "xac_minh":
             return False, "Email này đã được đăng ký."
-        data[email] = {"ten": name, "sdt": phone, "email": email, "tg": tg, "mk": _hash(pw), "tt": "cho",
+        data[email] = {"ten": name, "sdt": phone, "email": email, "tg": tg, "mk": _hash(pw),
+                       "tt": "xac_minh" if verify else "cho", "xm": tok if verify else None,
+                       "xm_het": int(now + 86400) if verify else None,
                        "id": secrets.token_hex(8), "tao": int(now), "duyet": None, "het_han": None,
                        "dang_nhap": None, "ip": ip}
         save(data)
     _reg_ip[ip].append(now)
-    _notify(f"👤 Khách mới đăng ký chờ duyệt:\n{name} · Zalo {phone} · {email}" + (f" · Telegram @{tg}" if tg else "")
-            + "\nDuyệt tại: https://pinyin.id.vn/quan-ly")
+    if verify:
+        sent, e = _send_verify(email, name, tok)
+        if sent:
+            return True, (f"Đã gửi thư xác nhận tới {email}. Mở hộp thư (xem cả mục Spam / Quảng cáo) và bấm "
+                          "\"Xác nhận email\" để hoàn tất đăng ký. Link có hiệu lực 24 giờ.")
+        _set(email, tt="cho", xm=None)         # gửi thư lỗi: không làm khách kẹt, chuyển thẳng sang chờ duyệt
+        _notify(f"⚠️ Không gửi được thư xác nhận tới {email}: {e}")
+    _notify_new(email)
     return True, "Đăng ký thành công! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được sau khi được duyệt."
+
+
+def _base():
+    return os.getenv("PUBLIC_URL", "https://pinyin.id.vn").rstrip("/")
+
+
+def _send_verify(email, name, tok):
+    link = f"{_base()}/xac-minh?t={tok}"
+    return mailer.send(email, "Xác nhận email đăng ký PinYin CKG", mailer.verify_html(html.escape(name), link))
+
+
+def _set(email, **kw):
+    with _lock:
+        data = dict(load())
+        if email in data:
+            data[email] = {**data[email], **kw}
+            save(data)
+
+
+def _notify_new(email):
+    u = load().get(email) or {}
+    _notify(f"👤 Khách mới đăng ký chờ duyệt:\n{u.get('ten')} · Zalo {u.get('sdt')} · {email}"
+            + (f" · Telegram @{u['tg']}" if u.get("tg") else "") + f"\nDuyệt tại: {_base()}/quan-ly")
+
+
+def verify_token(tok):
+    """Khách bấm link trong thư. Trả (ok, thông báo)."""
+    if not tok or len(tok) < 20:
+        return False, "Link xác nhận không hợp lệ."
+    for email, u in load().items():
+        if u.get("xm") and hmac.compare_digest(u["xm"], tok):
+            if u["tt"] != "xac_minh":
+                return True, "Email đã được xác nhận trước đó. Tài khoản đang chờ duyệt hoặc đã dùng được."
+            if (u.get("xm_het") or 0) < time.time():
+                return False, "Link đã hết hạn. Vào trang gửi lại thư xác nhận."
+            _set(email, tt="cho", xm=None, xm_het=None, xac_minh=int(time.time()))
+            _notify_new(email)
+            return True, f"Đã xác nhận email {email}! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được ngay khi được duyệt."
+    return False, "Link xác nhận không đúng hoặc đã dùng. Vào trang gửi lại thư xác nhận."
+
+
+def resend(email, ip):
+    now = time.time()
+    _reg_ip[ip] = [t for t in _reg_ip.get(ip, []) if now - t < 3600]
+    if len(_reg_ip[ip]) >= 4:
+        return False, "Gửi quá nhiều lần, thử lại sau 1 giờ."
+    email = email.strip().lower()
+    u = load().get(email)
+    _reg_ip[ip].append(now)
+    if not u or u["tt"] != "xac_minh":
+        # không tiết lộ email nào đã đăng ký
+        return True, f"Nếu {email} đang chờ xác nhận, thư mới đã được gửi. Kiểm tra hộp thư và mục Spam."
+    tok = secrets.token_urlsafe(24)
+    _set(email, xm=tok, xm_het=int(now + 86400))
+    sent, e = _send_verify(email, u["ten"], tok)
+    return (True, f"Đã gửi lại thư xác nhận tới {email}. Kiểm tra hộp thư và mục Spam.") if sent else (False, "Chưa gửi được thư, thử lại sau ít phút.")
 
 
 def login(user, pw):
@@ -140,6 +211,8 @@ def login(user, pw):
     if not u or not _check_pw(pw, u["mk"]):
         return None, "Sai email hoặc mật khẩu."
     st = status_of(u)
+    if st == "xac_minh":
+        return None, "Bạn chưa xác nhận email. Mở thư PinYin trong hộp thư (xem cả mục Spam) và bấm \"Xác nhận email\"."
     if st == "cho":
         return None, "Tài khoản đang chờ duyệt. Liên hệ Telegram @TuanKom để được duyệt nhanh."
     if st == "khoa":
@@ -174,7 +247,7 @@ def admin_list():
                     "con": (max(0, int((u["het_han"] - time.time()) // 86400)) if u.get("het_han") else None),
                     "dang_nhap": datetime.fromtimestamp(u["dang_nhap"], VN).strftime("%d/%m %H:%M") if u.get("dang_nhap") else "-",
                     "_tao": u["tao"]})
-    order = {"cho": 0, "ok": 1, "het": 2, "khoa": 3}
+    order = {"cho": 0, "xac_minh": 1, "ok": 2, "het": 3, "khoa": 4}
     out.sort(key=lambda x: (order.get(x["tt"], 9), -x["_tao"]))
     return out
 
@@ -259,14 +332,29 @@ def register_page(logo, msg="", ok=False, f=None):
     return page("PinYin · Đăng ký", f'<div class="box">{inner}</div>')
 
 
+def msg_page(logo, title, msg, ok=True, extra=""):
+    color = "ok" if ok else "no"
+    inner = (f'<h1>{logo}<span>PinYin</span></h1><p style="font-size:15px" class="{color}">{"✅" if ok else "⚠️"} {html.escape(msg)}</p>'
+             f'{extra}<a class="btn full" href="/login">Về trang đăng nhập</a>')
+    return page("PinYin · " + title, f'<div class="box">{inner}</div>')
+
+
+def resend_page(logo, msg="", ok=False):
+    inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Chưa nhận được thư xác nhận? Nhập email đã đăng ký để gửi lại.</p>
+<form method="post" action="/gui-lai-xac-minh"><label>Email</label><input type="email" name="email" required maxlength="80">
+<button class="full">Gửi lại thư xác nhận</button>{f'<div class="{"ok" if ok else "e"}" style="margin-top:10px;font-size:13px">{html.escape(msg)}</div>' if msg else ''}</form>
+<div class="alt"><a href="/login">Đăng nhập</a> · <a href="/dang-ky">Đăng ký</a></div>"""
+    return page("PinYin · Gửi lại thư xác nhận", f'<div class="box">{inner}</div>')
+
+
 ADMIN_JS = r"""
 const $=i=>document.getElementById(i);
-const TT={cho:['⏳ Chờ duyệt','wn'],ok:['✅ Đang dùng','ok'],het:['⌛ Hết hạn','no'],khoa:['⛔ Bị khóa','no']};
+const TT={xac_minh:['📧 Chưa xác nhận email','m'],cho:['⏳ Chờ duyệt','wn'],ok:['✅ Đang dùng','ok'],het:['⌛ Hết hạn','no'],khoa:['⛔ Bị khóa','no']};
 async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'});const j=await r.json();if(!j.ok){$('tb').innerHTML='<tr><td>'+j.loi+'</td></tr>';return}
  const L=j.users;$('sum').textContent=`${L.length} tài khoản · ${L.filter(x=>x.tt=='cho').length} chờ duyệt · ${L.filter(x=>x.tt=='ok').length} đang dùng`;
  $('tb').innerHTML=L.length?L.map(u=>{const t=TT[u.tt]||[u.tt,''],e=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   const d=`<select id="d_${u.user}"><option value="7">7 ngày</option><option value="30" selected>30 ngày</option><option value="90">90 ngày</option><option value="365">365 ngày</option></select>`;
-  let a=u.tt=='cho'?`${d}<button onclick="act('${u.user}','duyet')">Duyệt</button><button class="red" onclick="act('${u.user}','xoa')">Từ chối</button>`:
+  let a=(u.tt=='cho'||u.tt=='xac_minh')?`${d}<button onclick="act('${u.user}','duyet')">Duyệt</button><button class="red" onclick="act('${u.user}','xoa')">Từ chối</button>`:
    u.tt=='khoa'?`${d}<button onclick="act('${u.user}','mo')">Mở khóa</button><button class="red" onclick="act('${u.user}','xoa')">Xóa</button>`:
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
   return `<tr><td><b>${e(u.ten)}</b><br><a class="m" href="mailto:${e(u.user)}">${e(u.user)}</a></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
@@ -276,14 +364,21 @@ async function act(user,a){const days=+($('d_'+user)||{}).value||30;
  const r=await fetch('/quan-ly/api/act',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,act:a,days})});const j=await r.json();
  $('msg').innerHTML=j.ok?'<span class="ok">✅ '+j.msg+'</span>':'<span class="no">⚠️ '+j.loi+'</span>';load()}
 function copyLink(){navigator.clipboard.writeText('https://pinyin.id.vn/dang-ky').then(()=>{$('msg').innerHTML='<span class="ok">✅ Đã chép link đăng ký</span>'})}
-load();setInterval(load,20000);
+async function mailLoad(){const j=await (await fetch('/quan-ly/api/mail',{cache:'no-store'})).json();
+ $('mailbox').innerHTML=j.on?`📧 <b class="ok">Xác nhận email: ĐANG BẬT</b> · gửi từ ${j.from.replace(/</g,'&lt;')} · khách phải bấm link trong thư mới vào danh sách chờ duyệt. <a href="#" onclick="$('mk').style.display='flex';return false">Đổi khóa</a>`+mailForm(1):
+  `📧 <b class="wn">Xác nhận email: CHƯA BẬT</b> · khách đăng ký vào thẳng danh sách chờ duyệt (chỉ lọc tên miền email). Dán khóa API Resend để bật:`+mailForm(0)}
+function mailForm(h){return `<div id="mk" style="display:${h?'none':'flex'};gap:8px;margin-top:8px;flex-wrap:wrap"><input id="mkey" placeholder="Khóa API Resend (re_...)" style="flex:2;min-width:220px"><input id="mto" type="email" placeholder="Email để nhận thư thử" style="flex:1;min-width:180px"><button onclick="mailSave()">Lưu &amp; gửi thử</button></div>`}
+async function mailSave(){const key=$('mkey').value.trim(),to=$('mto').value.trim();if(!key||!to){alert('Nhập khóa API và email nhận thư thử.');return}
+ $('msg').textContent='Đang gửi thư thử...';const j=await (await fetch('/quan-ly/api/mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,to})})).json();
+ $('msg').innerHTML=j.ok?'<span class="ok">✅ Đã gửi thư thử tới '+to+' và bật xác nhận email.</span>':'<span class="no">⚠️ '+String(j.loi).replace(/</g,'&lt;')+'</span>';mailLoad()}
+load();mailLoad();setInterval(load,20000);
 """
 
 
 def admin_page(logo):
     body = f"""<div class="box"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
 <h1>{logo}<span>Quản lý khách hàng</span></h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="copyLink()">📋 Chép link đăng ký</button><a class="btn" style="background:#1c2a3d" href="/ckg/">← Về trang phân tích</a></div></div>
-<p id="sum" style="margin-top:6px"></p><div id="msg" style="min-height:22px;font-size:14px"></div>
+<div id="mailbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px"></div><p id="sum" style="margin-top:6px"></p><div id="msg" style="min-height:22px;font-size:14px"></div>
 <div style="overflow-x:auto"><table><thead><tr><th>Khách</th><th>Liên hệ</th><th>Trạng thái</th><th>Hạn dùng</th><th>Hoạt động</th><th></th></tr></thead><tbody id="tb"><tr><td>Đang tải…</td></tr></tbody></table></div>
 <p style="margin-top:14px">Khách đăng ký tại <b>https://pinyin.id.vn/dang-ky</b> → chờ duyệt ở đây (Telegram báo khi có người đăng ký). Khách chỉ có quyền XEM: không vào lệnh, không thấy tài khoản MT5, không thấy bot.</p></div>
 <style>table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{text-align:left;padding:9px 8px;border-top:1px solid var(--bd);vertical-align:middle}}th{{color:var(--h2);font-size:12px;text-transform:uppercase;letter-spacing:.04em}}
