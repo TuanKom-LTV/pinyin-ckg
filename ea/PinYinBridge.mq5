@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.10"
+#property version   "1.20"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.1"
+#define EA_VER   "1.2"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -25,6 +25,8 @@ ENUM_TIMEFRAMES TFS[3] = {PERIOD_M1, PERIOD_M5, PERIOD_M15};
 string  TFN[3] = {"M1", "M5", "M15"};
 bool    gBe = false, gTr = false, gHalf = true;
 double  gBeAt = 1.5, gBeLock = 0.25, gTrAt = 2.2, gTrStep = 0.6;
+bool    gMan = false, gAuto = true;      // lá chắn cho lệnh vào tay (MT5 điện thoại, máy khác)
+double  gSl = 2.5, gTp = 5.0;
 string  results = "";          // kết quả lệnh chờ gửi lên máy chủ ở lần đồng bộ sau
 string  gStatus  = "Đang kết nối...";
 string  doneIds[50];
@@ -219,16 +221,41 @@ void Exec(string &f[])
 }
 
 //---------------- Lá chắn (chạy ngay trên MT5 của khách) ----------------
+bool Guarded(ulong t)
+{
+   if(!PositionSelectByTicket(t) || PositionGetString(POSITION_SYMBOL) != Sym) return false;
+   long mg = PositionGetInteger(POSITION_MAGIC);
+   return mg == EA_MAGIC || (gMan && mg == 0);
+}
+
+void AutoSlTp(ulong k)
+{
+   string gv = "PY_S_" + IntegerToString((long)k);
+   if(GlobalVariableCheck(gv)) return;
+   GlobalVariableSet(gv, 1);
+   double sl = PositionGetDouble(POSITION_SL), tp = PositionGetDouble(POSITION_TP);
+   if(sl > 0 && tp > 0) return;
+   bool buy = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY;
+   double op = PositionGetDouble(POSITION_PRICE_OPEN), u = Unit(), mind = MinDist(); int dg = Dg();
+   MqlTick t; if(!SymbolInfoTick(Sym, t) || t.bid <= 0) return;
+   double px = buy ? t.bid : t.ask, ns = sl, nt = tp;
+   if(sl == 0 && gSl > 0) { ns = NormalizeDouble(buy ? op - gSl * u : op + gSl * u, dg); if((buy && px - ns < mind) || (!buy && ns - px < mind)) ns = NormalizeDouble(buy ? px - mind : px + mind, dg); }
+   if(tp == 0 && gTp > 0) { nt = NormalizeDouble(buy ? op + gTp * u : op - gTp * u, dg); if((buy && nt - px < mind) || (!buy && px - nt < mind)) nt = tp; }
+   if(ns != sl || nt != tp) trade.PositionModify(k, ns, nt);
+}
+
 void Guard()
 {
-   if(!(gBe || gTr)) return;
+   if(!(gBe || gTr || gMan)) return;
    if(!MQLInfoInteger(MQL_TRADE_ALLOWED) || !TerminalInfoInteger(TERMINAL_TRADE_ALLOWED)) return;
    double u = Unit(), mind = MinDist(), pt = SymbolInfoDouble(Sym, SYMBOL_POINT); int dg = Dg();
    MqlTick t; if(!SymbolInfoTick(Sym, t) || t.bid <= 0) return;
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
       ulong k = PositionGetTicket(i);
-      if(!Mine(k)) continue;
+      if(!Guarded(k)) continue;
+      if(PositionGetInteger(POSITION_MAGIC) == 0 && gAuto) { AutoSlTp(k); if(!PositionSelectByTicket(k)) continue; }
+      if(!(gBe || gTr)) continue;
       bool buy = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY;
       double op = PositionGetDouble(POSITION_PRICE_OPEN), sl = PositionGetDouble(POSITION_SL), tp = PositionGetDouble(POSITION_TP);
       double px = buy ? t.bid : t.ask, gain = buy ? (px - op) / u : (op - px) / u;
@@ -329,6 +356,7 @@ void Sync()
       {
          gBe = f[1] == "1"; gBeAt = StringToDouble(f[2]); gBeLock = StringToDouble(f[3]);
          gTr = f[4] == "1"; gTrAt = StringToDouble(f[5]); gTrStep = StringToDouble(f[6]); gHalf = f[7] == "1";
+         if(m >= 12) { gMan = f[8] == "1"; gAuto = f[9] == "1"; gSl = StringToDouble(f[10]); gTp = StringToDouble(f[11]); }
       }
       if(f[0] == "C") Exec(f);
    }

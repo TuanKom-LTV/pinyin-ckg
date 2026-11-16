@@ -27,8 +27,10 @@ router = APIRouter(prefix="/ckg/api/q", tags=["PinYin CKG · buồng lái nhanh"
 ROOT = Path(__file__).resolve().parent.parent.parent
 GUARD_FILE = ROOT / "data" / "guard.json"
 TFS = {"M1": mt5.TIMEFRAME_M1, "M5": mt5.TIMEFRAME_M5, "M15": mt5.TIMEFRAME_M15}
-GOLD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True}
-FX_DEF = {"be_on": False, "be_at": 15, "be_lock": 2, "tr_on": False, "tr_at": 22, "tr_step": 6, "half": True}
+GOLD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
+            "manual": False, "auto_sltp": True, "sl": 2.5, "tp": 5.0}   # manual: áp lá chắn cho lệnh vào tay (MT5 điện thoại...)
+FX_DEF = {"be_on": False, "be_at": 15, "be_lock": 2, "tr_on": False, "tr_at": 22, "tr_step": 6, "half": True,
+          "manual": False, "auto_sltp": True, "sl": 20.0, "tp": 30.0}
 _lock = threading.RLock()
 _half_done = set()          # ticket đã chốt 50% bởi trailing (chỉ 1 lần)
 
@@ -227,6 +229,33 @@ def _half_vol(p):
     return half
 
 
+_sltp_done = set()
+
+
+def _auto_sltp(p, g):
+    """Lệnh vào tay chưa có SL/TP: gắn theo khoảng cách trong ô Dừng lỗ / Chốt lời của buồng lái."""
+    info, tk = mt5.symbol_info(p.symbol), mt5.symbol_info_tick(p.symbol)
+    if not info or not tk or tk.bid <= 0:
+        return
+    u, d = _unit(info), info.digits
+    mind = (info.trade_stops_level + 1) * info.point
+    buy = p.type == mt5.POSITION_TYPE_BUY
+    px = tk.bid if buy else tk.ask
+    sl, tp = p.sl, p.tp
+    if not sl and g.get("sl", 0) > 0:
+        sl = round(p.price_open - g["sl"] * u if buy else p.price_open + g["sl"] * u, d)
+        if (buy and px - sl < mind) or (not buy and sl - px < mind):     # giá đã chạy quá SL dự kiến: đặt sát nhất có thể
+            sl = round(px - mind if buy else px + mind, d)
+    if not tp and g.get("tp", 0) > 0:
+        tp = round(p.price_open + g["tp"] * u if buy else p.price_open - g["tp"] * u, d)
+        if (buy and tp - px < mind) or (not buy and px - tp < mind):
+            tp = p.tp
+    if sl == p.sl and tp == p.tp:
+        return
+    _send({"action": mt5.TRADE_ACTION_SLTP, "symbol": p.symbol, "position": p.ticket, "sl": sl, "tp": tp})
+    _notify(f"📱 Lệnh vào tay {p.symbol} #{p.ticket} {'BUY' if buy else 'SELL'} {p.volume} lot → tự gắn SL {sl or '-'} · TP {tp or '-'}")
+
+
 def _set_sl(p, sl):
     return _send({"action": mt5.TRADE_ACTION_SLTP, "symbol": p.symbol, "position": p.ticket,
                   "sl": round(sl, mt5.symbol_info(p.symbol).digits), "tp": p.tp, "magic": MAGIC})
@@ -323,6 +352,10 @@ class QGuard(BaseModel):
     tr_at: float | None = None
     tr_step: float | None = None
     half: bool | None = None
+    manual: bool | None = None
+    auto_sltp: bool | None = None
+    sl: float | None = None
+    tp: float | None = None
 
 
 @router.post("/guard")
@@ -360,11 +393,18 @@ def _bot_guard():
 
 def _guard_step():
     bg = _bot_guard()
-    ps = [p for p in (mt5.positions_get() or []) if p.magic in (MAGIC, BOT_MAGIC)]
+    allg = _guards()
+    man = {s for s, v in allg.items() if v.get("manual")}          # mã bật lá chắn cho lệnh vào tay
+    ps = [p for p in (mt5.positions_get() or []) if p.magic in (MAGIC, BOT_MAGIC) or (p.magic == 0 and p.symbol in man)]
     live = {p.ticket for p in ps}
     _half_done.intersection_update(live)
+    _sltp_done.intersection_update(live)
     for p in ps:
         g = bg if p.magic == BOT_MAGIC else _guard(p.symbol)
+        if p.magic == 0 and g.get("auto_sltp") and p.ticket not in _sltp_done and (p.sl == 0 or p.tp == 0):
+            _sltp_done.add(p.ticket)
+            _auto_sltp(p, g)
+            continue                                                 # vòng sau đọc lại lệnh với SL/TP mới
         if not (g.get("be_on") or g.get("tr_on")):
             continue
         info = mt5.symbol_info(p.symbol)
@@ -403,7 +443,7 @@ def _loop():
         try:
             g = _guards()                       # chưa bật lá chắn nào: không gọi MT5
             bg = _bot_guard()
-            if any(v.get("be_on") or v.get("tr_on") for v in g.values()) or bg.get("be_on") or bg.get("tr_on"):
+            if any(v.get("be_on") or v.get("tr_on") or v.get("manual") for v in g.values()) or bg.get("be_on") or bg.get("tr_on"):
                 with _lock, mt5_service.session():
                     _guard_step()
         except Exception as e:

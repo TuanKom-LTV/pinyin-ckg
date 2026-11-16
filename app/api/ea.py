@@ -22,7 +22,8 @@ router = APIRouter(tags=["PinYin · cầu nối EA khách"])
 EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.ex5"
 ONLINE_SEC = 8
 WAIT_SEC = 10
-GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True}
+GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
+             "manual": False, "auto_sltp": True, "sl": 2.5, "tp": 5.0}
 _lock = threading.RLock()
 _st: dict[str, dict] = {}          # mã khách → trạng thái EA
 _ids = itertools.count(int(time.time()) % 100000 * 10)
@@ -88,7 +89,8 @@ async def sync(request: Request):
                 s["res"][l[1]] = {"ok": l[2][0] == "1", "msg": l[2][2:], "t": time.time()}
         s["pos"], s["pend"], s["ind"] = pos, pend, ind
         g = {**GUARD_DEF, **(u.get("ea_guard") or {})}
-        out = ["G|%d|%s|%s|%d|%s|%s|%d" % (g["be_on"], g["be_at"], g["be_lock"], g["tr_on"], g["tr_at"], g["tr_step"], g["half"])]
+        out = ["G|%d|%s|%s|%d|%s|%s|%d|%d|%d|%s|%s" % (g["be_on"], g["be_at"], g["be_lock"], g["tr_on"], g["tr_at"], g["tr_step"], g["half"],
+                                                  g["manual"], g["auto_sltp"], g["sl"], g["tp"])]
         for c in s["queue"]:
             out.append("C|" + c["id"] + "|" + c["line"])
             s["sent"].add(c["id"])
@@ -233,6 +235,10 @@ class QGuard(BaseModel):
     tr_at: float | None = None
     tr_step: float | None = None
     half: bool | None = None
+    manual: bool | None = None
+    auto_sltp: bool | None = None
+    sl: float | None = None
+    tp: float | None = None
 
 
 @router.post("/ckg/api/ea/q/guard")
