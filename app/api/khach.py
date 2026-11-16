@@ -35,8 +35,9 @@ def me(request: Request):
     u = getattr(request.state, "user", None)
     out = {"ok": True, "role": role, "user": u}
     if u:
-        d = users.load().get(u) or {}
-        out.update(ten=d.get("ten"), het_han=users.fmt_date(d.get("het_han")))
+        email, d = users.by_id(u)
+        d = d or {}
+        out.update(user=email, ten=d.get("ten"), het_han=users.fmt_date(d.get("het_han")))
     elif role == "chu":
         out["cho_duyet"] = sum(1 for x in users.load().values() if x["tt"] == "cho")
     return out

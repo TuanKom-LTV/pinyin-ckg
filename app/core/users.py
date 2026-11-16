@@ -19,7 +19,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 USERS_FILE = ROOT / "data" / "users.json"
 VN = timezone(timedelta(hours=7))
-USER_RE = re.compile(r"^[a-z0-9_]{3,20}$")
+EMAIL_RE = re.compile(r"^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$")
+USER_RE = re.compile(r"^[0-9a-f]{16}$")      # mã khách trong cookie (email có dấu chấm nên không đưa thẳng vào cookie)
 _lock = threading.RLock()
 _cache = {"mtime": None, "data": {}}
 _reg_ip: dict[str, list[float]] = {}
@@ -39,7 +40,24 @@ def load():
             except Exception:
                 _cache["data"] = {}
             _cache["mtime"] = m
+            # bản cũ (khóa = tên đăng nhập): chuyển sang khóa = email, thêm mã id
+            if any("@" not in k or "id" not in u for k, u in _cache["data"].items()):
+                new = {}
+                for k, u in _cache["data"].items():
+                    key = (u.get("email") or k).lower()
+                    if "@" in key and key not in new:
+                        new[key] = {**u, "email": key, "id": u.get("id") or secrets.token_hex(8)}
+                save(new)
+                return load()
         return _cache["data"]
+
+
+def by_id(uid):
+    """Mã khách → (email, bản ghi) hoặc (None, None)."""
+    for k, u in load().items():
+        if u.get("id") == uid:
+            return k, u
+    return None, None
 
 
 def save(data):
@@ -88,41 +106,39 @@ def register(f, ip):
     phone = re.sub(r"[^\d+]", "", f.get("phone", ""))[:15]
     tg = f.get("tg", "").strip().lstrip("@")[:40]
     email = f.get("email", "").strip().lower()[:80]
-    user = f.get("user", "").strip().lower()
     pw, pw2 = f.get("pw", ""), f.get("pw2", "")
     if len(name) < 2:
         return False, "Nhập họ tên."
     if not re.fullmatch(r"\+?\d{9,14}", phone):
         return False, "Số điện thoại Zalo không hợp lệ."
-    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[A-Za-z]{2,}", email):
+    if not EMAIL_RE.match(email):
         return False, "Email không hợp lệ."
     if tg and not re.fullmatch(r"[A-Za-z0-9_]{4,40}", tg):
         return False, "Telegram không hợp lệ (vd: @tennguoidung), hoặc để trống."
-    if not USER_RE.match(user):
-        return False, "Tên đăng nhập 3–20 ký tự, chỉ gồm chữ thường không dấu, số, dấu gạch dưới."
     if len(pw) < 6:
         return False, "Mật khẩu tối thiểu 6 ký tự."
     if pw != pw2:
         return False, "Hai lần nhập mật khẩu không khớp."
     with _lock:
         data = dict(load())
-        if user in data:
-            return False, "Tên đăng nhập đã có người dùng."
-        data[user] = {"ten": name, "sdt": phone, "email": email, "tg": tg, "mk": _hash(pw), "tt": "cho",
-                      "tao": int(now), "duyet": None, "het_han": None, "dang_nhap": None, "ip": ip}
+        if email in data:
+            return False, "Email này đã được đăng ký."
+        data[email] = {"ten": name, "sdt": phone, "email": email, "tg": tg, "mk": _hash(pw), "tt": "cho",
+                       "id": secrets.token_hex(8), "tao": int(now), "duyet": None, "het_han": None,
+                       "dang_nhap": None, "ip": ip}
         save(data)
     _reg_ip[ip].append(now)
     _notify(f"👤 Khách mới đăng ký chờ duyệt:\n{name} · Zalo {phone} · {email}" + (f" · Telegram @{tg}" if tg else "")
-            + f"\nTên đăng nhập: {user}\nDuyệt tại: https://pinyin.id.vn/quan-ly")
+            + "\nDuyệt tại: https://pinyin.id.vn/quan-ly")
     return True, "Đăng ký thành công! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được sau khi được duyệt."
 
 
 def login(user, pw):
-    """Trả (tên đăng nhập | None, lỗi)."""
+    """user = email. Trả (mã khách | None, lỗi)."""
     user = user.strip().lower()
     u = load().get(user)
     if not u or not _check_pw(pw, u["mk"]):
-        return None, "Sai tên đăng nhập hoặc mật khẩu."
+        return None, "Sai email hoặc mật khẩu."
     st = status_of(u)
     if st == "cho":
         return None, "Tài khoản đang chờ duyệt. Liên hệ Telegram @TuanKom để được duyệt nhanh."
@@ -134,17 +150,17 @@ def login(user, pw):
         data = dict(load())
         data[user] = {**data[user], "dang_nhap": int(time.time())}
         save(data)
-    return user, None
+    return data[user]["id"], None
 
 
-def session_key(user):
+def session_key(uid):
     """Một phần khóa ký cookie: đổi mật khẩu → phiên cũ tự hết."""
-    u = load().get(user)
+    u = by_id(uid)[1]
     return (u["mk"][-16:] if u else None)
 
 
-def active(user):
-    u = load().get(user)
+def active(uid):
+    u = by_id(uid)[1]
     return bool(u) and status_of(u) == "ok"
 
 
@@ -234,9 +250,8 @@ def register_page(logo, msg="", ok=False, f=None):
 <form method="post" action="/dang-ky" autocomplete="on">
 <label>Họ tên</label><input name="name" value="{v('name')}" required maxlength="60">
 <label>Số điện thoại Zalo <span style="color:var(--no)">*</span></label><input name="phone" value="{v('phone')}" required inputmode="tel" maxlength="15">
-<label>Email <span style="color:var(--no)">*</span></label><input type="email" name="email" value="{v('email')}" required maxlength="80" autocomplete="email">
+<label>Email <span style="color:var(--no)">*</span> <span style="color:var(--mut)">(dùng để đăng nhập)</span></label><input type="email" name="email" value="{v('email')}" required maxlength="80" autocomplete="email">
 <label>Telegram (không bắt buộc)</label><input name="tg" value="{v('tg')}" placeholder="@tennguoidung" maxlength="41">
-<label>Tên đăng nhập</label><input name="user" value="{v('user')}" required placeholder="chữ thường, số, _ (3–20 ký tự)" maxlength="20" autocomplete="username">
 <label>Mật khẩu</label><input type="password" name="pw" required minlength="6" autocomplete="new-password">
 <label>Nhập lại mật khẩu</label><input type="password" name="pw2" required minlength="6" autocomplete="new-password">
 <button class="full">Đăng ký</button>{f'<div class="e">{html.escape(msg)}</div>' if msg else ''}</form>
@@ -254,7 +269,7 @@ async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'}
   let a=u.tt=='cho'?`${d}<button onclick="act('${u.user}','duyet')">Duyệt</button><button class="red" onclick="act('${u.user}','xoa')">Từ chối</button>`:
    u.tt=='khoa'?`${d}<button onclick="act('${u.user}','mo')">Mở khóa</button><button class="red" onclick="act('${u.user}','xoa')">Xóa</button>`:
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
-  return `<tr><td><b>${e(u.ten)}</b><br><span class="m">${e(u.user)}</span></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.email?`<br><a href="mailto:${e(u.email)}">${e(u.email)}</a>`:''}${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
+  return `<tr><td><b>${e(u.ten)}</b><br><a class="m" href="mailto:${e(u.user)}">${e(u.user)}</a></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
    <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
 async function act(user,a){const days=+($('d_'+user)||{}).value||30;
  if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;
