@@ -48,11 +48,17 @@ body.v-ai .w>.c:not(.keep):not(#aip),body.v-ai .w>.g,body.v-ai .w>p{display:none
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--e200:#e5e7eb}}
 .ws>.c{margin-bottom:12px}
 @media(min-width:1100px){.ws.two{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(390px,1fr);gap:12px;align-items:start}
- .ws.two #qk{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto}.ws.two #cv{height:600px}}
+ .ws.two #qk{overflow:auto;box-sizing:border-box}.ws.two #cv{height:600px}}
 #chartc h2,#qk h2>span:first-child{text-transform:uppercase;letter-spacing:.03em}
 [data-theme="dark"] #qk,[data-theme="dark"] #chartc{--acc:#22d3ee;background:#0d1320;border-color:#1c2a3d}
 [data-theme="dark"] #qk h2>span:first-child,[data-theme="dark"] #chartc h2{color:#22d3ee}
 [data-theme="dark"] #qk .qsec,[data-theme="dark"] #qk .qrow{background:#0a101b;border-color:#1c2a3d}
+
+@media(min-width:1100px){.ws.two #qk{padding:10px 12px}.ws.two #qk h2{font-size:13px}.ws.two #qk .qrow{padding:6px 10px;margin:6px 0;font-size:12px}
+ .ws.two #qk .qsec{padding:9px 10px;margin:7px 0}.ws.two #qk .qlbl{font-size:11px;margin-bottom:6px}.ws.two #qk .qopt{padding:6px 4px;font-size:13px}
+ .ws.two #qk .qopt small{font-size:10px}.ws.two #qk .qbig{margin-top:8px}.ws.two #qk .qbig button{padding:9px 6px;font-size:16px}.ws.two #qk .qbig small{font-size:11px}
+ .ws.two #qk .qstep{grid-template-columns:32px 1fr 32px}.ws.two #qk .qstep input{font-size:14px;padding:5px}.ws.two #qk .qpre{margin-top:4px}.ws.two #qk .qpre button{padding:2px;font-size:11px}
+ .ws.two #qk .qg{padding:7px 8px;font-size:11px}.ws.two #qk .qwide{padding:8px;margin-top:7px;font-size:13px}.ws.two #qk .qpl{padding:5px 8px;font-size:12px}}
 body.v-ai .w>.ws{display:none!important}
 .brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
 h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
@@ -534,7 +540,9 @@ function qView(){const l=+$('qlot').value;[...$('qlots').children].forEach(b=>b.
  $('qmodeinfo').textContent=QM=='now'?'🚀 NGAY (Market SL/TP)':QM=='ema9'?`⚡ EMA9 ${$('qtf').value}: ${QT.ema9!=null?QT.ema9.toFixed(d):'-'}`:`🎯 Cản 10 nến ${$('qtf').value}: ${QT.lo10!=null?QT.lo10.toFixed(d):'-'} / ${QT.hi10!=null?QT.hi10.toFixed(d):'-'}`}
 function qGuardView(){const g=QG;[['qbe',g.be_on],['qtr',g.tr_on]].forEach(([i,on])=>{$(i).classList.toggle('on',!!on);$(i).textContent=on?'BẬT':'TẮT'});
  const set=(i,v)=>{if(document.activeElement!==$(i))$(i).value=v};set('qbeat',g.be_at);set('qbelk',g.be_lock);set('qtrat',g.tr_at);set('qtrst',g.tr_step);$('qhalf').checked=!!g.half}
-async function qTick(){const show=LV&&!VIEW&&!!TR;$('qk').style.display=show?'':'none';if($('ws').classList.contains('two')!=show){$('ws').classList.toggle('two',show);redraw()}if(!show)return;if(QSYM!=cs)qLoad();
+function qFit(){const q=$('qk'),c=$('chartc');if(!q||!c)return;q.style.height=$('ws').classList.contains('two')&&innerWidth>=1100?c.offsetHeight+'px':''}
+addEventListener('resize',qFit);
+async function qTick(){const show=LV&&!VIEW&&!!TR&&cs=='XAUUSD';$('qk').style.display=show?'':'none';if($('ws').classList.contains('two')!=show){$('ws').classList.toggle('two',show);redraw()}qFit();if(!show)return;if(QSYM!=cs)qLoad();
  let t;try{t=await jget('api/q/tick?sym='+cs+'&tf='+$('qtf').value)}catch(e){return}if(!t||!t.ok||t.sym!=cs)return;QT=t;if(!QBUSY){QG=t.guard;qGuardView()}
  const a=t.acc;if(a){$('qdemo').textContent=a.demo?'🔒 CHẾ ĐỘ DEMO':'⚠️ TÀI KHOẢN THẬT';$('qdemo').style.color=$('qdemo').style.borderColor=a.demo?'var(--wn)':'var(--no)';
   const lg=String(a.login);$('qacc').innerHTML=`<span>🎯 Tài khoản ${a.demo?'Demo':'Thật'} (${a.currency}): <b style="color:var(--acc)">#•••${lg.slice(-3)}</b> <span class="wn" style="margin-left:6px">${a.server}</span> · vốn <b>${a.equity.toFixed(2)}</b></span><span class="ok">● ĐỒNG BỘ GIÁ SỐNG</span>`}
