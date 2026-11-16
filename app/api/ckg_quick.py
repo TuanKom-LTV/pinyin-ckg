@@ -421,3 +421,84 @@ def start():
     if not _started:
         _started = True
         threading.Thread(target=_loop, daemon=True, name="pinyin-guard").start()
+
+
+# ---------- Đổi tài khoản MT5 ngay trên trang (chỉ chủ) ----------
+ACC_FILE = ROOT / "data" / "mt5_accounts.json"
+
+
+def _recent():
+    try:
+        return json.loads(ACC_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def _remember(a):
+    lst = [x for x in _recent() if not (x["login"] == a.login and x["server"] == a.server)]
+    lst.insert(0, {"login": a.login, "server": a.server, "name": a.name, "ccy": a.currency,
+                   "demo": a.trade_mode == mt5.ACCOUNT_TRADE_MODE_DEMO, "t": int(time.time())})
+    ACC_FILE.parent.mkdir(parents=True, exist_ok=True)
+    ACC_FILE.write_text(json.dumps(lst[:10], ensure_ascii=False), encoding="utf-8")   # KHÔNG lưu mật khẩu
+
+
+@router.get("/accounts")
+def q_accounts():
+    try:
+        with mt5_service.session():
+            a = mt5.account_info()
+            cur = {"login": a.login, "server": a.server, "name": a.name} if a else None
+            if a and not any(x["login"] == a.login and x["server"] == a.server for x in _recent()):
+                _remember(a)
+    except Exception:
+        cur = None
+    return _ok(cur=cur, recent=_recent())
+
+
+class LoginIn(BaseModel):
+    login: int
+    password: str = ""
+    server: str
+
+
+@router.post("/login")
+def q_login(x: LoginIn):
+    server = x.server.strip()
+    if x.login <= 0 or not server:
+        return _err("Nhập số tài khoản và máy chủ.")
+    try:
+        with _lock, mt5_service.session():
+            before = mt5.account_info()
+            if before and before.login == x.login and before.server == server and not x.password:
+                return _ok(msg="Đang dùng đúng tài khoản này rồi.")
+            # để trống mật khẩu: dùng mật khẩu MT5 đã lưu (tài khoản từng đăng nhập trên máy này)
+            ok = mt5.login(x.login, server=server, password=x.password) if x.password else mt5.login(x.login, server=server)
+            if not ok:
+                code, msg = mt5.last_error()
+                back = ""
+                if before:                          # thử quay lại tài khoản cũ (mật khẩu MT5 đã lưu)
+                    if mt5.login(before.login, server=before.server):
+                        back = f" Đã quay lại tài khoản cũ #{before.login}."
+                    else:
+                        back = f" ⚠️ Chưa quay lại được tài khoản cũ #{before.login}, đăng nhập lại trên trang này."
+                hint = " Kiểm tra số tài khoản, mật khẩu, và tên máy chủ đúng như trong email của sàn." if code in (-6, -2, -10005) or "auth" in str(msg).lower() else ""
+                return _err(f"Đăng nhập thất bại ({code} {msg}).{hint}{back}")
+            a = mt5.account_info()
+            _remember(a)
+        # đổi tài khoản: tắt bot để không vào lệnh nhầm, xóa theo dõi lệnh của tài khoản cũ
+        try:
+            from app.api import ckg_auto
+            c = ckg_auto._cfg()
+            if c.get("on"):
+                ckg_auto._save({**c, "on": False})
+            ckg_auto._state["known"].clear()
+            ckg_auto._state["last_bar"] = 0
+        except Exception:
+            pass
+        _half_done.clear()
+        kind = "DEMO" if a.trade_mode == mt5.ACCOUNT_TRADE_MODE_DEMO else "THẬT"
+        _notify(f"Đã đổi tài khoản MT5 → #{a.login} {a.server} ({kind}, {a.currency} {a.equity:.2f}). Bot tự động đã TẮT.")
+        return _ok(msg=f"Đã đăng nhập #{a.login} · {a.server} · {kind} · vốn {a.equity:.2f} {a.currency}. Bot tự động đã được tắt, bật lại khi sẵn sàng.",
+                   login=a.login, server=a.server, demo=kind == "DEMO")
+    except Exception as e:
+        return _err(str(e))
