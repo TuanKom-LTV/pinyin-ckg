@@ -61,6 +61,14 @@ body.v-ai .w>.c:not(.keep):not(#aip),body.v-ai .w>.g,body.v-ai .w>p{display:none
  .ws.two #qk .qg{padding:7px 8px;font-size:11px}.ws.two #qk .qwide{padding:8px;margin-top:7px;font-size:13px}.ws.two #qk .qpl{padding:5px 8px;font-size:12px}}
 body.v-ai .w>.ws{display:none!important}
 .g2s{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:10px;align-items:stretch}.g2s>.ac{margin-top:0!important}@media(max-width:800px){.g2s{grid-template-columns:1fr}}
+
+body.v-ai #top2{display:none!important}
+@media(min-width:1100px){body.fx #top2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px;align-items:stretch;margin-bottom:12px}
+ body.fx #top2>#gb1,body.fx #top2>#gb2{display:contents}body.fx #top2 .c{margin:0}
+ body.fx #top2>#ws{grid-column:1;grid-row:1/span 2;display:flex;flex-direction:column}body.fx #chartc{flex:1;display:flex;flex-direction:column}
+ body.fx #chartc .cvw{flex:1;height:auto;min-height:380px}
+ body.fx #gb1>.c:nth-child(1){grid-column:2;grid-row:1}body.fx #gb1>.c:nth-child(2){grid-column:2;grid-row:2}
+ body.fx #gb2>.c:nth-child(1){grid-column:1;grid-row:3}body.fx #gb2>.c:nth-child(2){grid-column:2;grid-row:3}}
 .brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
 h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
 h2{font-size:13px;letter-spacing:.06em;color:var(--mut);margin:0 0 10px;text-transform:uppercase}
@@ -97,7 +105,11 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <select id="sd" style="width:auto" onchange="render()"><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2" selected>Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select>
 <input id="sh" type="range" min="0" max="24" step="any" value="12.5" style="width:150px;padding:0" oninput="render()"> <b id="shl"></b> <button id="pb" onclick="play()">▶ Chạy</button></label></div>
 
-<div class="ws" id="ws"><div class="c" id="chartc"><div class="btns" id="cmode" style="margin:0 0 10px;align-items:center"><button data-c="pin" onclick="setCM('pin')">📊 Biểu đồ PinYin</button><button data-c="tv" onclick="setCM('tv')">📈 TradingView</button><span class="ok" style="font-size:12px;margin-left:4px">● TRỰC TIẾP</span><span id="cmnote" class="mut" style="font-size:11px"></span></div><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" id="cind" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><div class="cvw" id="cvbox"><canvas id="cv" style="touch-action:none;cursor:grab"></canvas></div><div class="cvw" id="tvbox" style="display:none"></div><div class="mut" id="chint" style="font-size:12px;margin-top:4px">Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
+<div class="c" id="aip"><div class="top"><h2 style="margin:0">🤖 Phân Tích AI · <span id="ais">GBPUSD</span></h2>
+<div class="btns" style="margin:0"><button id="aib" class="bb" style="background:var(--acc)" onclick="aiRun(false)">⚡ Phân tích ngay</button><button id="aib2" onclick="aiRun(true)" title="Bỏ qua bản lưu, gọi AI phân tích mới">🔄 Phân tích lại</button></div></div>
+<div id="aist" class="mut" style="margin:8px 0"></div><div id="aiout" class="aiout"></div>
+<p class="mut" style="font-size:12px;margin:12px 0 0">AI (Google Gemini) đọc dữ liệu MT5 đa khung M1 · M5 · M15 · H1 · H4 · D1 cùng các mốc CKG (pha tuần WPH7, chu kỳ ngày, khung giờ vào lệnh) rồi đưa kịch bản. Đây là phân tích tham khảo, không phải lời khuyên đầu tư; AI có thể sai, luôn tự kiểm tra trước khi vào lệnh.</p></div>
+<div id="top2"><div class="ws" id="ws"><div class="c" id="chartc"><div class="btns" id="cmode" style="margin:0 0 10px;align-items:center"><button data-c="pin" onclick="setCM('pin')">📊 Biểu đồ PinYin</button><button data-c="tv" onclick="setCM('tv')">📈 TradingView</button><span class="ok" style="font-size:12px;margin-left:4px">● TRỰC TIẾP</span><span id="cmnote" class="mut" style="font-size:11px"></span></div><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" id="cind" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><div class="cvw" id="cvbox"><canvas id="cv" style="touch-action:none;cursor:grab"></canvas></div><div class="cvw" id="tvbox" style="display:none"></div><div class="mut" id="chint" style="font-size:12px;margin-top:4px">Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
 <div class="c qk" id="qk" style="display:none"><h2 style="margin:0 0 4px"><span>🚀 BUỒNG LÁI THAO TÁC LỆNH (ĐIỀU KHIỂN MT5 TỪ XA)</span><span class="qbadge" id="qdemo">…</span></h2>
 <div class="qrow" id="qacc">…</div>
 <div class="qsec"><div class="qlbl"><span>1. CHỌN KHỐI LƯỢNG GIAO DỊCH (LOT)</span><span style="color:var(--acc)"><input id="qlot" type="number" step=".01" min=".01" value="0.02" style="width:74px;padding:2px 6px;text-align:right" oninput="qSave()"> lot</span></div>
@@ -116,10 +128,6 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="qsec"><div class="qlbl"><span>📊 VỊ THẾ ĐANG MỞ (<span id="qn">0</span>)</span><span id="qpl"></span></div><div id="qbook" class="mut" style="font-size:13px">Chưa có lệnh.</div>
 <div class="q2" style="margin-top:10px"><button class="qwide" style="margin:0;border-color:var(--ok);color:var(--ok)" onclick="qAct('half','Chốt 50% khối lượng tất cả lệnh '+cs+'?')">✂️ Chốt 50% khối lượng</button><button class="qwide" style="margin:0;border-color:var(--no);color:var(--no)" onclick="qAct('closeall','ĐÓNG TOÀN BỘ lệnh buồng lái trên '+cs+'?')">⛔ Đóng toàn bộ</button></div></div></div>
 </div>
-<div class="c" id="aip"><div class="top"><h2 style="margin:0">🤖 Phân Tích AI · <span id="ais">GBPUSD</span></h2>
-<div class="btns" style="margin:0"><button id="aib" class="bb" style="background:var(--acc)" onclick="aiRun(false)">⚡ Phân tích ngay</button><button id="aib2" onclick="aiRun(true)" title="Bỏ qua bản lưu, gọi AI phân tích mới">🔄 Phân tích lại</button></div></div>
-<div id="aist" class="mut" style="margin:8px 0"></div><div id="aiout" class="aiout"></div>
-<p class="mut" style="font-size:12px;margin:12px 0 0">AI (Google Gemini) đọc dữ liệu MT5 đa khung M1 · M5 · M15 · H1 · H4 · D1 cùng các mốc CKG (pha tuần WPH7, chu kỳ ngày, khung giờ vào lệnh) rồi đưa kịch bản. Đây là phân tích tham khảo, không phải lời khuyên đầu tư; AI có thể sai, luôn tự kiểm tra trước khi vào lệnh.</p></div>
 <div class="g" id="gb1">
 <div class="c"><h2>1 · Hướng chính (W và D1)</h2><div id="d1src" style="font-size:12px;margin:-4px 0 8px"></div>
 <div class="row"><span>Nến W</span><span id="wbtn"><button id="wu" onclick="W='BUY';render()">Xanh</button> <button id="wd" onclick="W='SELL';render()">Đỏ</button></span><b id="wbadge" style="display:none"></b></div>
@@ -135,6 +143,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div id="pipt"></div></div>
 <div class="c"><h2>5 · Điều kiện vào lệnh</h2><div id="chk"></div>
 <div class="btns"><button id="inj" onclick="inject()">⚡ Giả lập loạt nến M5 kết thúc lực</button></div></div>
+</div>
 </div>
 
 <div class="c" id="kb"><h2>6 · Kịch bản theo cây quyết định (4 sơ đồ tư duy)</h2><div class="g"><div><div class="mut" id="kwh"></div><div id="kw"></div></div><div><div class="mut" id="kdh"></div><div id="kd"></div></div></div>
@@ -162,7 +171,7 @@ function mk(sym){const c=PR[sym],pp=c.pip,w=[];let q=c.p0;for(let i=0;i<1440;i++
 Object.keys(PR).forEach(k=>ST[k]=mk(k));
 function setPair(sym){ST[cs].W=W;ST[cs].ref=ref;ST[cs].d1=['o','h','l','cl'].map(i=>$(i).value);cs=sym;const c=PR[sym],d=ST[sym];P=c.pip;SP=c.sp*c.pip;DG=c.dg;PV=c.pv;wk=d.wk;W=d.W;ref=d.ref;
  ['o','h','l','cl'].forEach((i,j)=>{$(i).value=d.d1[j];$(i).step=c.pip});$('pn').textContent='1 pip = '+c.pip;
- [...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.s==sym));G=sym=='XAUUSD';['gb1','gb2','gstat','kb'].forEach(i=>$(i).style.display=G?'none':'');$('gg').style.display=G?'':'none';$('ct').textContent=G?'Nến M15 · EMA9 · EMA21 · VWAP · FVG ('+SRC()+')':'Nến M5 · giá và ngày giờ ('+SRC()+')';$('inj').style.display=ST[sym].live?'none':'';PAN=0;YM=null;indBar();render();if(typeof chartTick=='function')chartTick();if(typeof VIEWMODE!='undefined'&&VIEWMODE=='ai')aiLoad();if(LV&&!ST[sym].live)liveTick(sym)}
+ [...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.s==sym));G=sym=='XAUUSD';['gb1','gb2','gstat','kb'].forEach(i=>$(i).style.display=G?'none':'');document.body.classList.toggle('fx',!G);$('gg').style.display=G?'':'none';$('ct').textContent=G?'Nến M15 · EMA9 · EMA21 · VWAP · FVG ('+SRC()+')':'Nến M5 · giá và ngày giờ ('+SRC()+')';$('inj').style.display=ST[sym].live?'none':'';PAN=0;YM=null;indBar();render();if(typeof chartTick=='function')chartTick();if(typeof VIEWMODE!='undefined'&&VIEWMODE=='ai')aiLoad();if(LV&&!ST[sym].live)liveTick(sym)}
 $('tabs').innerHTML=Object.keys(PR).map(k=>`<button data-s="${k}" onclick="setPair('${k}')">${k}</button>`).join('');
 const T=()=>{let d,h;if($('sm').checked){d=+$('sd').value;h=+$('sh').value}else if(WS!=null){const w=(Date.now()+252e5-MON().getTime())/36e5;d=Math.floor(w/24);h=w-d*24}else{const n=new Date(Date.now()+252e5);d=(n.getUTCDay()+6)%7;h=n.getUTCHours()+n.getUTCMinutes()/60}return{dow:d,h,w:d*24+h}};
 const hm=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
