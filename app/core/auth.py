@@ -200,7 +200,8 @@ async def auth_middleware(request: Request, call_next):
     request.state.user = cust
     # khách được cấp quyền giao dịch: dùng buồng lái EA của chính mình
     ea_ok = bool(cust) and path.startswith("/ckg/api/ea/") and users.can_trade(cust)
-    if role == "xem" and not ea_ok and viewer_blocked(path, request.method):
+    # trang công khai (đăng ký, xác nhận email...) luôn dùng được, kể cả khi đang đăng nhập tài khoản xem
+    if role == "xem" and not ea_ok and path not in PUBLIC_PATHS and viewer_blocked(path, request.method):
         return JSONResponse(
             {"ok": False, "xem": True,
              "loi": ("Tài khoản chỉ xem: chỉ đọc được bản phân tích AI gần nhất, không yêu cầu phân tích mới."
