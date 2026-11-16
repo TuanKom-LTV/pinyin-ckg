@@ -1,0 +1,30 @@
+PINYIN 01 - BAN SUA LOI GBPJPY
+================================
+
+Phạm vi:
+- Loại bỏ mã giao dịch cũ khỏi mã nguồn đang hoạt động.
+- Dùng GBPJPY thay thế trong thị trường, biểu đồ, phân tích và mô phỏng.
+- Đơn vị niêm yết GBPJPY là JPY; hiển thị 3 chữ số thập phân.
+- P/L mô phỏng GBPJPY được tính bằng JPY và chỉ quy đổi sang USD khi MT5 có tick USDJPY mới.
+- USDJPY chỉ là mã nội bộ phục vụ quy đổi P/L, không xuất hiện trong danh sách sản phẩm.
+- Đồng bộ phiên truy cập MT5 bằng khóa để tránh các request song song đóng/mở kết nối lẫn nhau.
+- Tắt cache HTML và gắn phiên bản cho JS để tránh trình duyệt tiếp tục dùng chart.js cũ (nguyên nhân có thể gây giao diện cũ và lỗi chartData[symbol]).
+
+Kiểm tra đã chạy:
+- Python: biên dịch cú pháp toàn bộ file .py thành công.
+- JavaScript: node --check cho 7 file JS hoạt động, tất cả thành công.
+- Kiểm tra cấu trúc: GBPJPY có mặt ở các luồng thị trường, MT5, chart, analysis, simulation.
+- Không còn mã giao dịch cũ trong các file được đóng gói.
+- Kiểm tra khóa MT5 bằng 6 luồng đồng thời: tối đa 1 phiên MT5 chạy cùng lúc.
+
+Lưu ý:
+- Đây là mã nguồn đọc dữ liệu MT5 và mô phỏng; không gửi lệnh giao dịch thật.
+- Chưa thể kiểm thử kết nối MT5 thực tế từ môi trường đóng gói này.
+- Nếu broker không cung cấp USDJPY hoặc tick USDJPY không mới, P/L GBPJPY trong mô phỏng sẽ hiển thị "--" và không được cộng vào số dư USD cho tới khi có tỷ giá quy đổi hợp lệ.
+- Dữ liệu dự phòng trong giao diện vẫn được đánh dấu là dữ liệu minh họa, không phải giá MT5 hiện tại.
+
+Cách cập nhật:
+1. Sao lưu thư mục dự án hiện tại trước khi chép đè.
+2. Giải nén toàn bộ ZIP này vào thư mục dự án PinYin 01, cho phép ghi đè file.
+3. Khởi động lại FastAPI.
+4. Mở lại trang PinYin bằng Ctrl+F5 một lần.

@@ -1,0 +1,21 @@
+# Bí mật - KHÔNG BAO GIỜ đưa lên GitHub
+.env
+tunnel/
+*.pem
+cloudflared*.json
+
+# Riêng từng máy
+.venv/
+tools/
+data/
+__pycache__/
+*.pyc
+
+# Bản sao lưu cũ
+backup_*/
+*.bak
+*backup*
+*.before_*
+*before_*
+frontend/ckg/_t_*
+*.zip

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PinYin CKG</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23131824'/%3E%3Cline x1='24' y1='10' x2='24' y2='54' stroke='%232ecc71' stroke-width='3' stroke-linecap='round'/%3E%3Crect x='18' y='17' width='12' height='30' rx='2' fill='%232ecc71'/%3E%3Cpath d='M31 32 46 16M31 32 46 48' stroke='%23e8ecf3' stroke-width='7' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f4f5f7;--card:#fff;--tx:#14181f;--mut:#667085;--bd:#e3e6eb;--ok:#12a150;--no:#d92d20;--wn:#b7791f;--acc:#2563eb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0e14;--card:#131824;--tx:#e8ecf3;--mut:#8b95a7;--bd:#222a3a;--ok:#2ecc71;--no:#ff5c5c;--wn:#f5c542;--acc:#5b8cff}}
+:root[data-theme="dark"]{--bg:#0b0e14;--card:#131824;--tx:#e8ecf3;--mut:#8b95a7;--bd:#222a3a;--ok:#2ecc71;--no:#ff5c5c;--wn:#f5c542;--acc:#5b8cff}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:960px;margin:0 auto;padding:14px}h1{font-size:18px;margin:0}
+.chip{font-size:12px;padding:4px 10px;display:inline-flex;align-items:center;gap:6px;opacity:.5}.chip.on{opacity:1}.chip i{width:12px;height:3px;border-radius:2px;display:inline-block}
+.menu{display:flex;gap:6px;margin-top:12px;border-bottom:1px solid var(--bd)}
+.menu button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 12px;font-weight:600;color:var(--mut)}
+.menu button.on{color:var(--acc);border-bottom-color:var(--acc)}
+#aip{display:none}body.v-ai #aip{display:block}
+body.v-ai .w>.c:not(.keep):not(#aip),body.v-ai .w>.g,body.v-ai .w>p{display:none!important}
+.aiout{line-height:1.6}.aiout h3{font-size:15px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.aiout ul{margin:4px 0;padding-left:20px}.aiout li{margin:2px 0}.aiout p{margin:6px 0}
+.aiout .kl{margin-top:14px;padding:12px;border-radius:10px;background:var(--bg);font-size:16px;font-weight:700;border-left:4px solid var(--mut)}
+.aiout .kl.ok{border-left-color:var(--ok)}.aiout .kl.no{border-left-color:var(--no)}.aiout .kl.wn{border-left-color:var(--wn)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--bd);border-top-color:var(--acc);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}@keyframes sp{to{transform:rotate(360deg)}}
+.brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
+h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
+h2{font-size:13px;letter-spacing:.06em;color:var(--mut);margin:0 0 10px;text-transform:uppercase}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.g{display:grid;gap:12px;grid-template-columns:1fr 1fr}@media(max-width:700px){.g{grid-template-columns:1fr}}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.px{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.mut{color:var(--mut);font-size:13px}.ok{color:var(--ok)}.no{color:var(--no)}.wn{color:var(--wn)}
+.row{display:flex;justify-content:space-between;padding:3px 0;gap:8px}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:7px 11px}
+button.on{border-color:var(--acc);color:var(--acc);font-weight:700}
+.bb{background:var(--ok);color:#fff;border:0;font-weight:700}.bs{background:var(--no);color:#fff;border:0;font-weight:700}
+input,select{font:inherit;padding:6px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:100%}
+input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.f label{font-size:12px;color:var(--mut)}
+.ph{display:flex;gap:3px;margin:6px 0}.ph div{height:30px;border-radius:5px;background:var(--bg);font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--mut)}
+.ph div.on{background:var(--acc);color:#fff;font-weight:700}
+.ck{display:flex;gap:8px;padding:4px 0;border-top:1px solid var(--bd)}.big{font-size:18px;font-weight:700;margin:8px 0}
+.tag{font-size:12px;background:var(--bg);border-radius:6px;padding:2px 8px}canvas{width:100%;height:380px;display:block}
+.pos{border-top:1px solid var(--bd);padding:8px 0}.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+@media(max-width:600px){.pt tr:first-child{display:none}.pt tr{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;padding:9px 0;border-bottom:1px solid var(--bd)}.pt td{display:flex;justify-content:space-between;padding:0;border:0;white-space:nowrap}.pt td:before{content:attr(data-l);color:var(--mut);margin-right:8px;font-weight:400}.pt td:last-child{grid-column:1/-1}.pt td:last-child button{width:100%;padding:8px!important;font-size:14px!important}#ht tr:first-child{display:none}#ht tr{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;padding:9px 0;border-bottom:1px solid var(--bd)}#ht td{display:flex;justify-content:space-between;padding:0;border:0;white-space:nowrap}#ht td:before{content:attr(data-l);color:var(--mut);margin-right:8px;font-weight:400}}th,td{padding:5px 7px;text-align:right;border-top:1px solid var(--bd);white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--mut);font-weight:600}tr.cur td{background:var(--bg);font-weight:700}.sc{overflow-x:auto}.cells{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(138px,1fr))}.cell{border:1px solid var(--bd);border-left:3px solid var(--bd);border-radius:8px;padding:6px 8px;background:var(--bg);font-size:11px;line-height:1.35}.cell.up{border-left-color:var(--ok)}.cell.dn{border-left-color:var(--no)}.cell.cur{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}.ct{display:flex;justify-content:space-between;gap:6px}.bg{font-size:14px;font-weight:700;margin:2px 0}.bg small{font-size:10px;font-weight:400;color:var(--mut)}.cb{display:flex;gap:10px;align-items:stretch;margin:4px 0}.bar{position:relative;width:14px;min-height:64px;background:linear-gradient(var(--mut),var(--mut)) center/2px 100% no-repeat}.bar i{position:absolute;left:0;width:100%;border-radius:2px}.bar i.up{background:var(--ok)}.bar i.dn{background:var(--no)}.kv{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:0 5px;font-size:10px}.kv span{color:var(--mut)}.kv b{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.cards4{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.ac{border:1px solid var(--bd);border-radius:12px;padding:12px;background:var(--card)}.ac .hd{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:700}.ac .vl{font-size:26px;font-weight:700;margin:10px 0 6px;font-variant-numeric:tabular-nums}.bdg{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--bg)}.ac .row{border-top:1px solid var(--bd);padding:5px 0;font-size:13px}.ac .row span{color:var(--mut)}.ac .nd{background:var(--bg);border-radius:8px;padding:8px;margin-top:8px;font-size:12px;line-height:1.5}.ac .nd b{display:block;margin-bottom:3px}
+.kr{display:flex;gap:8px;padding:5px 6px;border-top:1px solid var(--bd);font-size:13px;align-items:flex-start}.kr.cur{background:var(--bg);border-left:3px solid var(--acc)}.kr .k{min-width:40px;font-weight:700}.kr .s{margin-left:auto;font-size:11px;white-space:nowrap;color:var(--mut)}.kr.pv{color:var(--mut);font-size:12px}.kr.fin{font-weight:700}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="top"><div class="brand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="tagline">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div></div><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div class="btns" id="thb" style="margin:0"><button data-m="light" onclick="setTheme('light')">☀️ Sáng</button><button data-m="dark" onclick="setTheme('dark')">🌙 Tối</button></div></div>
+
+<div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button></div>
+<div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
+<div class="c keep" style="margin-top:12px"><div class="top"><div><div id="nm" class="mut">GBPUSD</div><div class="px" id="px">-</div></div>
+<div style="text-align:right"><div id="clk" class="mut"></div><div class="mut">Giờ VN (GMT+7)</div></div></div>
+<label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="sm" onchange="render()"> Giờ giả lập để xem thử:
+<select id="sd" style="width:auto" onchange="render()"><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2" selected>Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select>
+<input id="sh" type="range" min="0" max="24" step="any" value="12.5" style="width:150px;padding:0" oninput="render()"> <b id="shl"></b> <button id="pb" onclick="play()">▶ Chạy</button></label></div>
+
+<div class="c" id="aip"><div class="top"><h2 style="margin:0">🤖 Phân Tích AI · <span id="ais">GBPUSD</span></h2>
+<div class="btns" style="margin:0"><button id="aib" class="bb" style="background:var(--acc)" onclick="aiRun(false)">⚡ Phân tích ngay</button><button id="aib2" onclick="aiRun(true)" title="Bỏ qua bản lưu, gọi AI phân tích mới">🔄 Phân tích lại</button></div></div>
+<div id="aist" class="mut" style="margin:8px 0"></div><div id="aiout" class="aiout"></div>
+<p class="mut" style="font-size:12px;margin:12px 0 0">AI (Google Gemini) đọc dữ liệu MT5 đa khung M1 · M5 · M15 · H1 · H4 · D1 cùng các mốc CKG (pha tuần WPH7, chu kỳ ngày, khung giờ vào lệnh) rồi đưa kịch bản. Đây là phân tích tham khảo, không phải lời khuyên đầu tư; AI có thể sai, luôn tự kiểm tra trước khi vào lệnh.</p></div>
+<div class="g" id="gb1">
+<div class="c"><h2>1 · Hướng chính (W và D1)</h2><div id="d1src" style="font-size:12px;margin:-4px 0 8px"></div>
+<div class="row"><span>Nến W</span><span id="wbtn"><button id="wu" onclick="W='BUY';render()">Xanh</button> <button id="wd" onclick="W='SELL';render()">Đỏ</button></span><b id="wbadge" style="display:none"></b></div>
+<div class="mut" style="margin-top:6px" id="d1lbl">Nến D1 gần nhất (nhập O/H/L/C)</div>
+<div class="f"><label>Open<input id="o" type="number" step=".0001" value="1.3200" oninput="render()"></label><label>High<input id="h" type="number" step=".0001" value="1.3215" oninput="render()"></label><label>Low<input id="l" type="number" step=".0001" value="1.3105" oninput="render()"></label><label>Close<input id="cl" type="number" step=".0001" value="1.3110" oninput="render()"></label></div>
+<div class="row" style="margin-top:6px"><span class="mut">Ngưỡng bóng nến mộng (pip, tạm đặt)</span><input id="wk" type="number" value="10" style="width:70px" oninput="render()"></div>
+<div id="dir"></div></div>
+<div class="c"><h2>2 · Pha tuần WPH7 (tuần bắt đầu T2 04:00)</h2><div id="wph"></div><h2 style="margin-top:12px">3 · Nhịp trong ngày (6 chu kỳ)</h2><div id="day"></div></div>
+</div>
+
+<div class="g" id="gb2">
+<div class="c"><h2>4 · Số pip và thời gian</h2>
+<div id="pipt"></div></div>
+<div class="c"><h2>5 · Điều kiện vào lệnh</h2><div id="chk"></div>
+<div class="btns"><button id="inj" onclick="inject()">⚡ Giả lập loạt nến M5 kết thúc lực</button></div></div>
+</div>
+
+<div class="c" id="kb"><h2>6 · Kịch bản theo cây quyết định (4 sơ đồ tư duy)</h2><div class="g"><div><div class="mut" id="kwh"></div><div id="kw"></div></div><div><div class="mut" id="kdh"></div><div id="kd"></div></div></div>
+<div class="mut" style="margin-top:8px">Giả định tạm: CK tuần = P1 đến P7 của WPH7; CK ngày = 5 chu kỳ đầu (04-10h, 10-14h, 14-17h, 17-20h, 20-23h); chu kỳ tăng nếu nến đóng cao hơn giá mở của chính chu kỳ đó; hệ số cấp số nhân lấy theo ô "Gấp lot khi đảo". QLV, GMC giữ nguyên chữ trong sơ đồ.</div></div>
+<div class="c" id="gg" style="display:none"><div class="top" style="margin-bottom:10px"><h2 style="margin:0">Phân tích chi tiết các chỉ báo · XAUUSD (<span id="gtfl">M1</span>)</h2><div class="btns" id="gtfb" style="margin:0"><button data-g="M1" onclick="setGTF('M1')">M1</button><button data-g="M5" onclick="setGTF('M5')">M5</button></div></div>
+<label class="mut" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">Bước TP ($, tạm đặt)<input id="gs" type="number" step=".5" value="2" style="width:90px" oninput="render()"></label>
+<label class="mut" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">Giá vào lệnh cách EMA ($)<input id="ged" type="number" step=".1" min="0" value="0.2" style="width:90px" oninput="render()"></label><div id="gp"></div></div>
+<div class="c" id="gstat"><h2>📊 Thống kê từng pha tuần (pip)</h2><div class="sc" id="sw"></div><div class="row" style="margin-top:14px;align-items:center"><h2 style="margin:0">Thống kê từng chu kỳ trong ngày</h2><select id="sdv" style="width:auto" onchange="render()"><option value="-1">Hôm nay</option><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2">Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select></div><div class="sc" id="sdy"></div><div class="mut">Dấu … là đang chạy. M = mở, Đ = đóng, C = cao nhất, T = thấp nhất, BĐ = biên độ (pip). <span id="pn">1 pip = 0.0001</span>.</div></div>
+<div class="c"><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><canvas id="cv" style="touch-action:none;cursor:grab"></canvas><div class="mut" style="font-size:12px;margin-top:4px">Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
+
+<div class="c"><h2 id="cph">🚀 Buồng lái · 1 tài khoản (mô phỏng)</h2>
+<div class="g" style="margin-bottom:8px"><label class="mut">Vốn (USD) để kiểm giới hạn<input id="cap" type="number" value="1000" oninput="render()"><span id="capn" style="font-size:11px"></span></label>
+<label class="mut">Lot · Mục tiêu chốt (pip) · Gấp lot khi đảo<div class="f" style="grid-template-columns:1fr 1fr 1fr"><input id="lt" type="number" step=".01" value="0.03" oninput="render()"><input id="tp" type="number" value="30" oninput="render()"><select id="mu"><option>2</option><option>3</option></select></div></label><div class="mut" id="tpslrow" style="display:none;grid-column:1/-1;font-size:13px;gap:6px 16px;flex-wrap:wrap;align-items:center"><label><input type="checkbox" id="tpon" onchange="tpslSave()"> Gửi TP lên MT5 (= ô Mục tiêu chốt)</label><label><input type="checkbox" id="slon" onchange="tpslSave()"> Gửi SL lên MT5, cách <input id="slp" type="number" min="0" step="1" value="30" style="width:70px;padding:3px 6px" oninput="tpslSave()"> pip</label></div></div>
+<div id="mm" class="mut"></div><div id="acc" style="margin:8px 0"></div>
+<div class="btns"><button class="bs" onclick="op_('SELL')">SELL</button><button class="bb" onclick="op_('BUY')">BUY</button><button id="clb" onclick="cl_()">Chốt</button><button onclick="rv()">Cắt và đảo</button></div>
+<div id="oth" class="mut" style="margin-top:8px"></div></div>
+<div class="c"><div class="top"><h2 style="margin:0">📜 Lịch sử lệnh (như History của MT5)</h2><button id="hclr" onclick="H.length=0;hist()">Xóa lịch sử</button></div>
+<div id="hs" class="row" style="flex-wrap:wrap;gap:4px 16px;margin:8px 0"></div><div class="sc"><table id="ht"></table></div></div>
+<p class="mut">Bản giao diện theo kịch bản đã duyệt. Khi chưa nối máy chủ MT5, giá và nến là giả lập; khi nối rồi (huy hiệu LIVE màu xanh), giá và nến là dữ liệu MT5 thật. Khi trang chạy từ máy chủ PinYin có MT5, buồng lái gửi LỆNH THẬT sang MT5 (mỗi lệnh đều có hộp xác nhận); khi không nối máy chủ, lệnh chỉ là mô phỏng. Các mốc đánh dấu "tạm" là giả định cần sếp chốt.</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);let P=1e-4,SP=1.2e-4,DG=5,PV=10,cs='GBPUSD',G=false,GD=null,GL=null,GV=null;
+let p=1.315,W='SELL',m5=[],ref=null,wk=[];
+const PR={GBPUSD:{p0:1.315,pip:1e-4,dg:5,pv:10,sp:1.2,v:1},EURUSD:{p0:1.16,pip:1e-4,dg:5,pv:10,sp:.8,v:.8},AUDUSD:{p0:.66,pip:1e-4,dg:5,pv:10,sp:1,v:.7},GBPJPY:{p0:200,pip:.01,dg:3,pv:6.5,sp:2.5,v:1.4},EURJPY:{p0:175,pip:.01,dg:3,pv:6.5,sp:2,v:1.1},XAUUSD:{p0:2650,pip:.1,dg:2,pv:10,sp:3,v:3}},ST={};
+function mk(sym){const c=PR[sym],pp=c.pip,w=[];let q=c.p0;for(let i=0;i<1440;i++){const o=q,e=o+(Math.random()-.5)*6*c.v*pp;w.push({o,c:e,h:Math.max(o,e)+Math.random()*1.2*pp,l:Math.min(o,e)-Math.random()*1.2*pp});q=e}
+ return{wk:w,W:'SELL',ref:null,pos:null,d1:[c.p0+50*pp,c.p0+65*pp,c.p0-45*pp,c.p0-40*pp].map(v=>v.toFixed(c.dg))}}
+Object.keys(PR).forEach(k=>ST[k]=mk(k));
+function setPair(sym){ST[cs].W=W;ST[cs].ref=ref;ST[cs].d1=['o','h','l','cl'].map(i=>$(i).value);cs=sym;const c=PR[sym],d=ST[sym];P=c.pip;SP=c.sp*c.pip;DG=c.dg;PV=c.pv;wk=d.wk;W=d.W;ref=d.ref;
+ ['o','h','l','cl'].forEach((i,j)=>{$(i).value=d.d1[j];$(i).step=c.pip});$('pn').textContent='1 pip = '+c.pip;
+ [...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.s==sym));G=sym=='XAUUSD';['gb1','gb2','gstat','kb'].forEach(i=>$(i).style.display=G?'none':'');$('gg').style.display=G?'':'none';$('ct').textContent=G?'Nến M15 · EMA9 · EMA21 · VWAP · FVG ('+SRC()+')':'Nến M5 · giá và ngày giờ ('+SRC()+')';$('inj').style.display=ST[sym].live?'none':'';PAN=0;YM=null;indBar();render();if(typeof chartTick=='function')chartTick();if(typeof VIEWMODE!='undefined'&&VIEWMODE=='ai')aiLoad();if(LV&&!ST[sym].live)liveTick(sym)}
+$('tabs').innerHTML=Object.keys(PR).map(k=>`<button data-s="${k}" onclick="setPair('${k}')">${k}</button>`).join('');
+const T=()=>{let d,h;if($('sm').checked){d=+$('sd').value;h=+$('sh').value}else if(WS!=null){const w=(Date.now()+252e5-MON().getTime())/36e5;d=Math.floor(w/24);h=w-d*24}else{const n=new Date(Date.now()+252e5);d=(n.getUTCDay()+6)%7;h=n.getUTCHours()+n.getUTCMinutes()/60}return{dow:d,h,w:d*24+h}};
+const hm=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
+const cl=s=>s=='ok'?'ok':s=='warn'?'wn':'no',ic=s=>s=='ok'?'✅':s=='warn'?'⚠️':'⛔';
+const cum=[5,9,13,17,21,25,30],PT=['Quan sát','Ưu tiên','Ưu tiên','Xác nhận','Ưu tiên','Xác nhận','Quan sát'],PS=['no','ok','ok','warn','ok','warn','no'];
+const CY=[[4,10],[10,14],[14,17],[17,20],[20,23],[23,28]];
+function render(){
+ const t=T(),dir=W,sell=dir=='SELL',ag=sell?'tăng':'giảm',al=sell?'giảm':'tăng',ix=Math.max(0,Math.min(1439,Math.floor((t.w-4)*12))),dayS=Math.floor(ix/288)*288,open=wk[dayS].o;p=wk[ix].c;m5=wk.slice(Math.max(0,ix-59),ix+1);
+ $('px').textContent=p.toFixed(DG);$('nm').textContent=cs;$('clk').textContent=new Date().toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});$('shl').textContent=['T2','T3','T4','T5','T6'][+$('sd').value]+' '+hm(+$('sh').value);
+ d1Src();$('wu').classList.toggle('on',W=='BUY');$('wd').classList.toggle('on',W=='SELL');
+ if(!G){
+ // 1 hướng + nến mộng
+ const O=+$('o').value,H=+$('h').value,L=+$('l').value,C=+$('cl').value,rg=(H-L)/P,uw=(H-Math.max(O,C))/P,lw=(Math.min(O,C)-L)/P,dd=C>=O?'BUY':'SELL',wb=+$('wk').value;
+ const mong=rg>=90&&uw<=wb&&lw<=wb;
+ $('dir').innerHTML=`<div class="row"><span>Nến D1</span><b class="${dd=='BUY'?'ok':'no'}">${dd=='BUY'?'Xanh → BUY':'Đỏ → SELL'} · ${rg.toFixed(0)} pip</b></div>
+ <div class="row"><span>Cây nến mộng (≥90 pip, bóng ngắn)</span><b class="${mong?'ok':'wn'}">${mong?'Có':'Không'} (bóng ${uw.toFixed(0)}/${lw.toFixed(0)} pip)</b></div>
+ <div class="big ${sell?'no':'ok'}">Hướng chính: ${dir} ${dd==W?'':'<span class="wn" style="font-size:13px">· D1 lệch W, chỉ vào thuận W</span>'}</div>`;
+ // 2 WPH7
+ const e=(t.dow*24+t.h-4)/4,idx=e<0?-1:Math.min(Math.floor(e),30),ph=idx<0||idx>=30?-1:cum.findIndex(x=>idx<x);
+ $('wph').innerHTML=`<div class="ph">${[5,4,4,4,4,4,5].map((n,i)=>`<div style="flex:${n}" class="${ph==i?'on':''}">P${i+1}</div>`).join('')}</div>`+
+ (ph<0?`<div class="mut">${idx<0?'Chưa mở tuần mới':'Hết tuần giao dịch'}</div>`:`<div class="row"><span>Nến H4 #${idx+1}/30 · P${ph+1}</span><b class="${cl(PS[ph])}">${PT[ph]}</b></div>`);
+ // 3 nhịp ngày
+ const cy=t.h>=23||t.h<4?5:t.h>=20?4:t.h>=17?3:t.h>=14?2:t.h>=10?1:0;
+ const hint=[`Sáng ${ag} nhẹ so với giá mở cửa`,`Trước phiên Âu có đợt ${ag} mạnh 20-30 pip rồi ${al}`,`Đợt ${al} kéo dài đến 17:00`,'Chững lại: đi ngang hoặc nhích nhẹ đến 20:00',`Tiếp tục ${al}, xem xét vào lệnh`,'Cuối ngày, chờ đóng nến D1'];
+ $('day').innerHTML=CY.map((r,i)=>`<div class="row" style="${cy==i?'font-weight:700;color:var(--acc)':'color:var(--mut)'}"><span>CK${i+1} ${hm(r[0]%24)}-${hm(r[1]%24)}</span><span style="text-align:right">${cy==i?hint[i]:''}</span></div>`).join('');
+ // 4 pip & thời gian
+ const dc0=wk.slice(dayS,ix+1).filter(x=>!x.f),dc=dc0.length?dc0:[wk[ix]],sgn=sell?1:-1,agp=sgn*(p-open)/P,since=sgn*(p-(ref??open))/P,up=dc.filter(x=>x.c>open).length,dn=dc.length-up,mx=Math.max(...dc.map(x=>x.h)),mn=Math.min(...dc.map(x=>x.l));
+ const tm=up>dn?'BUY':'SELL',big=Math.max((mx-open)/P,(open-mn)/P);
+ $('pipt').innerHTML=`<div class="row"><span>Giá mở cửa D1 hôm nay</span><b>${open.toFixed(DG)}</b></div><div class="row"><span>Thời gian trên / dưới giá mở</span><b>${(up*5/60).toFixed(1)}h / ${(dn*5/60).toFixed(1)}h</b></div><div class="row"><span>Pip tối đa lên / xuống</span><b>${((mx-open)/P).toFixed(0)} / ${((open-mn)/P).toFixed(0)}</b></div>
+ <div class="row"><span>Pip ngược chiều (${ag}) từ giá mở</span><b>${agp.toFixed(1)}</b></div><div class="row"><span>Pip ${ag} từ lúc cắt lệnh trước</span><b>${since.toFixed(1)}</b></div>
+ <div class="mut">${tm=='BUY'&&big<30?'Mua nhiều thời gian nhưng pip ít, không đủ sức tăng → nghiêng SELL':tm=='SELL'&&big<30?'Bán nhiều thời gian nhưng pip ít → nghiêng BUY':'Pip đủ lớn, theo hướng chính'} (ngưỡng 30 pip, tạm đặt)</div>`;
+ // 5 checklist
+ const n=m5.length,last=m5[n-1],aga=x=>sell?x.c>x.o:x.c<x.o;let i=n-2,k=0;while(i>=0&&aga(m5[i])){k++;i--}
+ const tot=k?Math.abs(m5[n-2].c-m5[i+1].o)/P:0,m5ok=k>=3&&k<=7&&tot>=10&&tot<=15&&!aga(last);
+ const s1=t.h>=12&&t.h<13.5,s2=t.h>=18&&t.h<20;
+ const pc=s1?(agp>=20?'ok':'no'):s2?(since<=55?'ok':since<60?'warn':'no'):'no';
+ const pd=s1?`Bước 1: ${agp.toFixed(0)} pip ngược chiều (cần khoảng 20-25)`:s2?`Bước 2: ${since.toFixed(0)} pip từ lúc cắt lệnh trước (≤55 mới vào; 60-70 trở lên bỏ, chờ sau 23:00)`:'Ngoài khung giờ vào lệnh';
+ const CK=[[dd==W?'ok':'warn','Hướng W và D1',`${W} / ${dd}`],[ph<0?'no':PS[ph],'Pha tuần WPH7',ph<0?'Ngoài tuần':'P'+(ph+1)+' · '+PT[ph]],[s1||s2?'ok':'no','Khung giờ quan sát',s1?'Bước 1 · 12:00-13:30':s2?'Bước 2 · 18:00-19:59':'Chờ 12:00 hoặc 18:00'],[pc,'Số pip',pd],[m5ok?'ok':'no','Loạt nến M5',`${k} nến ${ag}, ${tot.toFixed(0)} pip${m5ok?', nến kết thúc lực xuất hiện':' (cần 3-7 nến, 10-15 pip, rồi nến đảo)'}`]];
+ const all=CK.every(x=>x[0]!='no');
+ $('chk').innerHTML=CK.map(x=>`<div class="ck"><span>${ic(x[0])}</span><span><b>${x[1]}</b><br><span class="mut">${x[2]}</span></span></div>`).join('')+`<div class="big ${all?(sell?'no':'ok'):'wn'}">${all?'ĐỦ ĐIỀU KIỆN → '+dir:'CHỜ, CHƯA ĐỦ ĐIỀU KIỆN'}</div>`;
+ }
+ if(G)gold(t,ix);
+ // cockpit
+ capSync();const cap=+$('cap').value,B=[[100,3,.01],[300,5,.01],[600,3,.02],[900,5,.02],[1000,3,.03],[1200,5,.03]];let b=null;B.forEach(x=>{if(cap>=x[0])b=x});
+ const opn=Object.keys(ST).filter(k=>ST[k].pos),lot=+$('lt').value,tp=+$('tp').value,q=ST[cs].pos;
+ $('cph').textContent=TR?'🚀 Buồng lái · MT5 '+(TR.demo?'DEMO':'TÀI KHOẢN THẬT')+' · lệnh thật':VIEW?'🚀 Buồng lái · mô phỏng (tài khoản chỉ xem, không vào được lệnh MT5)':'🚀 Buồng lái · 1 tài khoản (mô phỏng)';$('hclr').style.display=TR?'none':'';$('tpslrow').style.display=TR?'flex':'none';
+ $('mm').innerHTML=(TR?`<div class="${TR.demo?'':'no'}" style="margin-bottom:4px"><b>MT5 ${TR.demo?'DEMO':'TÀI KHOẢN THẬT'}</b> · ${TR.server} · Số dư <b>${TR.balance.toFixed(2)} ${TR.currency}</b> · Equity <b>${TR.equity.toFixed(2)}</b>${TR.chan?` <span class="no">· ${TR.chan}</span>`:''}</div>`:'')+(b?`Mức vốn này: tối đa ${b[1]} lệnh, mỗi lệnh ${b[2]} lot. Đang mở ${opn.reduce((t,k)=>t+(ST[k].pos.n||1),0)}/${b[1]} lệnh (tính tất cả các cặp). Giá trị pip ${cs}: ${PV.toFixed(2)} USD/lot${cs.endsWith('JPY')&&RT&&RT.usdjpy?' (USDJPY '+RT.usdjpy.toFixed(3)+')':''}.`:'Vốn dưới 100 USD: bảng quản lý vốn chưa có mức phù hợp.');
+ let h=`<div class="mut">Chưa có lệnh trên ${cs}.</div>`;
+ if(q){const pp=(q.t=='BUY'?p-q.e:q.e-(p+SP))/P,mi=q.live?Math.max(0,(Date.now()-q.ms)/6e4):Math.max(0,(t.w-q.tw)*60),mo=q.live?q.profit.toFixed(2)+' '+TR.currency:(pp*q.lot*PV).toFixed(2)+' USD';h=`<div class="row"><b class="${q.t=='BUY'?'ok':'no'}">${cs} ${q.t} ${q.lot} lot @ ${q.e.toFixed(DG)}${q.n>1?' ('+q.n+' lệnh)':''}${q.live&&(q.tp||q.sl)?` <span class="mut" style="font-weight:400">· TP ${q.tp?q.tp.toFixed(DG):'-'} · SL ${q.sl?q.sl.toFixed(DG):'-'}</span>`:''}</b><b class="${(q.live?q.profit:pp)>=0?'ok':'no'}">${pp.toFixed(1)} pip · ${mo}</b></div><div class="mut">Mở ${Math.floor(mi/60)}h${String(Math.floor(mi%60)).padStart(2,'0')}${mi>=180?' · ĐÃ QUÁ 3 GIỜ: nếu hòa vốn, dương ít hoặc âm nhẹ thì chốt':''}${pp>=tp?' · ĐẠT MỤC TIÊU, nên chốt':''}</div>`}
+ if(q&&q.live&&q.list)h+=posRows(q.list);if(b&&(q?q.lot:lot)>b[2])h+=`<div class="no">Lot ${q?q.lot:lot} vượt mức tối đa ${b[2]} theo vốn</div>`;$('clb').textContent=q&&q.n>1?'Chốt tất cả':'Chốt';
+ $('acc').innerHTML=h;
+ const ot=opn.filter(k=>k!=cs);
+ $('oth').innerHTML=ot.length?'Lệnh đang mở ở cặp khác: '+ot.map(k=>{const o=ST[k].pos,c=PR[k],pc=ST[k].wk[ix].c,v=(o.t=='BUY'?pc-o.e:o.e-(pc+c.sp*c.pip))/c.pip;return `${k} ${o.t} ${o.lot} lot (${o.live?o.profit.toFixed(2)+' '+TR.currency:v.toFixed(1)+' pip'})`}).join(' · '):'';
+ if(TR&&TR.khac&&TR.khac.length){const sm=TR.khac.reduce((a,o)=>a+o.profit,0);$('oth').innerHTML+=`<div style="margin-top:6px;padding:8px;border:1px dashed var(--bd);border-radius:8px">👁 <b>Lệnh khác trên tài khoản</b> (chỉ xem, buồng lái không quản lý): `+TR.khac.map(o=>`${o.sym} <span class="${o.t=='BUY'?'ok':'no'}">${o.t}</span> ${o.lot} lot @ ${o.e} (<span class="${o.profit>=0?'ok':'no'}">${o.profit.toFixed(2)} ${TR.currency}</span>, ${o.nguon})`).join(' · ')+` · Tổng: <b class="${sm>=0?'ok':'no'}">${sm.toFixed(2)} ${TR.currency}</b></div>`}
+ stats(t,ix);if(!G)kb(ix);hist();draw(open,ix)}
+const S=(a,b,ix)=>{const e=Math.min(b,ix+1);if(a>ix||a>=e)return null;const s=wk.slice(a,e),o=s[0].o,c=s[s.length-1].c,h=Math.max(...s.map(x=>x.h)),l=Math.min(...s.map(x=>x.l));return{o,h,l,c,r:(h-l)/P,d:(c-o)/P,part:e<b}};
+const TB=(rows,cu)=>`<table><tr><th></th><th>Mở</th><th>Cao nhất</th><th>Thấp nhất</th><th>Đóng</th><th>Biên độ</th><th>Tăng/giảm</th></tr>`+rows.map((r,i)=>{const s=r[1];return `<tr class="${cu==i?'cur':''}"><td>${r[0]}${s&&s.part?' …':''}</td>`+(s?`<td>${s.o.toFixed(DG)}</td><td>${s.h.toFixed(DG)}</td><td>${s.l.toFixed(DG)}</td><td>${s.c.toFixed(DG)}</td><td>${s.r.toFixed(1)}</td><td class="${s.d>=0?'ok':'no'}">${s.d>=0?'+':''}${s.d.toFixed(1)}</td>`:'<td colspan="6" style="text-align:center;color:var(--mut)">chưa tới</td>')+'</tr>'}).join('')+'</table>';
+const PH=['T2 04:00-23:59','T3 00:00-15:59','T3 16:00-T4 07:59','T4 08:00-23:59','T5 00:00-15:59','T5 16:00-T6 07:59','T6 08:00-T7 03:59'],CKt=['04:00-10:00','10:00-14:00','14:00-17:00','17:00-20:00','20:00-23:00','23:00-04:00'];
+const CE=(rows,cu,sb)=>`<div class="cells">`+rows.map((r,i)=>{const s=r[1],u=sb[i],f=s?(s.c>=s.o?'up':'dn'):'';let bar='';if(s){const k=v=>(v-s.l)/((s.h-s.l)||P)*100,a=k(Math.min(s.o,s.c)),b=k(Math.max(s.o,s.c));bar=`<div class="bar"><i class="${f}" style="bottom:${a.toFixed(0)}%;height:${Math.max(4,b-a).toFixed(0)}%"></i></div>`}
+ return `<div class="cell ${f} ${cu==i?'cur':''}"><div class="ct"><b>${r[0]}${s&&s.part?' …':''}</b><span class="${u[1]?cl(u[1]):'mut'}">${u[0]}</span></div><div class="mut">${u[2]}</div>`+(s?`<div class="bg ${s.d>=0?'ok':'no'}">${s.d>=0?'+':''}${s.d.toFixed(1)} pip <small>BĐ ${s.r.toFixed(0)}</small></div><div class="kv"><span>M</span><b>${s.o.toFixed(DG)}</b><span>Đ</span><b>${s.c.toFixed(DG)}</b><span>C</span><b>${s.h.toFixed(DG)}</b><span>T</span><b>${s.l.toFixed(DG)}</b></div>`:'<div class="mut">Chưa tới</div>')+`</div>`}).join('')+`</div>`;
+function stats(t,ix){const R=[];for(let i=0;i<7;i++)R.push([`P${i+1} (${cum[i]-(i?cum[i-1]:0)} nến H4)`,S((i?cum[i-1]:0)*48,cum[i]*48,ix)]);R.push(['Cả tuần',S(0,1440,ix)]);
+ $('sw').innerHTML=CE(R,cum.findIndex(x=>Math.floor(ix/48)<x),[...PT.map((x,i)=>[x,PS[i],PH[i]]),['Tổng hợp tuần','','T2 04:00 → T7 04:00']]);
+ const dv=+$('sdv').value,dy=dv<0?Math.floor(ix/288):dv,b0=dy*288,nm=['CK1 04-10h','CK2 10-14h','CK3 14-17h','CK4 17-20h','CK5 20-23h','CK6 23-04h'],of=[0,6,10,13,16,19,24],D=[['Cả ngày D1',S(b0,b0+288,ix)]];
+ for(let i=0;i<6;i++)D.push([nm[i],S(b0+of[i]*12,b0+of[i+1]*12,ix)]);
+ const ck=dy==Math.floor(ix/288)?1+of.findIndex((x,i)=>i<6&&(ix-b0)/12<of[i+1]):-1;$('sdy').innerHTML=CE(D,ck,[['Tổng hợp ngày','','04:00 → 04:00'],...CKt.map(x=>['','',x])])}
+function ema(a,n){const k=2/(n+1);let e=a[0];return a.map(x=>e=x*k+e*(1-k))}
+function rsi(a,n=14){const r=[];let g=0,l=0;a.forEach((x,i)=>{if(!i){r.push(50);return}const d=x-a[i-1];if(i<=n){g+=Math.max(d,0)/n;l+=Math.max(-d,0)/n}else{g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n}r.push(l?100-100/(1+g/l):100)});return r}
+function g15(ix){const o=[];for(let j=0;j*3<=ix;j++){const q=wk.slice(j*3,Math.min(j*3+3,ix+1));o.push({o:q[0].o,c:q[q.length-1].c,h:Math.max(...q.map(x=>x.h)),l:Math.min(...q.map(x=>x.l)),full:q.length==3})}return o}
+function atr(c,n=14){const r=[];let a=0;c.forEach((x,i)=>{const tr=i?Math.max(x.h-x.l,Math.abs(x.h-c[i-1].c),Math.abs(x.l-c[i-1].c)):x.h-x.l;a=i<n?(a*i+tr)/(i+1):(a*(n-1)+tr)/n;r.push(a)});return r}
+function gsig(c){const cl=c.map(x=>x.c),E=ema(cl,9),E2=ema(cl,21),AT=atr(c),stp=+$('gs').value||2,sg=[];
+ for(let i=15;i<c.length;i++){if(!c[i].full)continue;let t=0;if(E[i-1]<=E2[i-1]&&E[i]>E2[i])t=1;if(E[i-1]>=E2[i-1]&&E[i]<E2[i])t=-1;
+  if(t){const w=c.slice(i-3,i+1),sl=t>0?Math.min(...w.map(x=>x.l)):Math.max(...w.map(x=>x.h));sg.push({i,t,e:cl[i],sl,tp:[1,2,3].map(n=>cl[i]+t*stp*n)})}}
+ const fv=[];for(let i=2;i<c.length;i++){if(c[i].l>c[i-2].h)fv.push({i:i-2,a:c[i].l,b:c[i-2].h,t:1});if(c[i].h<c[i-2].l)fv.push({i:i-2,a:c[i-2].l,b:c[i].h,t:-1})}
+ return{c,E,E2,AT,sg,fv:fv.slice(-3)}}
+// Nến M1 cho bảng phân tích: tới phút hiện tại, lấy 600 nến gần nhất (đủ để EMA/ATR ổn định); nến cuối đang chạy
+function g1(t,ix){const m=M1(),mi=Math.max(0,Math.min(7199,ix*5+4,Math.floor((t.w-4)*60))),s=Math.max(0,mi-599),o=[];for(let i=s;i<=mi;i++){const q=m[i];o.push({o:q.o,h:q.h,l:q.l,c:q.c,full:i<mi})}return{c:o,mi}}
+let GTF='M1';try{const v=localStorage.getItem('ckg-gtf');if(v=='M1'||v=='M5')GTF=v}catch(e){}
+function setGTF(t){GTF=t;try{localStorage.setItem('ckg-gtf',t)}catch(e){}if(typeof chartFetch=='function')chartFetch(cs,t);render()}
+// Nến cho bảng phân tích: có MT5 thì dùng nến thật nhiều ngày của khung đã chọn (600 nến gần nhất), không thì dữ liệu tuần
+function gcan(t,ix){const ch=CH[cs+'|'+GTF];
+ if(LV&&ch&&ch.rows.length&&!$('sm').checked){const rs=ch.rows.slice(-600),L=rs.length;return{c:rs.map((r,i)=>({o:r.o,h:r.h,l:r.l,c:r.c,full:i<L-1}))}}
+ if(GTF=='M5'){const s=Math.max(0,ix-599),o=[];for(let i=s;i<=ix;i++){const q=wk[i];o.push({o:q.o,h:q.h,l:q.l,c:q.c,full:i<ix})}return{c:o}}
+ return g1(t,ix)}
+function gold(t,ix){const r1=gcan(t,ix),MI=Math.max(0,Math.min(7199,ix*5+4,Math.floor((t.w-4)*60))),g=gsig(r1.c),n=g.c.length-1,L=g.sg.at(-1),E=g.E[n],E2=g.E2[n],AT=g.AT[n],m1=M1(),dS=Math.floor(ix/288)*1440;let sm=0;for(let k=dS;k<=MI;k++)sm+=(m1[k].h+m1[k].l+m1[k].c)/3;const V=sm/(MI-dS+1);$('gtfl').textContent=GTF;[...$('gtfb').children].forEach(b=>b.classList.toggle('on',b.dataset.g==GTF));GD=g;GL=L;GV=V;
+ const f=v=>v.toFixed(DG),sl=(a,b)=>{const d=a-b;return Math.abs(d)<.02*AT?['Đi ngang','']:d>0?['Đang hướng lên','ok']:['Đang hướng xuống','no']},TH=GTF=='M5'?5.2:2.2;// ngưỡng ATR M1 (≈ phân vị 80% tuần 09-14/11), tạm đặt
+ const ca=(nm,val,bd,gd,rows,nd)=>`<div class="ac"><div class="hd"><span>${nm}</span><span class="bdg ${gd}">${bd}</span></div><div class="vl">${val}</div>`+rows.map(r=>`<div class="row" style="display:flex;justify-content:space-between"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')+`<div class="nd"><b>Nhận định</b>${nd}</div></div>`;
+ const em=(nm,E,k,pr)=>{const u=p>E,K=k==9?'E':'E2',s=sl(g[K][n],g[K][n-3]),gap=+$('ged').value||0,ds=Math.abs(p-E),sd=u?'BUY':'SELL',en=u?E+gap:E-gap,inz=ds<=gap,
+  ent=`<strong class="${u?'ok':'no'}">${sd} ${f(en)}</strong>`;
+  return ca(nm,f(E),u?'Giá trên '+nm:'Giá dưới '+nm,u?'ok':'no',[['Giá hiện tại',f(p)],['Cách '+nm,ds.toFixed(2)+' $'],['Giá vào lệnh',ent],['Độ dốc EMA',s[0]]],
+  `Giá hiện tại ${f(p)} đang nằm ${u?'trên':'dưới'} ${nm} ${ds.toFixed(2)} giá. ${pr} Độ dốc EMA: ${s[0].toLowerCase()}. `+
+  (inz?`<strong class="${u?'ok':'no'}">Giá đang trong vùng vào lệnh (≤ ${gap} giá quanh ${nm}): ${sd} quanh ${f(p)}.</strong>`
+      :`Giá vào lệnh: <strong class="${u?'ok':'no'}">${sd} ở ${f(en)}</strong>, cách ${nm} ${gap} giá. Chờ giá ${u?'hồi xuống':'hồi lên'} thêm ${(ds-gap).toFixed(2)} giá để vào lệnh.`))};
+ const hi=AT>=TH,vd=p-V;
+ let h='<div class="cards4">'+em('EMA 9',E,9,'Xu hướng ngắn hạn nghiêng về phía '+(p>E?'tăng.':'giảm.'))+em('EMA 21',E2,21,'Cấu trúc trung hạn nghiêng về phía '+(p>E2?'tăng.':'giảm.'))
+ +ca('ATR 14',AT.toFixed(2),hi?'Biến động cao':'Bình thường',hi?'wn':'ok',[['Mã giao dịch','XAUUSD'],['Trạng thái biến động',hi?'Biến động cao':'Bình thường'],['Ngưỡng XAUUSD',TH.toFixed(2)]],`ATR XAUUSD đang ${hi?'trên':'dưới'} ngưỡng ${TH.toFixed(2)}. ${hi?'Biên độ biến động lớn, cân nhắc giảm lot và nới SL.':'Biên độ biến động chưa chạm ngưỡng cảnh báo.'}`)
+ +ca('Daily VWAP',f(V),vd>=0?'Giá trên VWAP':'Giá dưới VWAP',vd>=0?'ok':'no',[['Giá hiện tại',f(p)],['Vị trí giá',vd>=0?'Trên VWAP':'Dưới VWAP'],['Khoảng cách',Math.abs(vd).toFixed(2)+' ('+(Math.abs(vd)/V*100).toFixed(3)+'%)']],`Giá đang ${vd>=0?'cao hơn':'thấp hơn'} mức giá bình quân trong ngày (VWAP tính từ giá mở cửa D1, chưa có khối lượng thật nên coi các nến bằng trọng số). Theo dõi khả năng giá quay lại kiểm tra VWAP.`)+'</div>';
+ // Thống kê 10 nến M1 đã đóng gần nhất
+ {const c10=r1.c.filter(x=>x.full).slice(-10);if(c10.length){const up=c10.filter(x=>x.c>x.o).length,dn=c10.filter(x=>x.c<x.o).length,eq=c10.length-up-dn,
+  sr=c10.reduce((s,x)=>s+(x.h-x.l),0),hh=Math.max(...c10.map(x=>x.h)),ll=Math.min(...c10.map(x=>x.l)),net=c10[c10.length-1].c-c10[0].o,
+  bi=up>dn?['Nghiêng về TĂNG','ok']:dn>up?['Nghiêng về GIẢM','no']:['Cân bằng',''];
+  h+=`<div class="ac" style="margin-top:10px"><div class="hd"><span>Thống kê ${c10.length} nến ${GTF} gần nhất</span><span class="bdg ${bi[1]}">${bi[0]}</span></div>`
+  +`<div style="display:flex;gap:4px;margin:10px 0 8px">${c10.map(x=>`<div title="M ${f(x.o)} · Đ ${f(x.c)} · C ${f(x.h)} · T ${f(x.l)}" style="flex:1;height:22px;border-radius:4px;background:${x.c>x.o?'var(--ok)':x.c<x.o?'var(--no)':'var(--mut)'}"></div>`).join('')}</div>`
+  +[['Nến xanh (tăng)',`<strong class="ok">${up}</strong>`],['Nến đỏ (giảm)',`<strong class="no">${dn}</strong>`]].concat(eq?[['Nến đứng (mở = đóng)',eq]]:[])
+   .concat([['Tổng biên độ (cộng cao−thấp từng nến)',sr.toFixed(2)+' $'],['Biên độ cả cụm (cao nhất − thấp nhất)',(hh-ll).toFixed(2)+' $ ('+f(ll)+' → '+f(hh)+')'],['Thay đổi ròng (mở nến đầu → đóng nến cuối)',`<strong class="${net>=0?'ok':'no'}">${net>=0?'+':''}${net.toFixed(2)} $</strong>`]])
+   .map(r=>`<div class="row" style="display:flex;justify-content:space-between"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')
+  +`<div class="nd"><b>Nhận định</b>${up} nến xanh, ${dn} nến đỏ${eq?', '+eq+' nến đứng':''} trong ${c10.length} nến ${GTF} gần nhất → <strong class="${bi[1]}">${bi[0].toLowerCase()}</strong>. Tổng biên độ ${sr.toFixed(2)} $, cả cụm dao động ${(hh-ll).toFixed(2)} $, giá ${net>=0?'tăng':'giảm'} ròng ${Math.abs(net).toFixed(2)} $.</div></div>`}}
+ if(L){const rk=Math.abs(L.e-L.sl),hit=L.tp.filter(x=>L.t>0?p>=x:p<=x).length,st=L.t>0?p<=L.sl:p>=L.sl;
+  h+=`<div class="ac" style="margin-top:10px"><div class="hd"><span>Tín hiệu EMA9 × EMA21</span><span class="bdg ${L.t>0?'ok':'no'}">${L.t>0?'BUY':'SELL'} @ ${f(L.e)}</span></div><div class="row" style="display:flex;justify-content:space-between;margin-top:8px"><span>SL (đáy/đỉnh 4 nến)</span><b>${f(L.sl)} (${rk.toFixed(2)}$)</b></div>`+L.tp.map((x,i)=>`<div class="row" style="display:flex;justify-content:space-between"><span>TP${i+1}</span><b>${f(x)} · R:R 1:${(Math.abs(x-L.e)/rk).toFixed(1)}</b></div>`).join('')+`<div class="row" style="display:flex;justify-content:space-between"><span>Trạng thái</span><b>${st?'⛔ Đã chạm SL':hit?'✅ Đã qua TP'+hit:'⏳ Đang chạy'}</b></div></div>`}
+ $('gp').innerHTML=h}
+
+const nd=(k,txt,T,G)=>({k,txt,T,G});
+const TB_=nd(2,'Theo dõi CK2',
+ nd(3,'Quan sát CK3 (chưa vào lệnh)',nd(4,'Kiểm tra số pip, SELL lướt đầu CK4','Kiểm tra số pip, vào lệnh cấp số nhân để về hòa','TP'),
+  nd(4,'Kiểm tra số pip, BUY CK4',nd(5,'TP hoặc SL+','Chốt lời trong ngày','Cắn SL+ thì bỏ qua, mai vào lại'),nd(5,'Kiểm tra số pip, vào lệnh theo cấp số nhân','TP','Kiểm tra số pip, vào lệnh theo cấp số nhân'))),
+ nd(3,'BUY CK3',nd(4,'TP hoặc SL+','TP (có thể Sell lướt CK4, mạo hiểm)',nd(5,'Chưa qua GMC và chưa quét SL+: nhồi thêm lệnh Buy. Giảm qua GMC và cắn SL+: nghỉ, chờ ngày hôm sau','TP','Cắt hết lệnh, chờ ngày hôm sau')),
+  nd(4,'Kiểm tra số pip, vào lệnh theo cấp số nhân',nd(5,'TP hoặc SL+','TP','Cắn mất SL, nghỉ chờ ngày hôm sau'),nd(5,'Nhồi theo cấp số nhân','TP','Kiểm tra số pip, vào lệnh theo cấp số nhân'))));
+const TS_=nd(2,'Theo dõi CK2',
+ nd(3,'SELL CK3, kiểm tra số pip',nd(4,'Kiểm tra số pip, SELL cấp số nhân',nd(5,'Sell thuận lệnh','Sell thuận lệnh','Chốt lời'),nd(5,'Chốt lời hoặc SL+','Nghỉ, chờ hôm sau','Chốt lời và nghỉ')),
+  nd(4,'Chốt lời hoặc SL+',nd(5,'Qua giá mở cửa và cắn SL+: nghỉ. Chưa qua và không cần SL: có thể nhồi thêm','Cắt hết lệnh, chờ hôm sau','Chốt lời trong ngày'),'Chốt lời trong ngày, có thể Buy lướt sóng')),
+ nd(3,'Đứng ngoài quan sát, không vào lệnh CK3',nd(4,'SELL CK4',nd(5,'Kiểm tra số pip, nhồi theo cấp số nhân','Nhồi tiếp cấp số nhân','Chốt lời'),nd(5,'Chốt lời hoặc SL+','Nghỉ, chờ hôm sau','Chốt lời trong ngày')),
+  nd(4,'Kiểm tra số pip, BUY lướt sóng CK4','Chốt lời và nghỉ','Buy nhồi để thuận lệnh')));
+const stT=(r,k,cur)=>r[k]?'đã xong · '+(r[k]=='T'?'tăng':'giảm'):k==cur?'đang chạy':'chưa tới';
+const kr=(k,t,r,cur)=>`<div class="kr ${k==cur?'cur':''}"><span class="k">CK${k}</span><span>${t}</span><span class="s">${stT(r,k,cur)}</span></div>`;
+function wRows(dir,r,m,cur){let h=kr(1,'Không ảnh hưởng nhánh (CK1 tăng hay giảm đều cùng kết quả)',r,cur)+kr(2,dir=='BUY'?'Theo dõi CK2: giảm → Buy CK3; tăng → quan sát CK3':'Theo dõi CK2: tăng → Sell CK3; giảm → quan sát CK3',r,cur),side=null,k0=0;
+ if(r[2]){if(dir=='BUY'){if(r[2]=='G'){side='BUY';k0=3}else{h+=kr(3,'Quan sát CK3: giảm → Buy CK4; tăng → Sell CK4',r,cur);if(r[3]){side=r[3]=='G'?'BUY':'SELL';k0=4}}}
+  else{if(r[2]=='T'){side='SELL';k0=3}else{h+=kr(3,'Quan sát CK3: tăng → Sell CK4; giảm → Buy CK4',r,cur);if(r[3]){side=r[3]=='T'?'SELL':'BUY';k0=4}}}}
+ if(side){let alive=true;for(let k=k0;k<=7;k++){if(!alive){h+=kr(k,'Chuỗi đã kết thúc',r,cur);continue}const n=k-k0,win=r[k]&&((side=='BUY')==(r[k]=='T'));
+  let t=n?`${side} cấp số nhân, lot x${Math.pow(m,n)}`:`Vào ${side} lệnh đầu (QLV)`;
+  if(r[k]){if(win){t+=' → Chốt lãi khi hết CK (không chốt thì SL+, chờ TP hoặc cán SL)';alive=false}else t+=k==7?' → Quan sát CK1, CK2 tuần sau và tiếp tục theo đuổi mục tiêu':' → ngược hướng, sang CK'+(k+1)+' nhân tiếp'}
+  h+=kr(k,t,r,cur)}}
+ return h}
+function dRows(tree,r,cur){let h=kr(1,'Không ảnh hưởng nhánh',r,cur),n=tree;while(n){if(typeof n=='string'){h+=`<div class="kr fin"><span>✔ Kết luận: ${n}</span></div>`;break}
+  h+=kr(n.k,n.txt,r,cur);const v=r[n.k];if(!v){const g=c=>typeof c=='string'?c:c.txt;h+=`<div class="kr pv"><span class="k"></span><span>Nếu CK${n.k} tăng: ${g(n.T)}<br>Nếu CK${n.k} giảm: ${g(n.G)}</span></div>`;break}n=v=='T'?n.T:n.G}
+ return h}
+function kb(ix){const m=+$('mu').value||2,dd=(+$('cl').value)>=(+$('o').value)?'BUY':'SELL';
+ const rw={};for(let k=1;k<=7;k++){const a=(k>1?cum[k-2]:0)*48,b=cum[k-1]*48;if(ix+1>=b)rw[k]=wk[b-1].c>=wk[a].o?'T':'G'}
+ const cw=cum.findIndex(x=>Math.floor(ix/48)<x)+1,dy=Math.floor(ix/288),b0=dy*288,of=[0,6,10,13,16,19,24],rd={};
+ for(let k=1;k<=5;k++){const a=b0+of[k-1]*12,b=b0+of[k]*12;if(ix+1>=b)rd[k]=wk[b-1].c>=wk[a].o?'T':'G'}
+ const cd=Math.min(5,1+of.findIndex((x,i)=>i<6&&(ix-b0)/12<of[i+1]));
+ $('kwh').innerHTML='<b>Tuần · W cạnh '+W+'</b> (CK = pha WPH7)';$('kw').innerHTML=wRows(W,rw,m,cw);
+ $('kdh').innerHTML='<b>Ngày · D cạnh '+dd+'</b> (nến D1 '+(dd=='BUY'?'xanh':'đỏ')+')';$('kd').innerHTML=dRows(dd=='BUY'?TB_:TS_,rd,cd)}
+let IX=0,TF='M5';const TFM={M1:1,M3:3,M5:5,M15:15,M30:30,H1:60,H4:240,D:1440,W:10080};
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function M1(){const d=ST[cs];if(d.m1)return d.m1;const o=[];wk.forEach((q,j)=>{const rn=rng(j*131+17),pt=[q.o];for(let k=1;k<5;k++)pt.push(Math.min(q.h,Math.max(q.l,q.o+(q.c-q.o)*k/5+(rn()-.5)*(q.h-q.l)*.5)));pt.push(q.c);const kh=Math.floor(rn()*5),kl=Math.floor(rn()*5);
+ for(let k=0;k<5;k++){const a=pt[k],b=pt[k+1],mx=Math.max(a,b),mn=Math.min(a,b);o.push({o:a,c:b,h:k==kh?q.h:mx+rn()*(q.h-mx)*.3,l:k==kl?q.l:mn-rn()*(mn-q.l)*.3})}});d.m1=o;return o}
+function grp(src,n,end,u){const r=[];for(let s=0;s<=end;s+=n){const e=Math.min(s+n-1,end);let h=-1e9,l=1e9;for(let i=s;i<=e;i++){if(src[i].h>h)h=src[i].h;if(src[i].l<l)l=src[i].l}r.push({o:src[s].o,c:src[e].c,h,l,full:e-s+1==n,a:s*u,ts:A2MS(s*u)})}return r}
+function A2MS(a){return MON().getTime()-252e5+(240+a*5)*6e4}
+// Biểu đồ: có máy chủ MT5 thì dùng nến thật đúng khung (≥ 5 ngày), không thì dựng từ dữ liệu tuần
+function tfc(ix){const k=cs+'|'+TF,ch=CH[k];if(LV&&ch&&ch.rows.length&&!$('sm').checked){const rs=ch.rows,L=rs.length;return rs.map((r,i)=>({o:r.o,h:r.h,l:r.l,c:r.c,ts:r.ts,full:i<L-1}))}
+ const m=TFM[TF];return m<5?grp(M1(),m,Math.min(7199,ix*5+4),.2):grp(wk,m/5,ix,1)}
+function setTF(t){TF=t;PAN=0;YM=null;[...$('tfb').children].forEach(b=>b.classList.toggle('on',b.dataset.t==t));render();chartTick()}
+$('tfb').innerHTML=Object.keys(TFM).map(k=>`<button data-t="${k}" class="${k==TF?'on':''}" onclick="setTF('${k}')">${k}</button>`).join('');
+const H=[];let TKT=1000;
+function closeRec(){const q=ST[cs].pos;if(!q)return;const cp=v=>Math.max(0,Math.min(1439,Math.floor((v-4)*12))),ci=cp(T().w),pip=(q.t=='BUY'?p-q.e:q.e-(p+SP))/P;H.push({id:++TKT,sym:cs,t:q.t,lot:q.lot,e:q.e,x:q.t=='BUY'?p:p+SP,oi:cp(q.tw),ci,pip,pf:pip*q.lot*PV,dg:DG})}
+function hist(){const CU=TR?TR.currency:'USD',tm=ms=>ms?new Date(ms).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'-',tl=a=>{const l=TL(Math.max(0,a));return l.d+' '+l.t},du=m=>{m=Math.max(0,m*5);return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
+ const n=H.length,w=H.filter(x=>x.pf>0).length,tp=H.reduce((a,x)=>a+x.pf,0),tpp=H.reduce((a,x)=>a+x.pip,0),g=H.filter(x=>x.pf>0).reduce((a,x)=>a+x.pf,0),ls=H.filter(x=>x.pf<0).reduce((a,x)=>a+x.pf,0);
+ $('hs').innerHTML=n?`<span>Số lệnh: <b>${n}</b></span><span>Thắng/Thua: <b class="ok">${w}</b>/<b class="no">${n-w}</b> (${(w/n*100).toFixed(0)}%)</span><span>Tổng pip: <b class="${tpp>=0?'ok':'no'}">${tpp.toFixed(1)}</b></span><span>Lãi: <b class="ok">${g.toFixed(2)}</b></span><span>Lỗ: <b class="no">${ls.toFixed(2)}</b></span><span>Ròng: <b class="${tp>=0?'ok':'no'}">${tp.toFixed(2)} ${CU}</b></span>`:'<span class="mut">Chưa có lệnh nào đóng.</span>';
+ $('ht').innerHTML='<tr><th>Ticket</th><th>Cặp</th><th>Loại</th><th>Lot</th><th>Giờ vào</th><th>Giá vào</th><th>Giờ ra</th><th>Giá ra</th><th>Thời gian giữ</th><th>Pip</th><th>Lợi nhuận (${CU})</th></tr>'+[...H].reverse().map(x=>`<tr><td data-l="Ticket">${x.id}</td><td data-l="Cặp">${x.sym}</td><td data-l="Loại" class="${x.t=='BUY'?'ok':'no'}">${x.t.toLowerCase()}</td><td data-l="Lot">${x.lot}</td><td data-l="Giờ vào">${x.cms?tm(x.oms):tl(x.oi)}</td><td data-l="Giá vào">${x.e.toFixed(x.dg)}</td><td data-l="Giờ ra">${x.cms?tm(x.cms):tl(x.ci)}</td><td data-l="Giá ra">${x.x.toFixed(x.dg)}</td><td data-l="Giữ">${x.cms?(x.oms?Math.floor((x.cms-x.oms)/36e5)+'h'+String(Math.floor((x.cms-x.oms)/6e4)%60).padStart(2,'0'):'-'):du(x.ci-x.oi)}</td><td data-l="Pip" class="${x.pip>=0?'ok':'no'}">${x.pip.toFixed(1)}</td><td data-l="Lợi nhuận" class="${x.pf>=0?'ok':'no'}"><b>${x.pf.toFixed(2)}</b></td></tr>`).join('')}
+function op_(t){if(TR){liveOpen(t);return}ST[cs].pos={t,lot:+$('lt').value,e:t=='BUY'?p+SP:p,tw:T().w};render()}
+function cl_(){if(TR){liveClose();return}closeRec();ref=p;ST[cs].pos=null;render()}
+function rv(){const q=ST[cs].pos;if(!q)return;if(TR){liveReverse(q);return}const m=+$('mu').value;closeRec();ref=p;ST[cs].pos=null;$('lt').value=+(q.lot*m).toFixed(2);op_(q.t=='BUY'?'SELL':'BUY')}
+function inject(){ST[cs].m1=null;const t=T(),ix=Math.max(6,Math.min(1439,Math.floor((t.w-4)*12))),a=W=='SELL'?1:-1;let q=wk[ix-6].c;const old=wk[ix].c;for(let i=0;i<6;i++){const o=q,c=i<5?q+a*2.4*P:q-a*1.5*P;wk[ix-5+i]={o,c,h:Math.max(o,c)+.3*P,l:Math.min(o,c)-.3*P};q=c}const dl=q-old;for(let i=ix+1;i<1440;i++){wk[i].o+=dl;wk[i].c+=dl;wk[i].h+=dl;wk[i].l+=dl}render()}
+function MON(){if(WS!=null)return new Date((WS-144e2)*1000+252e5);const n=new Date(Date.now()+252e5);n.setUTCHours(0,0,0,0);n.setUTCDate(n.getUTCDate()-((n.getUTCDay()+6)%7));return n}
+function TLM(ms){const d=new Date(ms+252e5),z=v=>String(v).padStart(2,'0'),dd=z(d.getUTCDate())+'/'+z(d.getUTCMonth()+1);return TFM[TF]>=1440?{t:dd,d:TF=='W'||d.getUTCMonth()==0?String(d.getUTCFullYear()):''}:{t:z(d.getUTCHours())+':'+z(d.getUTCMinutes()),d:dd}}
+function TL(a){const m=240+Math.round(a*5),d=new Date(MON().getTime()+Math.floor(m/1440)*864e5),mm=m%1440,z=v=>String(v).padStart(2,'0');return{t:z(Math.floor(mm/60))+':'+z(mm%60),d:z(d.getUTCDate())+'/'+z(d.getUTCMonth()+1)}}
+// Số nến hiển thị theo bề rộng khung (~12px mỗi nến, 30-90 nến)
+const SLN=()=>Math.max(30,Math.min(90,Math.round((($('cv').clientWidth||900)-66)/12)));
+// Thang giá chỉ theo nến; đường phụ (giá mở D1, SL/TP, VWAP...) chỉ được nới khung nếu nằm gần
+function fit(a,ex){let lo=Math.min(...a.map(c=>c.l)),hi=Math.max(...a.map(c=>c.h));const mn=8*P;if(hi-lo<mn){const m=(hi+lo)/2;lo=m-mn/2;hi=m+mn/2}
+ const sp=hi-lo,tol=.35*sp;(ex||[]).forEach(v=>{if(v==null||!isFinite(v))return;if(v<lo&&lo-v<=tol)lo=v;if(v>hi&&v-hi<=tol)hi=v});return[lo,hi]}
+// Đường ngang có nhãn; nằm ngoài khung thì ghim nhãn ở mép trên/dưới
+function hline(f,v,col,dash,txt,right){const x=f.x,top=f.y(f.hi),bot=f.y(f.lo),yy=f.y(v),out=yy<top?-1:yy>bot?1:0;x.font='11px sans-serif';
+ const tx=out?(out<0?'▲ ':'▼ ')+txt+' (ngoài khung)':txt,tw=x.measureText(tx).width,sk=(out<0?'t':'b')+(right?'r':'l'),nk=out?(f.stk[sk]=(f.stk[sk]||0)+1)-1:0,ly=out<0?top+14+nk*17:out>0?bot-4-nk*17:yy-5,lx=right?f.pw-tw-6:8;
+ if(!out){x.strokeStyle=col;x.setLineDash(dash);x.beginPath();x.moveTo(0,yy);x.lineTo(f.pw,yy);x.stroke();x.setLineDash([])}
+ x.globalAlpha=.85;x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--card');x.fillRect(lx-4,ly-12,tw+8,15);x.globalAlpha=1;x.fillStyle=col;x.fillText(tx,lx,ly)}
+function frame(lo,hi,n,absOf){const cv=$('cv'),r=devicePixelRatio||1,Wd=cv.clientWidth,Hd=cv.clientHeight;cv.width=Wd*r;cv.height=Hd*r;const x=cv.getContext('2d');x.scale(r,r);
+ const s=getComputedStyle(document.documentElement),g=k=>s.getPropertyValue(k),M=g('--mut'),BD=g('--bd'),R=66,Bm=36,pw=Wd-R,ph=Hd-Bm-8;if(YM){lo=YM.lo;hi=YM.hi}else{const pad=(hi-lo)*.06||P;lo-=pad;hi+=pad}FL=lo;FH=hi;FPW=pw;FPH=ph;
+ const y=v=>8+ph-(v-lo)/(hi-lo)*ph,w=pw/Math.max(n,zn());x.font='11px sans-serif';x.lineWidth=1;x.setLineDash([]);
+ for(let k=0;k<=6;k++){const v=lo+(hi-lo)*k/6;x.strokeStyle=BD;x.beginPath();x.moveTo(0,y(v));x.lineTo(pw,y(v));x.stroke();x.fillStyle=M;x.fillText(v.toFixed(DG),pw+5,y(v)+4)}
+ const st=Math.max(1,Math.round(Math.max(n,zn())/(Wd<500?5:8)));const ab=i=>i<n?absOf(i):absOf(n-1)+(i-n+1)*(n>1?absOf(n-1)-absOf(n-2):6e4);let pd='';for(let i=0;i<Math.max(n,zn());i+=st){const cx=i*w+w/2,L=TLM(ab(i));x.strokeStyle=BD;x.beginPath();x.moveTo(cx,8);x.lineTo(cx,8+ph);x.stroke();x.fillStyle=M;x.fillText(L.t,Math.max(2,cx-14),Hd-20);if(L.d!=pd){x.fillText(L.d,Math.max(2,cx-14),Hd-6);pd=L.d}}
+ CW=w;x.save();x.beginPath();x.rect(0,8,pw,ph);x.clip();
+ return{x,y,w,pw,ph,Hd,lo,hi,stk:{},M,B:g('--ok'),S:g('--no'),Y:g('--wn'),A:g('--acc')}}
+function tag(f,v,col){const x=f.x,yy=Math.max(8,Math.min(8+f.ph,f.y(v)));x.setLineDash([2,3]);x.strokeStyle=col;x.beginPath();x.moveTo(0,yy);x.lineTo(f.pw,yy);x.stroke();x.setLineDash([]);x.fillStyle=col;x.fillRect(f.pw,yy-9,64,18);x.fillStyle='#fff';x.font='bold 11px sans-serif';x.fillText(v.toFixed(DG),f.pw+4,yy+4);x.font='11px sans-serif'}
+function candles(f,a){const x=f.x,y=f.y,w=f.w;a.forEach((c,i)=>{const cx=i*w+w/2;x.strokeStyle=x.fillStyle=c.c>=c.o?f.B:f.S;x.beginPath();x.moveTo(cx,y(c.h));x.lineTo(cx,y(c.l));x.stroke();x.fillRect(cx-w*.32,Math.min(y(c.o),y(c.c)),w*.64,Math.max(1,Math.abs(y(c.o)-y(c.c))))})}
+// ===== Thu phóng / kéo xem + bật tắt chỉ báo =====
+let ZN=null,PAN=0,DOPEN=0,CW=10,CLEN=0,YM=null,FL=0,FH=1,FPW=1,FPH=1;// YM: thang giá thủ công {lo,hi}, null = tự động
+const IND={ema9:1,ema21:1,vwap:1,fvg:1,sig:1,sltp:1,d1:1,r10:1};try{Object.assign(IND,JSON.parse(localStorage.getItem('ckg-ind')||'{}'))}catch(e){}
+const IND_L={ema9:['EMA 9','--wn'],ema21:['EMA 21','--acc'],vwap:['VWAP','--wn'],fvg:['FVG',''],sig:['Tín hiệu ▲▼',''],sltp:['SL / TP',''],d1:['Giá mở D1','--mut'],r10:['Cao/Thấp 10 nến','--no']};
+function indBar(){const ks=G?['ema9','ema21','vwap','fvg','sig','sltp','r10']:['ema9','ema21','d1','r10'];$('ind').innerHTML=ks.map(k=>`<button class="chip ${IND[k]?'on':''}" onclick="togInd('${k}')" title="Bật/tắt ${IND_L[k][0]}">${IND_L[k][1]?`<i style="background:var(${IND_L[k][1]})"></i>`:''}${IND_L[k][0]}</button>`).join('')}
+function togInd(k){IND[k]=IND[k]?0:1;try{localStorage.setItem('ckg-ind',JSON.stringify(IND))}catch(e){}indBar();redraw()}
+const zn=()=>ZN||SLN();
+function zoom(f){ZN=Math.round(Math.max(15,Math.min(400,zn()*f)));redraw()}
+function zreset(){ZN=null;PAN=0;YM=null;redraw()}
+function yauto(){YM=null;redraw()}
+function yscale(k){const c=(FL+FH)/2,h=(FH-FL)*k/2;YM={lo:c-h,hi:c+h};redraw()}
+function redraw(){draw(DOPEN,IX);const b=$('yab');if(b)b.classList.toggle('on',!YM)}
+// PAN > 0: lùi về nến cũ; PAN < 0: chừa khoảng trống bên phải (tối đa ~70% khung) như TradingView
+function view(len){const z=zn();PAN=Math.max(-Math.floor(z*.7),Math.min(Math.round(PAN),Math.max(0,len-z)));CLEN=len;const e0=len-PAN,off=Math.max(0,e0-z),end=Math.min(e0,len);return{off,n:end-off,end}}
+function eline(f,E,col){if(!E||!E.length)return;const x=f.x;x.strokeStyle=col;x.lineWidth=1.8;x.beginPath();E.forEach((v,i)=>i?x.lineTo(i*f.w+f.w/2,f.y(v)):x.moveTo(f.w/2,f.y(v)));x.stroke();x.lineWidth=1}
+// Cao nhất / thấp nhất của 10 nến ĐÃ ĐÓNG gần nhất (không tính nến đang chạy)
+function r10(all){const c=all.filter(x=>x.full).slice(-10);if(c.length<2)return null;
+ return{hi:Math.max(...c.map(x=>x.h)),lo:Math.min(...c.map(x=>x.l)),i0:all.indexOf(c[0]),i1:all.indexOf(c[c.length-1]),n:c.length}}
+function drawR10(f,R,off){if(!R)return;const x=f.x,a0=Math.max(0,(R.i0-off)*f.w),a1=(R.i1-off+1)*f.w;
+ if(a1>0){x.fillStyle='rgba(91,140,255,.10)';x.fillRect(a0,f.y(R.hi),a1-a0,f.y(R.lo)-f.y(R.hi))}
+ hline(f,R.hi,f.S,[7,3],`Cao ${R.n} nến ${TF}: ${R.hi.toFixed(DG)}`,false);
+ hline(f,R.lo,f.B,[7,3],`Thấp ${R.n} nến ${TF}: ${R.lo.toFixed(DG)} · biên độ ${((R.hi-R.lo)/P).toFixed(0)} pip`,false)}
+function drawG(){const tc=tfc(IX),g=gsig(tc),v=view(g.c.length),off=v.off,n=v.n,a=g.c.slice(off,v.end);$('ct').textContent='Nến '+TF+' ('+SRC()+')';
+ const ln=GL&&IND.sltp?[[GL.sl,'SL'],...GL.tp.map((q,i)=>[q,'TP'+(i+1)])]:[];
+ const R=IND.r10?r10(g.c):null,rg=fit(a,[...ln.map(l=>l[0]),IND.vwap?GV:null,...(R?[R.hi,R.lo]:[])]),f=frame(rg[0],rg[1],n,i=>g.c[off+i].ts),x=f.x,y=f.y,w=f.w;
+ if(IND.fvg)g.fv.forEach(z=>{const i=z.i-off;if(i>=n)return;const i0=Math.max(0,i);x.fillStyle=z.t>0?'rgba(46,204,113,.18)':'rgba(255,92,92,.18)';x.fillRect(i0*w,y(z.a),f.pw-i0*w,y(z.b)-y(z.a))});
+ drawR10(f,R,off);candles(f,a);if(IND.ema9)eline(f,g.E.slice(off,v.end),f.Y);if(IND.ema21)eline(f,g.E2.slice(off,v.end),f.A);
+ if(IND.sig)g.sg.forEach(q=>{const i=q.i-off;if(i<0||i>=n)return;x.fillStyle=q.t>0?f.B:f.S;x.font='15px sans-serif';x.fillText(q.t>0?'▲':'▼',i*w+w/2-6,q.t>0?y(a[i].l)+16:y(a[i].h)-5)});
+ x.font='11px sans-serif';ln.forEach(([q,t],k)=>hline(f,q,f.M,[4,3],t+' '+q.toFixed(DG),k%2==1));
+ if(IND.vwap&&GV!=null)hline(f,GV,f.Y,[6,4],'VWAP '+GV.toFixed(DG),false);
+ x.restore();tag(f,a[a.length-1].c,f.A)}
+function draw(open,ix){IX=ix;DOPEN=open;if(G){drawG();return}const all=tfc(ix),v=view(all.length),a=all.slice(v.off,v.end),cl=all.map(c=>c.c),
+ R=IND.r10?r10(all):null,rg=fit(a,[...(IND.d1?[open]:[]),...(R?[R.hi,R.lo]:[])]),f=frame(rg[0],rg[1],a.length,i=>a[i].ts),x=f.x;$('ct').textContent='Nến '+TF+' · giá và ngày giờ ('+SRC()+')';
+ drawR10(f,R,v.off);candles(f,a);if(IND.ema9)eline(f,ema(cl,9).slice(v.off,v.end),f.Y);if(IND.ema21)eline(f,ema(cl,21).slice(v.off,v.end),f.A);
+ if(IND.d1)hline(f,open,f.M,[5,4],'Giá mở cửa D1 '+open.toFixed(DG),true);x.restore();
+ tag(f,a[a.length-1].c,f.A)}
+// Cử chỉ trên biểu đồ: lăn chuột = thu phóng, kéo = xem nến cũ, chụm 2 ngón = thu phóng, nhấp đúp = mặc định
+(()=>{const cv=$('cv'),PT={};let d0=0,z0=0,sx=0,sy=0,p0=0,y0=null,zone='',zx0=0;
+ const pts=()=>Object.values(PT),dist=q=>Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y);
+ const zoneOf=e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;return x>FPW?'price':y>8+FPH?'time':'plot'};
+ const curs=z=>z=='price'?'ns-resize':z=='time'?'ew-resize':'grab';
+ cv.addEventListener('wheel',e=>{e.preventDefault();const k=e.deltaY>0?1.15:1/1.15;if(zoneOf(e)=='price')yscale(k);else zoom(k)},{passive:false});
+ cv.addEventListener('dblclick',e=>{if(zoneOf(e)=='price')yauto();else zreset()});
+ cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}PT[e.pointerId]={x:e.clientX,y:e.clientY};const q=pts();
+  if(q.length==2){d0=dist(q);z0=zn();zone='pinch'}
+  else{zone=zoneOf(e);sx=e.clientX;sy=e.clientY;p0=PAN;zx0=zn();y0={lo:FL,hi:FH};if(zone=='plot')cv.style.cursor='grabbing'}});
+ cv.addEventListener('pointermove',e=>{if(!PT[e.pointerId]){cv.style.cursor=curs(zoneOf(e));return}PT[e.pointerId]={x:e.clientX,y:e.clientY};const q=pts();
+  if(q.length>=2&&d0){const z=Math.round(Math.max(15,Math.min(400,z0*d0/Math.max(1,dist(q)))));if(z!=ZN){ZN=z;redraw()}return}
+  if(q.length!=1)return;const dx=e.clientX-sx,dy=e.clientY-sy;
+  if(zone=='price'){const c=(y0.lo+y0.hi)/2,h=(y0.hi-y0.lo)/2*Math.exp(dy*.006);YM={lo:c-h,hi:c+h};redraw()}
+  else if(zone=='time'){const z=Math.round(Math.max(15,Math.min(400,zx0*Math.exp(-dx*.006))));if(z!=ZN){ZN=z;redraw()}}
+  else if(zone=='plot'){const np=Math.round(p0+dx/CW),sh=dy*(y0.hi-y0.lo)/FPH;
+   if(Math.abs(dy)>3||YM)YM={lo:y0.lo+sh,hi:y0.hi+sh};if(np!=PAN||YM){PAN=np;redraw()}}});
+ const up=e=>{delete PT[e.pointerId];const q=pts();if(q.length<2)d0=0;
+  if(q.length==1){sx=q[0].x;sy=q[0].y;p0=PAN;zx0=zn();y0={lo:FL,hi:FH};zone='plot'}else zone='';cv.style.cursor=curs(zoneOf(e))};
+ ['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,up))})();
+let pt=null;function play(){if(pt){clearInterval(pt);pt=null;$('pb').textContent='▶ Chạy';return}$('sm').checked=true;$('pb').textContent='⏸ Dừng';pt=setInterval(()=>{let h=+$('sh').value+1/12,d=+$('sd').value;if(h>=24){h-=24;d++}if(d>4){play();return}$('sh').value=h;$('sd').value=d;render()},250)}
+setInterval(()=>{if(!$('sm').checked)render()},30000);
+function setTheme(m){const r=document.documentElement;r.setAttribute('data-theme',m);[...$('thb').children].forEach(b=>b.classList.toggle('on',b.dataset.m==m));try{localStorage.setItem('ckg-theme',m)}catch(e){}if(typeof cs!=='undefined'&&ST[cs]&&ST[cs].wk)render()}
+
+// ===== Dữ liệu MT5 thật (chỉ bật khi app được phục vụ từ máy chủ pinyin-ckg-live) =====
+let LV=false;var WS=null;// WS: mốc đầu tuần (giây UTC) do máy chủ chọn
+const SRC=()=>LV&&ST[cs]&&ST[cs].live?'MT5 thật':'giả lập';
+function wkStartSec(){return (MON().getTime()-252e5+144e5)/1000}
+function fillArr(sp,len){let f=-1;for(let i=0;i<len;i++)if(sp[i]){f=i;break}if(f<0)return null;const o=new Array(len);let prev=null;for(let i=0;i<len;i++){const c=sp[i];if(c){prev=c;o[i]=c}else{const v=prev?prev.c:sp[f].o;o[i]={o:v,c:v,h:v,l:v,f:1}}}return o}
+function applyData(sym,js){if(js.ws)WS=js.ws;const d=ST[sym],s0=wkStartSec();if(d.s0!==s0){d.r5=[];d.r1=[];d.s0=s0}
+ const put=(a,rows,st,len)=>rows.forEach(r=>{const i=Math.floor((r[0]-s0)/st);if(i>=0&&i<len)a[i]={o:r[1],h:r[2],l:r[3],c:r[4]}});
+ put(d.r5,js.m5||[],300,1440);put(d.r1,js.m1||[],60,7200);
+ const f5=fillArr(d.r5,1440);if(!f5)return false;
+ d.wk=f5;d.m1=fillArr(d.r1,7200);d.live=true;d.upd=js.upd;d.off=js.now-Date.now();
+ if(js.m5.length)d.lastT=js.m5[js.m5.length-1][0];
+ if(js.d1&&js.d1t&&d.d1t!==js.d1t){d.d1t=js.d1t;d.d1=js.d1.map(v=>(+v).toFixed(PR[sym].dg));if(sym==cs)['o','h','l','cl'].forEach((i,j)=>$(i).value=d.d1[j])}
+ if(js.w1&&js.w1t&&d.w1t!==js.w1t){d.w1t=js.w1t;d.wOC=js.w1;d.W=js.w1[1]>=js.w1[0]?'BUY':'SELL';if(sym==cs)W=d.W}
+ if(sym==cs){wk=d.wk;$('inj').style.display='none'}return true}
+function srcBadge(){const t=$('src'),d=ST[cs];if(!LV)return;if(!d.live){t.textContent='🟠 Máy chủ OK · MT5 chưa có dữ liệu '+cs;return}
+ const ago=Math.round((Date.now()+d.off-d.upd)/1000);t.textContent=ago>3600?'⚪ LIVE MT5 · thị trường nghỉ, tick cuối '+new Date(d.upd).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',weekday:'short',hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}):ago>30?'🔴 LIVE · mất tín hiệu MT5 '+ago+'s':'🟢 LIVE MT5 · '+ago+'s trước'}
+async function jget(u,ms){const c=new AbortController(),tm=setTimeout(()=>c.abort(),ms||4000);try{const r=await fetch(u,{cache:'no-store',signal:c.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(tm)}}
+
+// ===== Nến biểu đồ thật từ MT5 (đúng khung, ≥ 5 ngày), cập nhật dần mỗi 3 giây =====
+const CH={},CHB={};
+async function chartFetch(sym,tf){const k=sym+'|'+tf;if(!LV||CHB[k])return;const c=CH[k];CHB[k]=1;
+ try{const since=c&&c.rows.length?Math.floor(c.rows[c.rows.length-1].ts/1000)-60:0;
+  const js=await jget('api/chart?sym='+sym+'&tf='+tf+(since?'&since='+since:''),since?6000:30000);
+  if(js&&js.ok){const nr=js.rows.map(r=>({ts:r[0]*1000,o:r[1],h:r[2],l:r[3],c:r[4]}));
+   if(!CH[k]||!since)CH[k]={rows:nr};else{const rs=CH[k].rows;nr.forEach(b=>{let j=rs.length-1;while(j>=0&&rs[j].ts>b.ts)j--;if(j>=0&&rs[j].ts==b.ts)rs[j]=b;else rs.splice(j+1,0,b)})}
+   if(k==cs+'|'+TF)redraw();if(G&&sym==cs&&tf==GTF&&!since)render()}}catch(e){}finally{CHB[k]=0}}
+function chartTick(){chartFetch(cs,TF);if(G&&GTF!=TF)chartFetch(cs,GTF)}
+
+function d1Src(){const e=$('d1src');if(!e)return;const d=ST[cs],auto=LV&&d.live;
+ ['o','h','l','cl'].forEach(i=>{$(i).readOnly=auto;$(i).style.opacity=auto?.85:1;$(i).style.cursor=auto?'default':''});
+ $('wbtn').style.display=auto?'none':'';$('wbadge').style.display=auto?'':'none';
+ $('d1lbl').textContent=auto?'Nến D1 gần nhất (tự động từ MT5)':'Nến D1 gần nhất (nhập O/H/L/C)';
+ if(!auto){e.innerHTML='<span class="wn">🟡 Giả lập: nhập tay nến D1 và chọn màu nến W</span>';return}
+ const fd=t=>{if(!t)return'-';const x=new Date(t+'T00:00:00Z'),z=v=>String(v).padStart(2,'0');return z(x.getUTCDate())+'/'+z(x.getUTCMonth()+1)},
+  wd=t=>{if(!t)return'-';const x=new Date(t+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+(x.getUTCDay()==0?1:0));const y=new Date(x);y.setUTCDate(y.getUTCDate()+4);const z=v=>String(v).padStart(2,'0');return z(x.getUTCDate())+'/'+z(x.getUTCMonth()+1)+'–'+z(y.getUTCDate())+'/'+z(y.getUTCMonth()+1)},
+  dn=t=>t?['CN','T2','T3','T4','T5','T6','T7'][new Date(t+'T00:00:00Z').getUTCDay()]:'';
+ const up=W=='BUY',oc=d.wOC;
+ $('wbadge').innerHTML=`<span class="${up?'ok':'no'}">${up?'Xanh → BUY':'Đỏ → SELL'}</span>${oc?` <span class="mut" style="font-weight:400;font-size:12px">(${(+oc[0]).toFixed(DG)} → ${(+oc[1]).toFixed(DG)}, ${((oc[1]-oc[0])/P).toFixed(0)} pip)</span>`:''}`;
+ e.innerHTML=`<span class="ok">🟢 Tự động từ MT5</span> · <span class="mut">nến D1 ${dn(d.d1t)} ${fd(d.d1t)} · nến W tuần ${wd(d.w1t)}</span>`}
+async function liveTick(sym){sym=sym||cs;try{const d=ST[sym],since=d.live&&d.lastT?d.lastT-900:0,js=await jget('api/data?sym='+sym+(since?'&since='+since:''));
+  if(js&&js.ok&&applyData(sym,js)&&sym==cs)render()}catch(e){}srcBadge()}
+async function liveInit(){try{const s=await jget('api/status');if(!s||!s.ok)return;LV=true}catch(e){return}
+ liveTick();chartTick();setInterval(()=>{liveTick();chartTick()},3000);setInterval(srcBadge,1000);
+ await acctTick();await ratesTick();await histTick();render();setInterval(ratesTick,60000);setInterval(async()=>{await acctTick();render()},3000);setInterval(async()=>{await histTick();hist()},15000)}
+// ===== Buồng lái nối MT5: gửi lệnh thật =====
+
+// ===== Tỷ giá thật: giá trị pip cặp JPY + quy đổi vốn tài khoản sang USD =====
+let RT=null;
+async function ratesTick(){try{const r=await jget('api/rates?ccy='+(TR?TR.currency:'USD'));if(!r||!r.ok)return;RT=r;
+ if(r.usdjpy){const v=1000/r.usdjpy;['GBPJPY','EURJPY'].forEach(k=>PR[k].pv=v);if(cs.endsWith('JPY'))PV=PR[cs].pv}}catch(e){}}
+function capSync(){const c=$('cap'),n=$('capn');if(!c)return;
+ if(TR&&RT&&RT.to_usd){const u=TR.equity*RT.to_usd;if(document.activeElement!==c)c.value=Math.floor(u);c.readOnly=true;
+  n.innerHTML=`<br>Tự lấy từ MT5: equity ${TR.equity.toFixed(2)} ${TR.currency} × ${RT.to_usd.toFixed(4)} ≈ <b>${u.toFixed(0)} USD</b>`}
+ else{c.readOnly=false;n.textContent=''}}
+
+// ===== TP/SL thật trên MT5 (tùy chọn, mặc định tắt; trình duyệt nhớ lựa chọn) =====
+function tpslLoad(){try{const o=JSON.parse(localStorage.getItem('ckg-tpsl')||'{}');$('tpon').checked=!!o.tp;$('slon').checked=!!o.sl;if(o.slp)$('slp').value=o.slp}catch(e){}}
+function tpslSave(){try{localStorage.setItem('ckg-tpsl',JSON.stringify({tp:$('tpon').checked,sl:$('slon').checked,slp:$('slp').value}))}catch(e){}}
+function tpslArgs(){const tp=$('tpon').checked?+$('tp').value:0,sl=$('slon').checked?+$('slp').value:0;return{tp_pip:tp>0?tp:null,sl_pip:sl>0?sl:null}}
+function tpslText(){const a=tpslArgs();return '\nTP: '+(a.tp_pip?a.tp_pip+' pip':'không đặt')+' · SL: '+(a.sl_pip?a.sl_pip+' pip':'không đặt')}
+
+// ===== Từng lệnh riêng trong buồng lái, chốt riêng từng ticket =====
+function posRows(L){if(!L.length)return'';const z=v=>String(v).padStart(2,'0'),du=ms=>{const m=Math.max(0,Math.floor((Date.now()-ms)/6e4));return Math.floor(m/60)+'h'+z(m%60)};
+ return `<div class="sc" style="margin:8px 0"><table class="pt"><tr><th>Ticket</th><th>Loại</th><th>Lot</th><th>Giá vào</th><th>SL</th><th>TP</th><th>Giữ</th><th>Pip</th><th>Lãi/lỗ</th><th></th></tr>`+
+ L.map(x=>{const c=PR[x.sym]||{pip:P,dg:DG},px=x.sym==cs?p:ST[x.sym].wk[IX].c,pp=(x.t=='BUY'?px-x.e:x.e-px)/c.pip;
+  return `<tr><td data-l="Ticket">#${x.ticket}</td><td data-l="Loại" class="${x.t=='BUY'?'ok':'no'}"><b>${x.t}</b></td><td data-l="Lot">${x.lot}</td><td data-l="Giá vào">${x.e.toFixed(c.dg)}</td>`+
+  `<td data-l="SL">${x.sl?x.sl.toFixed(c.dg):'-'}</td><td data-l="TP">${x.tp?x.tp.toFixed(c.dg):'-'}</td><td data-l="Giữ">${du(x.ms)}</td>`+
+  `<td data-l="Pip" class="${pp>=0?'ok':'no'}">${pp.toFixed(1)}</td><td data-l="Lãi/lỗ" class="${x.profit>=0?'ok':'no'}"><b>${x.profit.toFixed(2)}</b></td>`+
+  `<td><button style="padding:3px 10px;font-size:12px" onclick="liveCloseOne(${x.ticket})">Chốt</button></td></tr>`}).join('')+`</table></div>`}
+async function liveCloseOne(tk){const q=ST[cs].pos,x=q&&q.list?q.list.find(o=>o.ticket==tk):null;if(!x){alert('Lệnh #'+tk+' không còn mở.');return}
+ if(await tradeCall('close',{sym:cs,ticket:tk},`Chốt lệnh #${tk}: ${cs} ${x.t} ${x.lot} lot @ ${x.e} (hiện ${x.profit.toFixed(2)} ${TR.currency})?`))ref=p}
+let TR=null,BUSY=false,VIEW=false;// VIEW: đăng nhập bằng mật khẩu chỉ xem
+async function jpost(u,b){const c=new AbortController(),tm=setTimeout(()=>c.abort(),u.indexOf('api/ai')>=0?240000:20000);try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});return await r.json()}finally{clearTimeout(tm)}}
+async function acctTick(){try{const a=await jget('api/account');if(!a||!a.ok){TR=null;return}TR=a;Object.keys(ST).forEach(k=>{const ps=a.positions.filter(x=>x.sym==k);if(!ps.length){ST[k].pos=null;return}const lot=ps.reduce((s,x)=>s+x.lot,0);ST[k].pos={list:ps,tp:ps[0].tp,sl:ps[0].sl,t:ps[0].t,lot:+lot.toFixed(2),e:ps.reduce((s,x)=>s+x.e*x.lot,0)/lot,ms:Math.min(...ps.map(x=>x.ms)),profit:ps.reduce((s,x)=>s+x.profit,0),n:ps.length,live:true}})}catch(e){if(String(e.message)=='403'){VIEW=true;TR=null}}}
+async function histTick(){try{const r=await jget('api/history');if(!r||!r.ok)return;H.length=0;r.rows.forEach(x=>{const c=PR[x.sym]||{pip:1e-4,dg:5},e=x.e??x.x;H.push({id:x.id,sym:x.sym,t:x.t,lot:x.lot,e,x:x.x,oms:x.oms,cms:x.cms,pip:(x.t=='BUY'?x.x-e:e-x.x)/c.pip,pf:x.pf,dg:c.dg})})}catch(e){}}
+function tierWarn(lot){capSync();const cap=+$('cap').value,B=[[100,3,.01],[300,5,.01],[600,3,.02],[900,5,.02],[1000,3,.03],[1200,5,.03]];let b=null;B.forEach(x=>{if(cap>=x[0])b=x});const w=[];if(b&&lot>b[2])w.push('Lot '+lot+' vượt mức '+b[2]+' theo vốn.');if(b&&TR.positions.length>=b[1])w.push('Đã có '+TR.positions.length+'/'+b[1]+' lệnh mở.');return w.length?'\n\n⚠️ '+w.join(' '):''}
+async function tradeCall(path,body,msg){if(BUSY)return false;if(!TR.trade){alert('Không gửi được lệnh: '+TR.chan);return false}if(!confirm((TR.demo?'[MT5 DEMO] ':'[⚠️ TÀI KHOẢN THẬT] ')+msg))return false;BUSY=true;$('acc').style.opacity=.5;let ok=false;
+ try{const r=await jpost('api/'+path,body);ok=!!(r&&r.ok);if(!ok)alert('Lệnh không thành công: '+(r&&r.loi||'không rõ lỗi'))}catch(e){alert('Lỗi kết nối máy chủ PinYin: '+e.message)}
+ await acctTick();await histTick();BUSY=false;$('acc').style.opacity='';render();return ok}
+function liveOpen(t){const lot=+$('lt').value;tradeCall('order',{sym:cs,side:t,lot,...tpslArgs()},`Gửi lệnh ${t} ${cs} ${lot} lot sang MT5?`+tpslText()+tierWarn(lot))}
+async function liveClose(){const q=ST[cs].pos;if(!q){alert('Không có lệnh PinYin nào đang mở trên '+cs);return}if(await tradeCall('close',{sym:cs},`Chốt ${q.n>1?'tất cả '+q.n+' lệnh':'lệnh'} ${cs} ${q.t} ${q.lot} lot (hiện ${q.profit.toFixed(2)} ${TR.currency})?`))ref=p}
+async function liveReverse(q){const m=+$('mu').value,nl=+(q.lot*m).toFixed(2);if(await tradeCall('reverse',{sym:cs,mult:m,...tpslArgs()},`Cắt lệnh ${cs} ${q.t} ${q.lot} lot rồi vào ${q.t=='BUY'?'SELL':'BUY'} ${nl} lot?`+tpslText())){ref=p;$('lt').value=nl}}
+
+let _m=null;try{_m=localStorage.getItem('ckg-theme')}catch(e){}
+if(_m!='light'&&_m!='dark')_m=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+
+// ===== Menu Phân Tích AI (Gemini, gọi qua máy chủ PinYin) =====
+let VIEWMODE='ckg',AIBUSY=false;
+function setView(v){VIEWMODE=v;document.body.classList.toggle('v-ai',v=='ai');[...$('menu').children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));try{localStorage.setItem('ckg-view',v)}catch(e){}
+ if(v=='ai')aiLoad();else render()}
+function aiEsc(t){return t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function aiMd(t){t=t.replace(/\$([^$\n]{1,40})\$/g,'$1').replace(/\\geq?\b/g,'≥').replace(/\\leq?\b/g,'≤').replace(/\\times\b/g,'×').replace(/\\approx\b/g,'≈').replace(/\\%/g,'%');
+ const L=aiEsc(t).split(/\r?\n/);let h='',ul=false;const inl=x=>x.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+ const close=()=>{if(ul){h+='</ul>';ul=false}};
+ L.forEach(l=>{const m=l.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)$/);
+  if(/^#{1,4}\s+/.test(l)){close();h+='<h3>'+inl(l.replace(/^#{1,4}\s+/,''))+'</h3>'}
+  else if(/Kết luận\s*:/i.test(l)){close();const u=l.toUpperCase(),c=/ĐỨNG NGOÀI/.test(u)?'wn':/\bBUY\b/.test(u)?'ok':/\bSELL\b/.test(u)?'no':'';h+=`<div class="kl ${c}">${inl(l.replace(/\*\*/g,''))}</div>`}
+  else if(m){if(!ul){h+='<ul>';ul=true}h+='<li>'+inl(m[1])+'</li>'}
+  else if(l.trim()){close();h+='<p>'+inl(l)+'</p>'}else close()});
+ close();return h}
+function aiShow(r){if(!r||!r.co){$('aiout').innerHTML='';$('aist').textContent=VIEW?'Chưa có bản phân tích nào cho '+cs+'. Chủ tài khoản cần bấm phân tích trước.':'Chưa có bản phân tích cho '+cs+'. Bấm "⚡ Phân tích ngay".';return}
+ $('aist').innerHTML=`Phân tích lúc <b>${r.gio}</b> · model ${aiEsc(r.model||'')}${r.tu_bo_nho?' · bản lưu (dưới 60 giây)':''}${r.tokens?' · '+r.tokens+' token':''}`;$('aiout').innerHTML=aiMd(r.text||'')}
+async function aiLoad(){$('ais').textContent=cs;[$('aib'),$('aib2')].forEach(b=>b.style.display=VIEW?'none':'');
+ if(!LV){$('aist').textContent='Phân Tích AI cần chạy từ máy chủ PinYin (mở trang qua /ckg/ hoặc link từ xa).';$('aiout').innerHTML='';return}
+ try{aiShow(await jget('api/ai/last?sym='+cs))}catch(e){$('aist').textContent='Không đọc được bản phân tích: '+e.message}}
+async function aiRun(fresh){if(AIBUSY||!LV)return;AIBUSY=true;const s0=cs;[$('aib'),$('aib2')].forEach(b=>b.disabled=true);
+ $('aist').innerHTML='<span class="spin"></span>AI đang đọc dữ liệu MT5 đa khung và phân tích '+s0+'… (thường 10-40 giây)';
+ try{const r=await jpost('api/ai',{sym:s0,lam_moi:!!fresh});
+  if(s0!=cs)return;if(r&&r.ok)aiShow(r);else $('aist').innerHTML='<span class="no">'+aiEsc((r&&r.loi)||'Không rõ lỗi')+'</span>'}
+ catch(e){$('aist').innerHTML='<span class="no">Lỗi kết nối máy chủ: '+aiEsc(e.message)+'</span>'}
+ finally{AIBUSY=false;[$('aib'),$('aib2')].forEach(b=>b.disabled=false)}}
+tpslLoad();setPair('GBPUSD');setTheme(_m);liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai')setView('ai')});
+</script>
+</body>
+</html>

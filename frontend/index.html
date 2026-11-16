@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PinYin AI Trading Platform</title>
+    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">P</div>
+            <div>
+                <h2>PinYin AI</h2>
+                <small>TRADING PLATFORM</small>
+            </div>
+        </div>
+
+        <div class="menu-label">MENU CHÍNH</div>
+        <nav>
+            <button class="nav-item active" data-page="overview">▦ Tổng quan thị trường</button>
+            <button class="nav-item" data-page="analysis">◈ Phân tích AI</button>
+            <button class="nav-item" data-page="simulation">⇄ Giao dịch mô phỏng</button>
+            <button class="nav-item" data-page="learning">▤ Trung tâm học tập</button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot" id="sidebar-status-dot"></div>
+            <span id="sidebar-status-text">Đang kiểm tra hệ thống</span>
+            <p>Phiên bản 1.0.0</p>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <div class="breadcrumb">PINYIN AI / <span id="breadcrumb">TỔNG QUAN</span></div>
+                <h1 id="page-title">Tổng quan thị trường</h1>
+            </div>
+            <div class="top-right">
+                <span class="demo-label" id="platform-mode">ĐANG KIỂM TRA MT5</span>
+                <div class="avatar">PY</div>
+            </div>
+        </header>
+
+        <section id="page-overview" class="page active">
+            <div class="welcome">
+                <div>
+                    <h2>Chào mừng đến với PinYin AI</h2>
+                    <p>Nền tảng phân tích thị trường và thực hành giao dịch thông minh.</p>
+                </div>
+                <div class="welcome-icon" aria-label="Trợ lý AI cá nhân hóa">AI</div>
+            </div>
+
+            <div class="section-heading">
+                <h2>Tổng quan thị trường</h2>
+                <span class="demo-label" id="overview-data-status">ĐANG KIỂM TRA MT5</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span>Sản phẩm</span>
+                    <h2 id="overview-symbol">XAUUSD</h2>
+                    <small>Vàng / Đô la Mỹ</small>
+                </div>
+                <div class="stat-card">
+                    <span>Giá tham chiếu</span>
+                    <h2 id="overview-price">Đang tải...</h2>
+                    <small id="overview-price-note">Đang kiểm tra dữ liệu MT5</small>
+                </div>
+                <div class="stat-card">
+                    <span>Xu hướng</span>
+                    <h2 id="overview-trend">Chưa phân tích</h2>
+                    <small>Chưa có kết quả phân tích xu hướng</small>
+                </div>
+                <div class="stat-card">
+                    <span>Trạng thái AI</span>
+                    <h2 class="blue" id="overview-ai">Đang kiểm tra</h2>
+                    <small id="overview-ai-note">Mô hình AI</small>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-heading">
+                    <h3>Danh sách thị trường</h3>
+                    <span id="market-list-source">Đang kiểm tra nguồn dữ liệu...</span>
+                </div>
+                <div id="market-list" class="market-grid">
+                    <p>Đang tải dữ liệu thị trường...</p>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <h3>Biểu đồ thị trường</h3>
+                        <span id="chart-data-status">Đang kiểm tra nguồn dữ liệu...</span>
+                    </div>
+                    <div id="market-chart" class="chart-placeholder">
+                        <p>Đang tải biểu đồ...</p>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-heading"><h3>Tổng quan hệ thống</h3></div>
+                    <div class="system-row"><span>Backend</span><b id="sys-backend">Đang kiểm tra...</b></div>
+                    <div class="system-row"><span>Dữ liệu thị trường</span><b id="sys-market">Đang kiểm tra...</b></div>
+                    <div class="system-row"><span>Máy chủ MT5</span><b id="sys-mt5-server">--</b></div>
+                    <div class="system-row"><span>Mã có giá MT5</span><b id="sys-mt5-symbols">--</b></div>
+                    <div class="system-row system-note"><small id="sys-market-note">Đang kiểm tra kết nối MT5...</small></div>
+                    <div class="system-row"><span>Mô hình AI</span><b id="sys-ai">Đang kiểm tra...</b></div>
+                    <div class="system-row"><span>Giao dịch MT5</span><b id="sys-trade">Đang kiểm tra...</b></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-analysis" class="page">
+            <div class="panel module-panel">
+                <h2>Phân tích AI</h2>
+                <p>Phân tích xu hướng và tín hiệu thị trường bằng hệ thống mô phỏng.</p>
+
+                <div class="analysis-toolbar">
+                    <div class="analysis-control">
+                        <label for="analysis-symbol">Mã giao dịch</label>
+                        <select id="analysis-symbol">
+                            <option value="XAUUSD">XAUUSD - Vàng</option>
+                            <option value="EURUSD">EURUSD - Euro / USD</option>
+                            <option value="GBPUSD">GBPUSD - Bảng Anh / USD</option>
+                            <option value="GBPJPY">GBPJPY - Bảng Anh / Yên Nhật</option>
+                        </select>
+                    </div>
+
+                    <div class="analysis-control">
+                        <label for="analysis-timeframe">Khung thời gian</label>
+                        <select id="analysis-timeframe">
+                            <option value="M1">M1</option>
+                            <option value="M5">M5</option>
+                            <option value="M15">M15</option>
+                            <option value="M30">M30</option>
+                            <option value="H1">H1</option>
+                            <option value="H4">H4</option>
+                        </select>
+                    </div>
+
+                    <button type="button" id="run-analysis-btn">
+                        Phân tích thị trường
+                    </button>
+                </div>
+
+                <div class="analysis-grid">
+                    <div class="analysis-card">
+                        <span>Xu hướng hiện tại</span>
+                        <h3 id="analysis-trend">Chưa phân tích</h3>
+                        <small id="analysis-trend-detail">Đang chờ dữ liệu</small>
+                    </div>
+
+                    <div class="analysis-card">
+                        <span>Tín hiệu mô phỏng</span>
+                        <h3 id="analysis-signal">WAIT</h3>
+                        <small id="analysis-signal-detail">Chưa có nhận định</small>
+                    </div>
+
+                    <div class="analysis-card">
+                        <span>Trạng thái biến động</span>
+                        <h3 id="analysis-strength">--</h3>
+                        <small id="analysis-strength-detail">Đang chờ phân tích ATR</small>
+                    </div>
+                </div>
+
+                <div class="ai-panel">
+                    <div class="ai-panel-head">
+                        <div>
+                            <h3>Phân tích bằng AI <span id="ai-provider-name"></span></h3>
+                            <small id="ai-status">Đang kiểm tra mô hình AI...</small>
+                        </div>
+                        <button type="button" id="ai-run-btn">Phân tích bằng AI</button>
+                    </div>
+                    <p class="ai-hint">Dùng mã và khung thời gian đang chọn ở trên. Dữ liệu nến và chỉ báo MT5 được gửi tới mô hình AI đang cấu hình (Gemini hoặc Claude); kết quả chỉ là gợi ý.</p>
+
+                    <div id="ai-result" hidden>
+                        <div class="ai-grid">
+                            <div class="ai-cell"><span>Tín hiệu</span><strong id="ai-signal">--</strong></div>
+                            <div class="ai-cell"><span>Xu hướng</span><strong id="ai-trend">--</strong></div>
+                            <div class="ai-cell"><span>Độ tin cậy</span><strong id="ai-confidence">--</strong></div>
+                            <div class="ai-cell"><span>Cắt lỗ</span><strong id="ai-sl">--</strong></div>
+                            <div class="ai-cell"><span>Chốt lời</span><strong id="ai-tp">--</strong></div>
+                        </div>
+                        <p id="ai-reason" class="ai-text"></p>
+                        <p id="ai-risk" class="ai-text ai-risk"></p>
+                        <small id="ai-meta" class="ai-meta"></small>
+
+                        <div class="ai-actions">
+                            <button type="button" id="ai-trade-btn" hidden>Đặt lệnh theo gợi ý...</button>
+                        </div>
+
+                        <div id="ai-confirm" class="trade-confirm" hidden>
+                            <p id="ai-confirm-text"></p>
+                            <label>Khối lượng (lot)
+                                <input type="number" id="ai-lot" value="0.01" min="0.01" step="0.01">
+                            </label>
+                            <div class="trade-confirm-buttons">
+                                <button type="button" id="ai-confirm-yes" class="danger">Xác nhận gửi lệnh MT5</button>
+                                <button type="button" id="ai-confirm-no" class="ghost">Hủy</button>
+                            </div>
+                        </div>
+                        <p id="ai-trade-msg" class="trade-msg"></p>
+                    </div>
+                    <p id="ai-error" class="trade-msg trade-msg-error" hidden></p>
+                </div>
+
+                <div class="analysis-result">
+                    <h3>Nhận định thị trường</h3>
+                    <p id="analysis-reason">
+                        Chọn mã giao dịch và nhấn Phân tích thị trường để xem kết quả.
+                    </p>
+                </div>
+
+                <div class="analysis-insight-section">
+                    <h3>Phân tích chi tiết các chỉ báo</h3>
+
+                    <div class="analysis-insight-grid">
+
+                        <div class="analysis-insight-card">
+                            <div class="analysis-insight-header">
+                                <h4>EMA 9</h4>
+                                <span id="ema9-status" class="insight-status">Chưa phân tích</span>
+                            </div>
+                            <div class="insight-main-value" id="analysis-ema9">--</div>
+                            <div class="insight-row">
+                                <span>Giá hiện tại</span>
+                                <strong id="ema9-price">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Vị trí giá</span>
+                                <strong id="ema9-position">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Độ dốc EMA</span>
+                                <strong id="ema9-slope">--</strong>
+                            </div>
+                            <div class="insight-analysis">
+                                <strong>Nhận định</strong>
+                                <p id="ema9-analysis">Đang chờ dữ liệu phân tích.</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-insight-card">
+                            <div class="analysis-insight-header">
+                                <h4>EMA 21</h4>
+                                <span id="ema21-status" class="insight-status">Chưa phân tích</span>
+                            </div>
+                            <div class="insight-main-value" id="analysis-ema21">--</div>
+                            <div class="insight-row">
+                                <span>Giá hiện tại</span>
+                                <strong id="ema21-price">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Vị trí giá</span>
+                                <strong id="ema21-position">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Độ dốc EMA</span>
+                                <strong id="ema21-slope">--</strong>
+                            </div>
+                            <div class="insight-analysis">
+                                <strong>Nhận định</strong>
+                                <p id="ema21-analysis">Đang chờ dữ liệu phân tích.</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-insight-card">
+                            <div class="analysis-insight-header">
+                                <h4>ATR 14</h4>
+                                <span id="atr-status" class="insight-status">Chưa phân tích</span>
+                            </div>
+                            <div class="insight-main-value" id="analysis-atr">--</div>
+                            <div class="insight-row">
+                                <span>Mã giao dịch</span>
+                                <strong id="atr-symbol">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Trạng thái biến động</span>
+                                <strong id="atr-volatility">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Ngưỡng XAUUSD</span>
+                                <strong>3.00</strong>
+                            </div>
+                            <div class="insight-analysis">
+                                <strong>Nhận định</strong>
+                                <p id="atr-analysis">Đang chờ dữ liệu phân tích.</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-insight-card">
+                            <div class="analysis-insight-header">
+                                <h4>Daily VWAP</h4>
+                                <span id="vwap-status" class="insight-status">Chưa phân tích</span>
+                            </div>
+                            <div class="insight-main-value" id="analysis-vwap">--</div>
+                            <div class="insight-row">
+                                <span>Giá hiện tại</span>
+                                <strong id="vwap-price">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Vị trí giá</span>
+                                <strong id="vwap-position">--</strong>
+                            </div>
+                            <div class="insight-row">
+                                <span>Khoảng cách</span>
+                                <strong id="vwap-distance">--</strong>
+                            </div>
+                            <div class="insight-analysis">
+                                <strong>Nhận định</strong>
+                                <p id="vwap-analysis">Đang chờ dữ liệu phân tích.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="notice">
+                    Đây là kết quả mô phỏng phục vụ phát triển và kiểm thử giao diện,
+                    không phải dữ liệu thị trường thực tế hoặc khuyến nghị đầu tư.
+                </div>
+            </div>
+        </section>
+
+        <section id="page-simulation" class="page">
+    <div class="panel module-panel mt5-trade-panel">
+        <div class="ai-panel-head">
+            <div>
+                <h2>Giao dịch MT5 (tài khoản Demo)</h2>
+                <small id="mt5-acc-status">Đang đọc tài khoản MT5...</small>
+            </div>
+            <span id="mt5-acc-badge" class="acc-badge">--</span>
+        </div>
+
+        <div class="ai-grid">
+            <div class="ai-cell"><span>Máy chủ</span><strong id="mt5-acc-server">--</strong></div>
+            <div class="ai-cell"><span>Số dư</span><strong id="mt5-acc-balance">--</strong></div>
+            <div class="ai-cell"><span>Vốn (equity)</span><strong id="mt5-acc-equity">--</strong></div>
+            <div class="ai-cell"><span>Ký quỹ tự do</span><strong id="mt5-acc-free">--</strong></div>
+        </div>
+
+        <div class="mt5-order-form">
+            <label>Mã
+                <select id="mt5-symbol">
+                    <option value="XAUUSD">XAUUSD</option>
+                    <option value="EURUSD">EURUSD</option>
+                    <option value="GBPUSD">GBPUSD</option>
+                    <option value="GBPJPY">GBPJPY</option>
+                </select>
+            </label>
+            <label>Lệnh
+                <select id="mt5-side">
+                    <option value="BUY">BUY</option>
+                    <option value="SELL">SELL</option>
+                </select>
+            </label>
+            <label>Lot
+                <input type="number" id="mt5-lot" value="0.01" min="0.01" step="0.01">
+            </label>
+            <label>Cắt lỗ (tùy chọn)
+                <input type="number" id="mt5-sl" step="any" placeholder="giá SL">
+            </label>
+            <label>Chốt lời (tùy chọn)
+                <input type="number" id="mt5-tp" step="any" placeholder="giá TP">
+            </label>
+            <button type="button" id="mt5-order-btn">Gửi lệnh...</button>
+        </div>
+
+        <div id="mt5-confirm" class="trade-confirm" hidden>
+            <p id="mt5-confirm-text"></p>
+            <div class="trade-confirm-buttons">
+                <button type="button" id="mt5-confirm-yes" class="danger">Xác nhận gửi lệnh MT5</button>
+                <button type="button" id="mt5-confirm-no" class="ghost">Hủy</button>
+            </div>
+        </div>
+        <p id="mt5-trade-msg" class="trade-msg"></p>
+
+        <h3>Lệnh PinYin đang mở trên MT5</h3>
+        <div class="table-wrap">
+            <table class="mt5-positions">
+                <thead>
+                    <tr><th>Ticket</th><th>Mã</th><th>Lệnh</th><th>Lot</th><th>Giá vào</th><th>Giá hiện tại</th><th>SL</th><th>TP</th><th>Lãi/Lỗ</th><th></th></tr>
+                </thead>
+                <tbody id="mt5-positions-body">
+                    <tr><td colspan="10">Chưa có lệnh</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="notice">
+            Lệnh ở khung này được gửi THẬT sang MetaTrader 5. Máy chủ chỉ cho phép tài khoản Demo
+            và chỉ quản lý lệnh do PinYin mở. AI không tự đặt lệnh.
+        </div>
+    </div>
+    <div class="panel module-panel">
+        <h2>Giao dịch mô phỏng</h2>
+        <p>Thực hành quản lý lệnh bằng số dư ảo, không sử dụng tiền thật.</p>
+
+        <div class="simulation-stats">
+            <div class="stat-card">
+                <span>Số dư mô phỏng</span>
+                <h2 id="sim-balance">10,000.00 USD</h2>
+                <small>Vốn khởi tạo: 10,000 USD</small>
+            </div>
+            <div class="stat-card">
+                <span>Lãi / Lỗ đã ghi nhận</span>
+                <h2 id="sim-total-pnl">0.00 USD</h2>
+                <small>Kết quả các lệnh đã đóng</small>
+            </div>
+            <div class="stat-card">
+                <span>Lệnh đang mở</span>
+                <h2 id="sim-open-count">0</h2>
+                <small>Số lệnh mô phỏng</small>
+            </div>
+            <div class="stat-card">
+                <span>Vốn chủ sở hữu</span>
+                <h2 id="sim-equity">10,000.00 USD</h2>
+                <small>Số dư cộng lãi/lỗ thả nổi</small>
+            </div>
+        </div>
+
+        <div class="simulation-form-section">
+
+
+            <div class="simulation-form-grid">
+                <div class="form-group">
+                    <label for="sim-symbol">Mã giao dịch</label>
+                    <select id="sim-symbol">
+                        <option value="XAUUSD">XAUUSD</option>
+                        <option value="EURUSD">EURUSD</option>
+                        <option value="GBPUSD">GBPUSD</option>
+                        <option value="GBPJPY">GBPJPY - Bảng Anh / Yên Nhật</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div class="sim-direction-buttons">
+                        <button type="button" class="sim-direction-btn active buy" data-direction="BUY">BUY</button>
+                        <button type="button" class="sim-direction-btn sell" data-direction="SELL">SELL</button>
+                    </div>
+                    <select id="sim-direction" hidden>
+                        <option value="BUY" selected>BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sim-volume">Khối lượng giả lập</label>
+                    <input id="sim-volume" type="number" min="0.01" max="10" step="0.01" value="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="sim-entry">Giá mở lệnh giả lập</label>
+                    <input id="sim-entry" type="number" min="0.00001" step="any" placeholder="Nhập giá">
+                </div>
+            </div>
+
+
+            <p id="sim-message" class="notice">
+                Đây là môi trường thực hành với dữ liệu giả lập, không kết nối sàn giao dịch.
+            </p>
+        </div>
+
+        <div class="simulation-tabs">
+            <button type="button" class="sim-tab-btn active" data-sim-tab="open" aria-selected="true">Lệnh đang mở</button>
+            <button type="button" class="sim-tab-btn" data-sim-tab="history" aria-selected="false">Lịch sử</button>
+            <button type="button" class="sim-tab-btn" data-sim-tab="stats" aria-selected="false">Thống kê</button>
+        </div>
+
+        <div id="sim-tab-open" class="sim-tab-panel">
+            <div class="simulation-history-section">
+                <h3>Các lệnh đang mở</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Loại</th>
+                                <th>Khối lượng</th>
+                                <th>Giá mở</th>
+                                <th>Giá hiện tại</th>
+                                <th>Lãi/lỗ thả nổi</th>
+                                <th>Thời gian mở</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sim-open-orders">
+                            <tr>
+                                <td colspan="8">Chưa có lệnh mô phỏng</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="sim-tab-history" class="sim-tab-panel" hidden>
+            <div class="simulation-history-section">
+                <h3>Lịch sử lệnh đã đóng</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Loại</th>
+                                <th>Khối lượng</th>
+                                <th>Giá mở</th>
+                                <th>Kết quả mô phỏng</th>
+                                <th>Thời gian đóng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sim-closed-orders">
+                            <tr>
+                                <td colspan="6">Chưa có lịch sử lệnh</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="sim-tab-stats" class="sim-tab-panel" hidden>
+            <div id="sim-history-stats" class="sim-history-stats">
+                <div class="sim-history-stat">
+                    <span>Tổng lệnh đã đóng</span>
+                    <strong id="sim-history-total">0</strong>
+                </div>
+                <div class="sim-history-stat">
+                    <span>Lệnh có lãi</span>
+                    <strong id="sim-history-win" class="positive">0</strong>
+                </div>
+                <div class="sim-history-stat">
+                    <span>Lệnh có lỗ</span>
+                    <strong id="sim-history-loss" class="negative">0</strong>
+                </div>
+                <div class="sim-history-stat">
+                    <span>Lệnh hòa vốn</span>
+                    <strong id="sim-history-zero">0</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+                <section id="page-learning" class="page">
+            <div class="learning-header">
+                <div>
+                    <h2>Trung tâm học tập</h2>
+                    <p>Học kiến thức thị trường, phân tích kỹ thuật và quản trị rủi ro qua các bài học thực hành.</p>
+                </div>
+                <div class="learning-progress-card">
+                    <span>Tiến độ học tập</span>
+                    <strong id="learning-progress-text">0 / 4 chuyên đề</strong>
+                    <div class="learning-progress-track">
+                        <div id="learning-progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="learning-grid">
+                <article class="learning-card">
+                    <div class="learning-card-number">01</div>
+                    <div class="learning-card-icon">📘</div>
+                    <h3>Kiến thức nền tảng</h3>
+                    <p>Tìm hiểu Forex, vàng, cặp tiền, giá Bid/Ask và cách đọc biến động giá.</p>
+                    <div class="learning-card-meta">4 bài học · Cơ bản</div>
+                    <button type="button" class="learning-start-btn" data-lesson="basics">Bắt đầu học</button>
+                </article>
+
+                <article class="learning-card">
+                    <div class="learning-card-number">02</div>
+                    <div class="learning-card-icon">📊</div>
+                    <h3>Phân tích kỹ thuật</h3>
+                    <p>Nhận biết nến Nhật, xu hướng và tìm hiểu EMA, VWAP, ATR.</p>
+                    <div class="learning-card-meta">5 bài học · Trung cấp</div>
+                    <button type="button" class="learning-start-btn" data-lesson="technical">Bắt đầu học</button>
+                </article>
+
+                <article class="learning-card">
+                    <div class="learning-card-number">03</div>
+                    <div class="learning-card-icon">🛡️</div>
+                    <h3>Quản trị rủi ro</h3>
+                    <p>Hiểu về vốn, mức độ rủi ro, tỷ lệ lợi nhuận/rủi ro và tâm lý.</p>
+                    <div class="learning-card-meta">4 bài học · Quan trọng</div>
+                    <button type="button" class="learning-start-btn" data-lesson="risk">Bắt đầu học</button>
+                </article>
+
+                <article class="learning-card">
+                    <div class="learning-card-number">04</div>
+                    <div class="learning-card-icon">🎯</div>
+                    <h3>Thực hành mô phỏng</h3>
+                    <p>Làm quen với giao diện mô phỏng, theo dõi kết quả và đọc lịch sử.</p>
+                    <div class="learning-card-meta">3 bài học · Thực hành</div>
+                    <button type="button" class="learning-start-btn" data-lesson="practice">Bắt đầu học</button>
+                </article>
+            </div>
+
+            <div id="learning-lesson-area" class="learning-lesson-area" hidden>
+                <div class="learning-lesson-top">
+                    <div>
+                        <span class="learning-section-label">NỘI DUNG HỌC TẬP</span>
+                        <h3 id="learning-lesson-title">Bài học</h3>
+                    </div>
+                    <button type="button" id="learning-close-btn" class="learning-close-btn">Đóng bài học</button>
+                </div>
+                <div id="learning-lesson-content"></div>
+                <button type="button" id="learning-complete-btn" class="learning-complete-btn">Đánh dấu đã hoàn thành</button>
+            </div>
+        </section>
+
+        <footer>PinYin AI Trading Platform · 1.0.0 · <span id="footer-data-source">Đang kiểm tra nguồn dữ liệu</span></footer>
+    </main>
+    <script src="/static/js/app.js?v=20261115-gbpjpy-fix2"></script>
+<script src="/static/js/market.js?v=20261115-gbpjpy-fix2"></script>
+<script src="/static/js/chart.js?v=20261115-gbpjpy-fix2"></script>
+<script src="/static/js/mt5_chart.js?v=20261115-gbpjpy-fix2"></script>
+<script src="/static/js/analysis.js?v=20261115-gbpjpy-fix2"></script>
+    <script src="/static/js/simulation.js?v=20261115-gbpjpy-fix2"></script>
+    <script src="/static/js/learning.js?v=20261115-gbpjpy-fix2"></script>
+    <script src="/static/js/status.js?v=20261115-ai1"></script>
+    <script src="/static/js/ai_trade.js?v=20261116-ai2"></script>
+<script>
+/* PINYIN_OVERVIEW_FALLBACK_V1 */
+(function () {
+    async function capNhatTongQuan() {
+        const price = document.getElementById("overview-price");
+        const note = document.getElementById("overview-price-note");
+        const status = document.getElementById("overview-data-status");
+        const symbol = document.getElementById("overview-symbol");
+
+        if (!price || !note || !status) return;
+
+        try {
+            const response = await fetch("/api/v1/market/overview", {
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error("API HTTP " + response.status);
+            }
+
+            const data = await response.json();
+
+            if (symbol && data.san_pham) {
+                symbol.textContent = data.san_pham;
+            }
+
+            if (
+                Number(data.gia) > 0 &&
+                Number.isFinite(Number(data.gia)) &&
+                (
+                    data.trang_thai === "du_lieu_mt5" ||
+                    data.trang_thai === "du_lieu_mt5_cu"
+                )
+            ) {
+                price.textContent = Number(data.gia).toLocaleString(
+                    "vi-VN",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                );
+
+                if (data.trang_thai === "du_lieu_mt5_cu") {
+                    status.textContent = "MT5 - DỮ LIỆU ĐÃ CŨ";
+                    note.textContent =
+                        "Giá gần nhất, không phải giá hiện tại";
+                } else {
+                    status.textContent = "MT5 - DỮ LIỆU MỚI";
+                    note.textContent =
+                        "Bid: " + Number(data.bid).toFixed(2) +
+                        " | Ask: " + Number(data.ask).toFixed(2);
+                }
+            } else {
+                price.textContent = "Chưa có dữ liệu";
+                note.textContent =
+                    data.ghi_chu || "MT5 chưa cung cấp giá hợp lệ";
+                status.textContent = "CHƯA CÓ DỮ LIỆU MT5";
+            }
+        } catch (error) {
+            price.textContent = "Không khả dụng";
+            note.textContent = "Không đọc được dữ liệu từ API";
+            status.textContent = "LỖI KẾT NỐI";
+            console.error("Lỗi cập nhật tổng quan:", error);
+        }
+    }
+
+    if (typeof window.loadMarketOverview === "function") {
+        window.loadMarketOverview();
+    } else {
+        capNhatTongQuan();
+        setInterval(capNhatTongQuan, 5000);
+    }
+})();
+</script>
+<script>
+/* PINYIN_MARKET_STATUS_FIX_V2 */
+(function () {
+    async function capNhatTrangThaiThiTruong() {
+        try {
+            const response = await fetch("/api/v1/market/overview", {
+                cache: "no-store"
+            });
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+
+            const status = document.getElementById("overview-data-status");
+            const note = document.getElementById("overview-price-note");
+            const price = document.getElementById("overview-price");
+
+            if (!status || !note || !price) return;
+
+            if (data.trang_thai === "du_lieu_mt5_cu") {
+                const day = new Date().getDay();
+                const weekend = day === 0 || day === 6;
+
+                status.textContent = weekend
+                    ? "THỊ TRƯỜNG ĐANG ĐÓNG CỬA"
+                    : "MT5 - DỮ LIỆU ĐÃ CŨ";
+
+                note.textContent = weekend
+                    ? "Giá đóng cửa gần nhất - chờ thị trường mở lại"
+                    : "Dữ liệu MT5 cũ - không phải giá hiện tại";
+
+            } else if (data.trang_thai === "du_lieu_mt5") {
+                status.textContent = "MT5 - GIÁ MỚI NHẤT";
+
+                note.textContent =
+                    "Bid: " + Number(data.bid).toFixed(2) +
+                    " | Ask: " + Number(data.ask).toFixed(2);
+
+            } else {
+                status.textContent = "CHƯA CÓ GIÁ MT5";
+                note.textContent =
+                    data.ghi_chu || "Đang chờ dữ liệu MT5";
+                price.textContent = "Chưa có dữ liệu";
+            }
+        } catch (error) {
+            console.error("Lỗi kiểm tra trạng thái MT5:", error);
+        }
+    }
+
+    capNhatTrangThaiThiTruong();
+    setInterval(capNhatTrangThaiThiTruong, 5000);
+})();
+</script>
+<script>
+/* PINYIN_PLATFORM_MODE_V1 */
+(function () {
+    async function capNhatCheDo() {
+        const element = document.getElementById("platform-mode");
+        if (!element) return;
+
+        try {
+            const response = await fetch("/api/v1/market/overview", {
+                cache: "no-store"
+            });
+
+            if (!response.ok) throw new Error("API khong phan hoi");
+
+            const data = await response.json();
+
+            if (
+                data.trang_thai === "du_lieu_mt5" ||
+                data.trang_thai === "du_lieu_mt5_cu"
+            ) {
+                element.textContent = "THỊ TRƯỜNG THỰC - MT5";
+            } else {
+                element.textContent = "CHƯA CÓ DỮ LIỆU MT5";
+            }
+        } catch (error) {
+            element.textContent = "CHƯA KẾT NỐI MT5";
+        }
+    }
+
+    capNhatCheDo();
+    setInterval(capNhatCheDo, 5000);
+})();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

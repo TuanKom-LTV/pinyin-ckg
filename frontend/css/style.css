@@ -1,0 +1,2001 @@
+﻿* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #0b1020;
+    --sidebar: #10182b;
+    --panel: #151f33;
+    --border: #26334b;
+    --text: #e8edf7;
+    --muted: #8996ad;
+    --blue: #5794ff;
+    --green: #35c995;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 255px;
+    position: fixed;
+    inset: 0 auto 0 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 48px;
+}
+
+.brand-icon {
+    width: 43px;
+    height: 43px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #347cf5, #7958db);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.brand h2 {
+    font-size: 19px;
+}
+
+.brand small {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1.3px;
+}
+
+.menu-label {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin: 0 0 15px 10px;
+}
+
+nav {
+    display: grid;
+    gap: 8px;
+}
+
+.nav-item {
+    border: 0;
+    background: transparent;
+    color: #aab6ca;
+    text-align: left;
+    padding: 14px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background: #1c3155;
+    color: #75aaff;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    font-size: 12px;
+    color: var(--green);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 7px;
+}
+
+.sidebar-bottom p {
+    color: var(--muted);
+    margin: 12px 0 0 15px;
+    font-size: 11px;
+}
+
+.main {
+    margin-left: 255px;
+    padding: 30px 38px;
+    min-height: 100vh;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.breadcrumb {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 1.3px;
+    margin-bottom: 9px;
+}
+
+.breadcrumb span {
+    color: var(--blue);
+}
+
+.topbar h1 {
+    font-size: 25px;
+}
+
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.demo-label {
+    display: inline-block;
+    color: #e8b85d;
+    background: #3a2d19;
+    border: 1px solid #69502a;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.avatar {
+    width: 37px;
+    height: 37px;
+    border-radius: 50%;
+    background: #263b60;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+}
+
+.welcome {
+    background: linear-gradient(110deg, #192f52, #252447);
+    border: 1px solid #30456c;
+    border-radius: 13px;
+    padding: 27px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.welcome h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.welcome p {
+    color: #b4c2d9;
+    font-size: 13px;
+}
+
+.welcome-icon {
+    font-size: 43px;
+    color: #82adff;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 17px;
+}
+
+.section-heading h2 {
+    font-size: 17px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 23px;
+}
+
+.stat-card,
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+}
+
+.stat-card {
+    padding: 19px;
+}
+
+.stat-card span,
+.stat-card small {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.stat-card h2 {
+    font-size: 22px;
+    margin: 15px 0 8px;
+}
+
+.green {
+    color: var(--green) !important;
+}
+
+.blue {
+    color: var(--blue) !important;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 18px;
+}
+
+.panel {
+    padding: 21px;
+}
+
+.panel-heading {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.panel-heading h3 {
+    font-size: 14px;
+}
+
+.panel-heading span {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.chart-placeholder {
+    min-height: 245px;
+    border-radius: 8px;
+    border: 1px dashed #35445e;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 48px,
+        #26334b 49px
+    );
+    padding: 20px;
+}
+
+.chart-line {
+    color: var(--blue);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.chart-message {
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+    margin-top: 85px;
+}
+
+.system-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+}
+
+.system-row span {
+    color: var(--muted);
+}
+
+.system-row b {
+    font-size: 11px;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+.module-panel {
+    min-height: 300px;
+}
+
+.module-panel h2 {
+    margin-bottom: 13px;
+    font-size: 20px;
+}
+
+.module-panel p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 22px;
+}
+
+.notice {
+    border: 1px solid #65512c;
+    background: #302819;
+    color: #e7c57e;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 20px;
+}
+
+.simulation-balance {
+    background: #102c31;
+    border: 1px solid #23544e;
+    padding: 20px;
+    border-radius: 9px;
+    margin-top: 20px;
+}
+
+.simulation-balance span,
+.simulation-balance small {
+    color: #91bcb2;
+    font-size: 11px;
+}
+
+.simulation-balance h2 {
+    color: var(--green);
+    margin: 10px 0;
+}
+
+.learning-item {
+    padding: 17px;
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+footer {
+    color: var(--muted);
+    font-size: 10px;
+    text-align: center;
+    margin-top: 35px;
+    padding: 20px;
+}
+
+@media (max-width: 1000px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        min-height: auto;
+    }
+
+    .sidebar-bottom {
+        display: none;
+    }
+
+    .main {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .topbar {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* PINYIN - CAC O TAB THI TRUONG */
+.market-tab {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 18px;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+    font-family: inherit;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: #172033;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.market-tab:hover {
+    border-color: #38bdf8;
+    background: #1e293b;
+    transform: translateY(-2px);
+}
+
+.market-tab.selected {
+    border: 2px solid #38bdf8;
+    background: #172e43;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12);
+}
+
+.market-tab-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #38bdf8;
+}
+
+.market-tab-description {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.market-tab strong {
+    font-size: 22px;
+    color: #f8fafc;
+}
+
+.market-tab-unit {
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+.market-tab small {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+#market-chart {
+    margin-top: 20px;
+}
+
+/* PINYIN - BO CUC 4 TAB THI TRUONG NAM NGANG */
+#market-list.market-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    align-items: stretch;
+}
+
+#market-list .market-tab {
+    width: 100%;
+    min-width: 0;
+    min-height: 145px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 12px;
+    overflow: hidden;
+}
+
+#market-list .market-tab-name {
+    font-size: 14px;
+}
+
+#market-list .market-tab-description {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+#market-list .market-tab strong {
+    font-size: 20px;
+    white-space: nowrap;
+}
+
+#market-list .market-tab small {
+    font-size: 10px;
+}
+
+@media (max-width: 650px) {
+    #market-list.market-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* PINYIN - HIEN THI TRUC GIA VA TRUC THOI GIAN */
+#market-chart {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+#market-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 250px;
+    overflow: visible;
+}
+
+#market-chart .chart-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+#market-chart .chart-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#market-chart select {
+    background: #1e293b;
+    color: #e8edf7;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+#market-chart .chart-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 8px;
+}
+
+#market-chart .chart-message {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 11px;
+    color: #8996ad;
+}
+
+/* PINYIN - 3 BIEU TUONG CHON KIEU BIEU DO */
+.chart-type-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px;
+    background: #10182b;
+    border: 1px solid #334155;
+    border-radius: 7px;
+}
+
+.chart-type-btn {
+    width: 38px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-type-btn svg {
+    width: 21px;
+    height: 21px;
+}
+
+.chart-type-btn:hover {
+    background: #26334b;
+    color: #ffffff;
+}
+
+.chart-type-btn.active {
+    color: #38bdf8;
+    background: #1c3155;
+    border-color: #38bdf8;
+}
+
+@media (max-width: 650px) {
+    #market-chart .chart-controls {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+}
+
+/* PINYIN - 3 BIEU TUONG CHON KIEU BIEU DO */
+.chart-type-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px;
+    background: #10182b;
+    border: 1px solid #334155;
+    border-radius: 7px;
+}
+
+.chart-type-btn {
+    width: 38px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-type-btn svg {
+    width: 21px;
+    height: 21px;
+}
+
+.chart-type-btn:hover {
+    background: #26334b;
+    color: #ffffff;
+}
+
+.chart-type-btn.active {
+    color: #38bdf8;
+    background: #1c3155;
+    border-color: #38bdf8;
+}
+
+@media (max-width: 650px) {
+    #market-chart .chart-controls {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+}
+
+/* PINYIN - THIET KE MOI CUM CHON KIEU BIEU DO */
+#market-chart .chart-type-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+#market-chart .chart-type-btn {
+    width: 112px;
+    min-height: 78px;
+    padding: 9px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    background: #172033;
+    border: 1px solid #334155;
+    border-radius: 9px;
+    color: #a8b5c9;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#market-chart .chart-type-btn svg {
+    display: block;
+    width: 64px;
+    height: 42px;
+    min-height: 0;
+}
+
+#market-chart .chart-type-btn span {
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+#market-chart .chart-type-btn:hover {
+    background: #22334c;
+    border-color: #38bdf8;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+#market-chart .chart-type-btn.active {
+    background: #15334b;
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12);
+}
+
+@media (max-width: 650px) {
+    #market-chart .chart-type-tabs {
+        width: 100%;
+        gap: 6px;
+    }
+
+    #market-chart .chart-type-btn {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+    }
+
+    #market-chart .chart-type-btn span {
+        font-size: 10px;
+    }
+}
+
+/* PINYIN - THU NHO CUM CHON KIEU BIEU DO */
+#market-chart .chart-type-btn {
+    width: 86px;
+    min-height: 58px;
+    padding: 5px 7px;
+    gap: 3px;
+    border-radius: 7px;
+}
+
+#market-chart .chart-type-btn svg {
+    width: 42px;
+    height: 27px;
+    min-height: 0;
+}
+
+#market-chart .chart-type-btn span {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+#market-chart .chart-type-tabs {
+    gap: 7px;
+}
+
+
+/* PINYIN - KIEU BIEU DO COMPACT */
+#market-chart .chart-type-btn {
+    width: 68px;
+    min-height: 46px;
+    padding: 3px 4px;
+    gap: 2px;
+    border-radius: 6px;
+}
+
+#market-chart .chart-type-btn svg {
+    width: 32px;
+    height: 20px;
+    min-height: 0;
+}
+
+#market-chart .chart-type-btn span {
+    font-size: 9px;
+    font-weight: 500;
+}
+
+#market-chart .chart-type-tabs {
+    gap: 5px;
+}
+
+
+/* PINYIN - THIET KE THE THI TRUONG COMPACT */
+#market-list.market-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+#market-list .market-tab {
+    min-height: 0;
+    padding: 9px 10px;
+    gap: 4px;
+    border-radius: 7px;
+    border-width: 1px;
+}
+
+#market-list .market-tab.selected {
+    border-width: 1px;
+}
+
+#market-list .market-tab-name {
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+#market-list .market-tab-description {
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+#market-list .market-tab strong {
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+#market-list .market-tab-unit {
+    font-size: 10px;
+}
+
+#market-list .market-tab small {
+    font-size: 9px;
+}
+
+@media (max-width: 650px) {
+    #market-list.market-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+    }
+}
+
+/* PINYIN - MARKET CARDS EXTRA COMPACT */
+#market-list.market-grid {
+    gap: 6px;
+}
+
+#market-list .market-tab {
+    padding: 6px 8px;
+    gap: 2px;
+    min-height: 0;
+    border-radius: 5px;
+}
+
+#market-list .market-tab-name {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+#market-list .market-tab-description {
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+#market-list .market-tab strong {
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+#market-list .market-tab-unit {
+    font-size: 9px;
+}
+
+#market-list .market-tab small {
+    font-size: 8px;
+    line-height: 1.2;
+}
+
+@media (max-width: 650px) {
+    #market-list.market-grid {
+        gap: 6px;
+    }
+
+    #market-list .market-tab {
+        padding: 6px;
+    }
+}
+
+/* PINYIN - GIAO DIEN PHAN TICH AI */
+.analysis-toolbar {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.analysis-control {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 150px;
+}
+
+.analysis-control label {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.analysis-control select {
+    min-width: 150px;
+    padding: 10px 12px;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+#run-analysis-btn {
+    padding: 11px 16px;
+    color: white;
+    background: #176b59;
+    border: 1px solid #23866e;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#run-analysis-btn:hover {
+    background: #21836c;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.analysis-card,
+.analysis-result,
+.analysis-indicators {
+    padding: 17px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.analysis-card span,
+.analysis-card small {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.analysis-card h3 {
+    margin: 12px 0 7px;
+    font-size: 21px;
+}
+
+.analysis-result,
+.analysis-indicators {
+    margin-top: 14px;
+}
+
+.analysis-result h3,
+.analysis-indicators h3 {
+    margin-bottom: 13px;
+    font-size: 15px;
+}
+
+.analysis-result p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.analysis-indicator-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.analysis-indicator-row:last-child {
+    border-bottom: 0;
+}
+
+.analysis-indicator-row span {
+    color: var(--muted);
+}
+
+.analysis-indicator-row strong {
+    color: var(--text);
+}
+
+@media (max-width: 650px) {
+    .analysis-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analysis-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .analysis-control,
+    .analysis-control select,
+    #run-analysis-btn {
+        width: 100%;
+    }
+}
+
+/* ===== PHAN TICH CHI TIET 4 CHI BAO ===== */
+
+.analysis-insight-section {
+    margin-top: 24px;
+}
+
+.analysis-insight-section > h3 {
+    margin-bottom: 16px;
+}
+
+.analysis-insight-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.analysis-insight-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--border-color, #303846);
+    border-radius: 12px;
+    background: var(--card-bg, #151b26);
+}
+
+.analysis-insight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.analysis-insight-header h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.insight-status {
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: rgba(148, 163, 184, 0.14);
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.insight-status.positive {
+    background: rgba(34, 197, 94, 0.13);
+    color: #22c55e;
+}
+
+.insight-status.negative {
+    background: rgba(239, 68, 68, 0.13);
+    color: #ef4444;
+}
+
+.insight-status.warning {
+    background: rgba(245, 158, 11, 0.14);
+    color: #f59e0b;
+}
+
+.insight-main-value {
+    margin-bottom: 18px;
+    font-size: 25px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.insight-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border-color, #303846);
+    font-size: 12px;
+}
+
+.insight-row span {
+    color: var(--text-secondary, #94a3b8);
+}
+
+.insight-row strong {
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.insight-analysis {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(100, 116, 139, 0.10);
+}
+
+.insight-analysis > strong {
+    font-size: 12px;
+}
+
+.insight-analysis p {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary, #cbd5e1);
+}
+
+@media (max-width: 1100px) {
+    .analysis-insight-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .analysis-insight-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* PINYIN - GIAO DIEN KET QUA MO PHONG */
+.positive {
+    color: #22c55e !important;
+    font-weight: 700;
+}
+
+.negative {
+    color: #ef4444 !important;
+    font-weight: 700;
+}
+
+#sim-open-orders,
+#sim-closed-orders {
+    font-variant-numeric: tabular-nums;
+}
+
+#sim-open-orders td,
+#sim-closed-orders td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#sim-open-orders button {
+    padding: 6px 12px;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    cursor: pointer;
+}
+
+#sim-open-orders button:hover {
+    background: rgba(239, 68, 68, 0.22);
+}
+
+#sim-message {
+    margin-top: 12px;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    #sim-open-orders,
+    #sim-closed-orders {
+        font-size: 12px;
+    }
+}
+
+/* PINYIN - THONG KE LICH SU MO PHONG */
+.sim-history-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.sim-history-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+    border-radius: 10px;
+    background: var(--card-bg, rgba(128, 128, 128, 0.06));
+}
+
+.sim-history-stat span {
+    color: var(--text-secondary, #999);
+    font-size: 13px;
+}
+
+.sim-history-stat strong {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+    .sim-history-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .sim-history-stat {
+        padding: 12px;
+    }
+
+    .sim-history-stat strong {
+        font-size: 19px;
+    }
+}
+
+/* NUT BUY SELL MO PHONG */
+.sim-direction-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    width: 100%;
+    margin: 12px 0 18px;
+}
+
+.sim-direction-btn {
+    min-height: 68px;
+    border: none;
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.sim-direction-btn.buy {
+    background: #16a34a;
+}
+
+.sim-direction-btn.sell {
+    background: #dc2626;
+}
+
+.sim-direction-btn:hover {
+    filter: brightness(1.12);
+    transform: translateY(-2px);
+}
+
+.sim-direction-btn.active {
+    outline: 3px solid rgba(255, 255, 255, 0.75);
+    outline-offset: 2px;
+}
+
+.sim-direction-btn:active {
+    transform: scale(0.98);
+}
+
+/* BO TRI 4 CHI SO GIAO DICH MO PHONG */
+.simulation-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin: 18px 0 24px;
+}
+
+.simulation-stats .stat-card {
+    min-width: 0;
+    padding: 16px 14px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.simulation-stats .stat-card span {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-secondary, #9ca3af);
+}
+
+.simulation-stats .stat-card h2 {
+    margin: 2px 0;
+    font-size: clamp(17px, 1.5vw, 23px);
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+.simulation-stats .stat-card small {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-secondary, #9ca3af);
+}
+
+@media (max-width: 900px) {
+    .simulation-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .simulation-stats {
+        gap: 8px;
+    }
+
+    .simulation-stats .stat-card {
+        padding: 12px 10px;
+    }
+
+    .simulation-stats .stat-card h2 {
+        font-size: 16px;
+    }
+}
+
+/* PINYIN - GIAO DIEN 3 TAB GIAO DICH MO PHONG */
+.simulation-tabs {
+    display: flex;
+    gap: 10px;
+    margin: 24px 0 18px;
+    padding: 6px;
+    background: var(--card-bg, #f1f5f9);
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.sim-tab-btn {
+    flex: 1;
+    min-height: 46px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary, #64748b);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sim-tab-btn:hover {
+    background: rgba(100, 116, 139, 0.12);
+}
+
+.sim-tab-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.sim-tab-panel[hidden] {
+    display: none !important;
+}
+
+.sim-tab-panel {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .simulation-tabs {
+        gap: 5px;
+        padding: 4px;
+    }
+
+    .sim-tab-btn {
+        padding: 9px 5px;
+        font-size: 13px;
+    }
+}
+
+/* PINYIN - CAN CHINH BANG LICH SU LENH */
+#sim-tab-history .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#sim-tab-history .data-table {
+    width: 100%;
+    min-width: 850px;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#sim-tab-history .data-table th,
+#sim-tab-history .data-table td {
+    padding: 15px 12px;
+    line-height: 1.6;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#sim-tab-history .data-table th:nth-child(1),
+#sim-tab-history .data-table td:nth-child(1) {
+    width: 14%;
+}
+
+#sim-tab-history .data-table th:nth-child(2),
+#sim-tab-history .data-table td:nth-child(2) {
+    width: 10%;
+}
+
+#sim-tab-history .data-table th:nth-child(3),
+#sim-tab-history .data-table td:nth-child(3) {
+    width: 13%;
+}
+
+#sim-tab-history .data-table th:nth-child(4),
+#sim-tab-history .data-table td:nth-child(4) {
+    width: 15%;
+}
+
+#sim-tab-history .data-table th:nth-child(5),
+#sim-tab-history .data-table td:nth-child(5) {
+    width: 20%;
+}
+
+#sim-tab-history .data-table th:nth-child(6),
+#sim-tab-history .data-table td:nth-child(6) {
+    width: 28%;
+}
+
+
+/* PINYIN - CAN CHINH BANG LENH DANG MO */
+#sim-tab-open .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#sim-tab-open .data-table {
+    width: 100%;
+    min-width: 1100px;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#sim-tab-open .data-table th,
+#sim-tab-open .data-table td {
+    padding: 15px 10px;
+    line-height: 1.6;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#sim-tab-open .data-table th:nth-child(1),
+#sim-tab-open .data-table td:nth-child(1) { width: 12%; }
+
+#sim-tab-open .data-table th:nth-child(2),
+#sim-tab-open .data-table td:nth-child(2) { width: 8%; }
+
+#sim-tab-open .data-table th:nth-child(3),
+#sim-tab-open .data-table td:nth-child(3) { width: 11%; }
+
+#sim-tab-open .data-table th:nth-child(4),
+#sim-tab-open .data-table td:nth-child(4) { width: 12%; }
+
+#sim-tab-open .data-table th:nth-child(5),
+#sim-tab-open .data-table td:nth-child(5) { width: 12%; }
+
+#sim-tab-open .data-table th:nth-child(6),
+#sim-tab-open .data-table td:nth-child(6) { width: 15%; }
+
+#sim-tab-open .data-table th:nth-child(7),
+#sim-tab-open .data-table td:nth-child(7) { width: 18%; }
+
+#sim-tab-open .data-table th:nth-child(8),
+#sim-tab-open .data-table td:nth-child(8) { width: 12%; }
+
+
+/* PINYIN - TRUNG TAM HOC TAP */
+.learning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.learning-header h2 {
+    font-size: 23px;
+    margin-bottom: 8px;
+}
+
+.learning-header p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.learning-progress-card {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card-bg, #ffffff);
+}
+
+.learning-progress-card span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+.learning-progress-card strong {
+    font-size: 17px;
+}
+
+.learning-progress-track {
+    height: 7px;
+    margin-top: 12px;
+    overflow: hidden;
+    background: var(--border);
+    border-radius: 20px;
+}
+
+#learning-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #2563eb;
+    border-radius: 20px;
+    transition: width 0.25s ease;
+}
+
+.learning-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.learning-card {
+    position: relative;
+    padding: 23px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--card-bg, #ffffff);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.learning-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+}
+
+.learning-card-number {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.learning-card-icon {
+    font-size: 30px;
+    margin-bottom: 16px;
+}
+
+.learning-card h3 {
+    font-size: 17px;
+    margin-bottom: 10px;
+}
+
+.learning-card p {
+    min-height: 44px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.learning-card-meta {
+    margin: 17px 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.learning-start-btn,
+.learning-complete-btn {
+    width: 100%;
+    min-height: 42px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.learning-start-btn:hover,
+.learning-complete-btn:hover {
+    background: #1d4ed8;
+}
+
+.learning-card.completed {
+    border-color: #16a34a;
+}
+
+.learning-card.completed .learning-start-btn {
+    background: #15803d;
+}
+
+.learning-lesson-area {
+    margin-top: 25px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--card-bg, #ffffff);
+}
+
+.learning-lesson-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.learning-section-label {
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.learning-lesson-top h3 {
+    margin-top: 7px;
+    font-size: 20px;
+}
+
+.learning-close-btn {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: transparent;
+    cursor: pointer;
+}
+
+#learning-lesson-content {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+#learning-lesson-content h4 {
+    margin: 18px 0 7px;
+}
+
+#learning-lesson-content ul {
+    padding-left: 22px;
+}
+
+.learning-complete-btn {
+    margin-top: 22px;
+}
+
+@media (max-width: 800px) {
+    .learning-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .learning-progress-card {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .learning-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .learning-card {
+        padding: 18px;
+    }
+
+    .learning-lesson-area {
+        padding: 17px;
+    }
+}
+
+
+/* ===== PINYIN LEARNING - READABILITY UPGRADE ===== */
+
+#page-learning {
+    color: #e8edf5 !important;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+#page-learning .learning-header h2 {
+    color: #ffffff !important;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+#page-learning .learning-header p {
+    color: #e2e8f0 !important;
+    font-size: 16px;
+}
+
+#page-learning .learning-progress-card,
+#page-learning .learning-card {
+    background: #1e293b !important;
+    border: 1px solid #64748b !important;
+    color: #ffffff !important;
+}
+
+#page-learning .learning-card-number,
+#page-learning .learning-card-meta {
+    color: #cbd5e1 !important;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+#page-learning .learning-card h3 {
+    color: #ffffff !important;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+#page-learning .learning-card p {
+    color: #e2e8f0 !important;
+    font-size: 17px;
+    line-height: 1.8;
+}
+
+#page-learning .learning-progress-card span {
+    color: #e2e8f0 !important;
+    font-size: 15px;
+}
+
+#page-learning .learning-progress-card strong {
+    color: #ffffff !important;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+#page-learning .learning-lesson-area {
+    background: #172235 !important;
+    border: 1px solid #64748b !important;
+    color: #ffffff !important;
+}
+
+#page-learning .learning-section-label {
+    color: #93c5fd !important;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+#page-learning .learning-lesson-top h3 {
+    color: #ffffff !important;
+    font-size: 27px;
+    font-weight: 800;
+}
+
+#page-learning #learning-lesson-content,
+#page-learning #learning-lesson-content p,
+#page-learning #learning-lesson-content li {
+    color: #f1f5f9 !important;
+    font-size: 18px;
+    line-height: 1.9;
+}
+
+#page-learning #learning-lesson-content h4,
+#page-learning #learning-lesson-content strong {
+    color: #ffffff !important;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+#page-learning .learning-start-btn,
+#page-learning .learning-complete-btn {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    font-size: 16px;
+    font-weight: 800;
+    min-height: 48px;
+    border: 1px solid #60a5fa;
+}
+
+#page-learning .learning-close-btn {
+    background: #334155 !important;
+    color: #ffffff !important;
+    font-size: 15px;
+    font-weight: 700;
+    border: 1px solid #94a3b8;
+}
+
+
+/* ===== WELCOME AI - PERSONALIZED DESIGN ===== */
+#page-overview .welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+#page-overview .welcome h2 {
+    color: #ffffff !important;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    text-shadow: 0 2px 12px rgba(96, 165, 250, 0.25);
+}
+
+#page-overview .welcome p {
+    color: #dbeafe !important;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+#page-overview .welcome-icon {
+    position: relative;
+    flex: 0 0 82px;
+    width: 82px;
+    height: 82px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #2563eb, #7c3aed);
+    border: 1px solid rgba(191, 219, 254, 0.7);
+    color: #ffffff;
+    font-size: 29px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
+}
+
+#page-overview .welcome-icon::after {
+    content: "✦";
+    position: absolute;
+    top: -9px;
+    right: -7px;
+    color: #fde68a;
+    font-size: 22px;
+    text-shadow: 0 0 10px rgba(253, 230, 138, 0.7);
+}
+
+@media (max-width: 600px) {
+    #page-overview .welcome-icon {
+        flex-basis: 60px;
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        font-size: 23px;
+    }
+
+    #page-overview .welcome h2 {
+        font-size: 22px;
+    }
+}
+
+
+/* TRANG THAI DU LIEU THI TRUONG */
+.market-status-live {
+    color: #22c55e !important;
+}
+
+.market-status-closed {
+    color: #94a3b8 !important;
+}
+
+.market-status-old {
+    color: #f59e0b !important;
+}
+
+.market-status-demo {
+    color: #9ca3af !important;
+}
+
+/* TRANG THAI KET NOI HE THONG */
+.conn-ok { color: #22c55e !important; }
+.conn-warn { color: #f59e0b !important; }
+.conn-closed { color: #94a3b8 !important; }
+.conn-error { color: #ef4444 !important; }
+.status-dot.conn-warn { background: #f59e0b; }
+.status-dot.conn-closed { background: #94a3b8; }
+.status-dot.conn-error { background: #ef4444; }
+.system-row.system-note { padding: 10px 0; border-bottom: none; }
+.system-row.system-note small { color: var(--muted); line-height: 1.4; }
+
+/* ===== PHAN TICH CLAUDE + GIAO DICH MT5 ===== */
+.ai-panel {
+    margin: 22px 0;
+    padding: 18px;
+    border: 1px solid #2c4a7a;
+    border-radius: 8px;
+    background: #111a2c;
+}
+.ai-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.ai-panel-head small { color: var(--muted); display: block; margin-top: 4px; }
+.ai-hint { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+.ai-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+}
+.ai-cell {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--panel);
+}
+.ai-cell span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 6px; }
+.ai-cell strong { font-size: 16px; overflow-wrap: anywhere; }
+.ai-text { line-height: 1.6; margin: 8px 0; }
+.ai-risk { color: #f5b14c; }
+.ai-meta { color: var(--muted); display: block; margin-top: 6px; }
+.ai-actions { margin-top: 12px; }
+
+#ai-run-btn, #ai-trade-btn, #mt5-order-btn, .trade-confirm button {
+    padding: 10px 16px;
+    color: white;
+    background: #2a5bb8;
+    border: 1px solid #3a6fd6;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+}
+#ai-run-btn:hover, #ai-trade-btn:hover, #mt5-order-btn:hover { background: #3468cc; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.trade-confirm button.danger, button.danger { background: #b4372f !important; border-color: #d14a40 !important; color: #fff; }
+.trade-confirm button.ghost, button.ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+}
+button.small { padding: 4px 10px; font-size: 12px; }
+
+.trade-confirm {
+    margin-top: 12px;
+    padding: 14px;
+    border: 1px solid #d14a40;
+    border-radius: 6px;
+    background: rgba(180, 55, 47, .12);
+}
+.trade-confirm p { margin-bottom: 10px; }
+.trade-confirm label { display: block; margin-bottom: 10px; color: var(--muted); font-size: 12px; }
+.trade-confirm-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.trade-confirm input, .mt5-order-form input, .mt5-order-form select {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 8px 10px;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+}
+.trade-confirm input { max-width: 160px; }
+.trade-msg { margin-top: 10px; font-size: 13px; min-height: 1em; }
+.trade-msg-ok { color: #22c55e; }
+.trade-msg-error { color: #ef4444; }
+
+.mt5-trade-panel { margin-bottom: 22px; }
+.mt5-trade-panel h3 { margin: 18px 0 10px; }
+.mt5-order-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    align-items: end;
+    margin-top: 14px;
+}
+.mt5-order-form label { color: var(--muted); font-size: 12px; }
+.acc-badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid var(--border); }
+.acc-demo { color: #22c55e; border-color: #22c55e; }
+.acc-real { color: #fff; background: #b4372f; border-color: #d14a40; }
+.acc-error { color: #ef4444; border-color: #ef4444; }
+.mt5-trade-panel .table-wrap { overflow-x: auto; }
+.mt5-positions { width: 100%; border-collapse: collapse; font-size: 12px; }
+.mt5-positions th, .mt5-positions td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+.mt5-positions th { color: var(--muted); font-weight: 600; }
+.mt5-positions .positive { color: #22c55e; }
+.mt5-positions .negative { color: #ef4444; }
+#ai-signal.positive { color: #22c55e; }
+#ai-signal.negative { color: #ef4444; }
