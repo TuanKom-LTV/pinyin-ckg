@@ -121,11 +121,12 @@ h1{{font-size:19px;margin:0 0 4px}}h1.lg{{display:flex;align-items:center;gap:10
 input{{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx)}}
 button{{width:100%;margin-top:12px;font:inherit;font-weight:700;padding:10px;border:0;border-radius:9px;background:var(--acc);color:#fff;cursor:pointer}}
 .e{{color:var(--no);font-size:13px;margin-top:10px}}
+.tg{{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;color:#229ED9;font-size:13px;font-weight:600;text-decoration:none}}
 </style></head><body>
 <form method="post" action="/login"><h1 class="lg">{LOGO_K}<span>PinYin</span></h1><p>Truy cập từ xa cần mật khẩu.</p>
 <input type="hidden" name="next" value="{html.escape(nxt)}">
 <input type="password" name="pw" placeholder="Mật khẩu" autocomplete="current-password" autofocus required>
-<button>Đăng nhập</button>{f'<div class="e">{html.escape(msg)}</div>' if msg else ''}</form></body></html>"""
+<button>Đăng nhập</button>{f'<div class="e">{html.escape(msg)}</div>' if msg else ''}<a class="tg" href="https://t.me/TuanKom" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>Cần mật khẩu? Liên hệ Telegram @TuanKom</a></form></body></html>"""
     return HTMLResponse(body, headers={"Cache-Control": "no-store"})
 
 
