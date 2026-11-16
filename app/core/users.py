@@ -87,12 +87,15 @@ def register(f, ip):
     name = f.get("name", "").strip()[:60]
     phone = re.sub(r"[^\d+]", "", f.get("phone", ""))[:15]
     tg = f.get("tg", "").strip().lstrip("@")[:40]
+    email = f.get("email", "").strip().lower()[:80]
     user = f.get("user", "").strip().lower()
     pw, pw2 = f.get("pw", ""), f.get("pw2", "")
     if len(name) < 2:
         return False, "Nhập họ tên."
     if not re.fullmatch(r"\+?\d{9,14}", phone):
         return False, "Số điện thoại Zalo không hợp lệ."
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[A-Za-z]{2,}", email):
+        return False, "Email không hợp lệ."
     if tg and not re.fullmatch(r"[A-Za-z0-9_]{4,40}", tg):
         return False, "Telegram không hợp lệ (vd: @tennguoidung), hoặc để trống."
     if not USER_RE.match(user):
@@ -105,11 +108,11 @@ def register(f, ip):
         data = dict(load())
         if user in data:
             return False, "Tên đăng nhập đã có người dùng."
-        data[user] = {"ten": name, "sdt": phone, "tg": tg, "mk": _hash(pw), "tt": "cho",
+        data[user] = {"ten": name, "sdt": phone, "email": email, "tg": tg, "mk": _hash(pw), "tt": "cho",
                       "tao": int(now), "duyet": None, "het_han": None, "dang_nhap": None, "ip": ip}
         save(data)
     _reg_ip[ip].append(now)
-    _notify(f"👤 Khách mới đăng ký chờ duyệt:\n{name} · Zalo {phone}" + (f" · Telegram @{tg}" if tg else "")
+    _notify(f"👤 Khách mới đăng ký chờ duyệt:\n{name} · Zalo {phone} · {email}" + (f" · Telegram @{tg}" if tg else "")
             + f"\nTên đăng nhập: {user}\nDuyệt tại: https://pinyin.id.vn/quan-ly")
     return True, "Đăng ký thành công! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được sau khi được duyệt."
 
@@ -150,7 +153,7 @@ def active(user):
 def admin_list():
     out = []
     for k, u in load().items():
-        out.append({"user": k, "ten": u["ten"], "sdt": u["sdt"], "tg": u["tg"], "tt": status_of(u),
+        out.append({"user": k, "ten": u["ten"], "sdt": u["sdt"], "email": u.get("email", ""), "tg": u["tg"], "tt": status_of(u),
                     "tao": fmt_date(u["tao"]), "het_han": fmt_date(u.get("het_han")),
                     "con": (max(0, int((u["het_han"] - time.time()) // 86400)) if u.get("het_han") else None),
                     "dang_nhap": datetime.fromtimestamp(u["dang_nhap"], VN).strftime("%d/%m %H:%M") if u.get("dang_nhap") else "-",
@@ -230,7 +233,8 @@ def register_page(logo, msg="", ok=False, f=None):
         inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Đăng ký tài khoản xem phân tích. Tài khoản cần được duyệt trước khi dùng.</p>
 <form method="post" action="/dang-ky" autocomplete="on">
 <label>Họ tên</label><input name="name" value="{v('name')}" required maxlength="60">
-<label>Số điện thoại Zalo <span style="color:var(--no)">*</span></label><input name="phone" value="{v('phone')}" required inputmode="tel" maxlength="15" placeholder="Số có dùng Zalo để liên hệ">
+<label>Số điện thoại Zalo <span style="color:var(--no)">*</span></label><input name="phone" value="{v('phone')}" required inputmode="tel" maxlength="15">
+<label>Email <span style="color:var(--no)">*</span></label><input type="email" name="email" value="{v('email')}" required maxlength="80" autocomplete="email">
 <label>Telegram (không bắt buộc)</label><input name="tg" value="{v('tg')}" placeholder="@tennguoidung" maxlength="41">
 <label>Tên đăng nhập</label><input name="user" value="{v('user')}" required placeholder="chữ thường, số, _ (3–20 ký tự)" maxlength="20" autocomplete="username">
 <label>Mật khẩu</label><input type="password" name="pw" required minlength="6" autocomplete="new-password">
@@ -250,7 +254,7 @@ async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'}
   let a=u.tt=='cho'?`${d}<button onclick="act('${u.user}','duyet')">Duyệt</button><button class="red" onclick="act('${u.user}','xoa')">Từ chối</button>`:
    u.tt=='khoa'?`${d}<button onclick="act('${u.user}','mo')">Mở khóa</button><button class="red" onclick="act('${u.user}','xoa')">Xóa</button>`:
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
-  return `<tr><td><b>${e(u.ten)}</b><br><span class="m">${e(u.user)}</span></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
+  return `<tr><td><b>${e(u.ten)}</b><br><span class="m">${e(u.user)}</span></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.email?`<br><a href="mailto:${e(u.email)}">${e(u.email)}</a>`:''}${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
    <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
 async function act(user,a){const days=+($('d_'+user)||{}).value||30;
  if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;
