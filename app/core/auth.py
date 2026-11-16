@@ -19,6 +19,8 @@ from dotenv import load_dotenv
 from fastapi import Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
+from app.core import users
+
 
 ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 load_dotenv(ENV_FILE)
@@ -27,7 +29,7 @@ COOKIE = "pinyin_auth"
 SESSION_DAYS = 30
 MAX_FAILS = 5
 LOCK_SECONDS = 15 * 60
-PUBLIC_PATHS = {"/login", "/logout", "/static/images/favicon.svg"}
+PUBLIC_PATHS = {"/login", "/logout", "/dang-ky", "/static/images/favicon.svg"}
 
 _fails: dict[str, list[float]] = {}
 
@@ -45,7 +47,8 @@ ROLES = ("chu", "xem")
 # Người xem không được gọi các đường dẫn này (vào lệnh, xem số dư/lệnh/lịch sử tài khoản)
 VIEW_BLOCK_PREFIXES = ("/api/v1/trade", "/ckg/api/account", "/ckg/api/history",
                        "/ckg/api/order", "/ckg/api/close", "/ckg/api/reverse",
-                       "/docs", "/redoc", "/openapi.json")
+                       "/docs", "/redoc", "/openapi.json",
+                       "/ckg/api/q", "/ckg/api/auto", "/quan-ly")   # buồng lái nhanh, bot, quản lý khách
 AI_PATH = "/api/v1/ai/analyze"
 
 
@@ -55,6 +58,8 @@ def _password(role: str = "chu"):
 
 def _secret(role: str):
     # Đổi mật khẩu của quyền nào thì chỉ các phiên của quyền đó hết hạn
+    if role.startswith("u-"):
+        return os.getenv("PINYIN_SECRET", "") + "|" + role + "|" + (users.session_key(role[2:]) or secrets.token_hex(8))
     return os.getenv("PINYIN_SECRET", "") + "|" + role + "|" + _password(role)
 
 
@@ -63,16 +68,26 @@ def _sign(exp: int, role: str) -> str:
     return f"{exp}.{role}.{mac}"
 
 
-def _role(token: str | None) -> str | None:
-    """Trả về quyền của cookie hợp lệ, hoặc None."""
+def _who(token: str | None):
+    """Cookie hợp lệ → (quyền, tên khách | None); không hợp lệ → (None, None).
+    Khách (u-<tên>) luôn có quyền "xem"; bị khóa / hết hạn / đổi mật khẩu thì phiên mất hiệu lực ngay."""
     if not token or token.count(".") != 2:
-        return None
+        return None, None
     exp_s, role, _ = token.split(".")
-    if role not in ROLES or not _password(role):
-        return None
     if not exp_s.isdigit() or int(exp_s) < time.time():
-        return None
-    return role if hmac.compare_digest(token, _sign(int(exp_s), role)) else None
+        return None, None
+    if role.startswith("u-"):
+        user = role[2:]
+        if not users.USER_RE.match(user) or not users.active(user):
+            return None, None
+        return ("xem", user) if hmac.compare_digest(token, _sign(int(exp_s), role)) else (None, None)
+    if role not in ROLES or not _password(role):
+        return None, None
+    return (role, None) if hmac.compare_digest(token, _sign(int(exp_s), role)) else (None, None)
+
+
+def _role(token: str | None) -> str | None:
+    return _who(token)[0]
 
 
 def viewer_blocked(path: str, method: str) -> bool:
@@ -120,12 +135,14 @@ h1{{font-size:19px;margin:0 0 4px}}h1.lg{{display:flex;align-items:center;gap:10
 input{{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx)}}
 button{{width:100%;margin-top:12px;font:inherit;font-weight:700;padding:10px;border:0;border-radius:9px;background:var(--acc);color:#fff;cursor:pointer}}
 .e{{color:var(--no);font-size:13px;margin-top:10px}}
+.alt{{text-align:center;margin-top:10px;font-size:13px;color:var(--mut)}}.alt a{{color:#22d3ee}}
 .tg{{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;color:#229ED9;font-size:13px;font-weight:600;text-decoration:none}}
 </style></head><body>
-<form method="post" action="/login"><h1 class="lg">{LOGO_K}<span>PinYin</span></h1><p>Truy cập từ xa cần mật khẩu.</p>
+<form method="post" action="/login"><h1 class="lg">{LOGO_K}<span>PinYin</span></h1><p>Đăng nhập để xem phân tích.</p>
 <input type="hidden" name="next" value="{html.escape(nxt)}">
-<input type="password" name="pw" placeholder="Mật khẩu" autocomplete="current-password" autofocus required>
-<button>Đăng nhập</button>{f'<div class="e">{html.escape(msg)}</div>' if msg else ''}<a class="tg" href="https://t.me/TuanKom" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>Cần mật khẩu? Liên hệ Telegram @TuanKom</a></form></body></html>"""
+<input name="user" placeholder="Tên đăng nhập" autocomplete="username" autofocus style="margin-bottom:10px">
+<input type="password" name="pw" placeholder="Mật khẩu" autocomplete="current-password" required>
+<button>Đăng nhập</button>{f'<div class="e">{html.escape(msg)}</div>' if msg else ''}<a class="tg" href="https://t.me/TuanKom" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>Hỗ trợ: Telegram @TuanKom</a><div class="alt">Chưa có tài khoản? <a href="/dang-ky">Đăng ký</a></div></form></body></html>"""
     return HTMLResponse(body, headers={"Cache-Control": "no-store"})
 
 
@@ -133,6 +150,7 @@ async def auth_middleware(request: Request, call_next):
     path = request.url.path
 
     if not is_remote(request):
+        request.state.role, request.state.user = "chu", None
         return await call_next(request)
 
     if path == "/login":
@@ -144,7 +162,19 @@ async def auth_middleware(request: Request, call_next):
             return _login_page("Sai quá nhiều lần. Thử lại sau 15 phút.", nxt)
         form = parse_qs((await request.body()).decode("utf-8", "ignore"))
         pw = (form.get("pw") or [""])[0]
+        uname = (form.get("user") or [""])[0].strip()
         nxt = _safe_next((form.get("next") or ["/"])[0])
+        if uname:
+            user, err = users.login(uname, pw)
+            if not user:
+                if err.startswith("Sai"):
+                    _fails.setdefault(ip, []).append(time.time())
+                return _login_page(err, nxt)
+            _fails.pop(ip, None)
+            resp = RedirectResponse(nxt if nxt != "/" else "/ckg/", status_code=303)
+            resp.set_cookie(COOKIE, _sign(int(time.time()) + SESSION_DAYS * 86400, "u-" + user),
+                            max_age=SESSION_DAYS * 86400, httponly=True, secure=True, samesite="lax", path="/")
+            return resp
         if not _password("chu"):
             return _login_page("Máy chủ chưa đặt PINYIN_PASSWORD trong .env.", nxt)
         role = None
@@ -166,7 +196,8 @@ async def auth_middleware(request: Request, call_next):
         resp.delete_cookie(COOKIE, path="/")
         return resp
 
-    role = _role(request.cookies.get(COOKIE))
+    role, cust = _who(request.cookies.get(COOKIE))
+    request.state.user = cust
     if role == "xem" and viewer_blocked(path, request.method):
         return JSONResponse(
             {"ok": False, "xem": True,
@@ -175,7 +206,7 @@ async def auth_middleware(request: Request, call_next):
                      "Tài khoản chỉ xem: không có quyền vào lệnh hoặc xem tài khoản MT5.")},
             status_code=403)
     if path in PUBLIC_PATHS or role:
-        request.state.role = role or "chu"
+        request.state.role = role
         resp = await call_next(request)
         resp.headers.setdefault("X-Robots-Tag", "noindex, nofollow")
         if role:
