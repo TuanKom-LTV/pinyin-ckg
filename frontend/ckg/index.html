@@ -60,6 +60,7 @@ body.v-ai .w>.c:not(.keep):not(#aip),body.v-ai .w>.g,body.v-ai .w>p{display:none
  .ws.two #qk .qstep{grid-template-columns:32px 1fr 32px}.ws.two #qk .qstep input{font-size:14px;padding:5px}.ws.two #qk .qpre{margin-top:4px}.ws.two #qk .qpre button{padding:2px;font-size:11px}
  .ws.two #qk .qg{padding:7px 8px;font-size:11px}.ws.two #qk .qwide{padding:8px;margin-top:7px;font-size:13px}.ws.two #qk .qpl{padding:5px 8px;font-size:12px}}
 body.v-ai .w>.ws{display:none!important}
+.g2s{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:10px;align-items:stretch}.g2s>.ac{margin-top:0!important}@media(max-width:800px){.g2s{grid-template-columns:1fr}}
 .brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
 h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
 h2{font-size:13px;letter-spacing:.06em;color:var(--mut);margin:0 0 10px;text-transform:uppercase}
@@ -262,7 +263,7 @@ function gold(t,ix){const r1=gcan(t,ix),MI=Math.max(0,Math.min(7199,ix*5+4,Math.
  {const c10=r1.c.filter(x=>x.full).slice(-10);if(c10.length){const up=c10.filter(x=>x.c>x.o).length,dn=c10.filter(x=>x.c<x.o).length,eq=c10.length-up-dn,
   sr=c10.reduce((s,x)=>s+(x.h-x.l),0),hh=Math.max(...c10.map(x=>x.h)),ll=Math.min(...c10.map(x=>x.l)),net=c10[c10.length-1].c-c10[0].o,
   bi=up>dn?['Nghiêng về TĂNG','ok']:dn>up?['Nghiêng về GIẢM','no']:['Cân bằng',''];
-  h+=`<div class="ac" style="margin-top:10px"><div class="hd"><span>Thống kê ${c10.length} nến ${GTF} gần nhất</span><span class="bdg ${bi[1]}">${bi[0]}</span></div>`
+  h+='<div class="g2s">';h+=`<div class="ac" style="margin-top:10px"><div class="hd"><span>Thống kê ${c10.length} nến ${GTF} gần nhất</span><span class="bdg ${bi[1]}">${bi[0]}</span></div>`
   +`<div style="display:flex;gap:4px;margin:10px 0 8px">${c10.map(x=>`<div title="M ${f(x.o)} · Đ ${f(x.c)} · C ${f(x.h)} · T ${f(x.l)}" style="flex:1;height:22px;border-radius:4px;background:${x.c>x.o?'var(--ok)':x.c<x.o?'var(--no)':'var(--mut)'}"></div>`).join('')}</div>`
   +[['Nến xanh (tăng)',`<strong class="ok">${up}</strong>`],['Nến đỏ (giảm)',`<strong class="no">${dn}</strong>`]].concat(eq?[['Nến đứng (mở = đóng)',eq]]:[])
    .concat([['Tổng biên độ (cộng cao−thấp từng nến)',sr.toFixed(2)+' $'],['Biên độ cả cụm (cao nhất − thấp nhất)',(hh-ll).toFixed(2)+' $ ('+f(ll)+' → '+f(hh)+')'],['Thay đổi ròng (mở nến đầu → đóng nến cuối)',`<strong class="${net>=0?'ok':'no'}">${net>=0?'+':''}${net.toFixed(2)} $</strong>`]])
@@ -270,7 +271,7 @@ function gold(t,ix){const r1=gcan(t,ix),MI=Math.max(0,Math.min(7199,ix*5+4,Math.
   +`<div class="nd"><b>Nhận định</b>${up} nến xanh, ${dn} nến đỏ${eq?', '+eq+' nến đứng':''} trong ${c10.length} nến ${GTF} gần nhất → <strong class="${bi[1]}">${bi[0].toLowerCase()}</strong>. Tổng biên độ ${sr.toFixed(2)} $, cả cụm dao động ${(hh-ll).toFixed(2)} $, giá ${net>=0?'tăng':'giảm'} ròng ${Math.abs(net).toFixed(2)} $.</div></div>`}}
  if(L){const rk=Math.abs(L.e-L.sl),hit=L.tp.filter(x=>L.t>0?p>=x:p<=x).length,st=L.t>0?p<=L.sl:p>=L.sl;
   h+=`<div class="ac" style="margin-top:10px"><div class="hd"><span>Tín hiệu EMA9 × EMA21</span><span class="bdg ${L.t>0?'ok':'no'}">${L.t>0?'BUY':'SELL'} @ ${f(L.e)}</span></div><div class="row" style="display:flex;justify-content:space-between;margin-top:8px"><span>SL (đáy/đỉnh 4 nến)</span><b>${f(L.sl)} (${rk.toFixed(2)}$)</b></div>`+L.tp.map((x,i)=>`<div class="row" style="display:flex;justify-content:space-between"><span>TP${i+1}</span><b>${f(x)} · R:R 1:${(Math.abs(x-L.e)/rk).toFixed(1)}</b></div>`).join('')+`<div class="row" style="display:flex;justify-content:space-between"><span>Trạng thái</span><b>${st?'⛔ Đã chạm SL':hit?'✅ Đã qua TP'+hit:'⏳ Đang chạy'}</b></div></div>`}
- $('gp').innerHTML=h}
+ if(h.includes('<div class="g2s">'))h+='</div>';$('gp').innerHTML=h}
 
 const nd=(k,txt,T,G)=>({k,txt,T,G});
 const TB_=nd(2,'Theo dõi CK2',
