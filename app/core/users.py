@@ -92,9 +92,9 @@ def register(f, ip):
     if len(name) < 2:
         return False, "Nhập họ tên."
     if not re.fullmatch(r"\+?\d{9,14}", phone):
-        return False, "Số điện thoại không hợp lệ."
-    if not re.fullmatch(r"[A-Za-z0-9_]{4,40}", tg):
-        return False, "Telegram không hợp lệ (vd: @tennguoidung)."
+        return False, "Số điện thoại Zalo không hợp lệ."
+    if tg and not re.fullmatch(r"[A-Za-z0-9_]{4,40}", tg):
+        return False, "Telegram không hợp lệ (vd: @tennguoidung), hoặc để trống."
     if not USER_RE.match(user):
         return False, "Tên đăng nhập 3–20 ký tự, chỉ gồm chữ thường không dấu, số, dấu gạch dưới."
     if len(pw) < 6:
@@ -109,7 +109,8 @@ def register(f, ip):
                       "tao": int(now), "duyet": None, "het_han": None, "dang_nhap": None, "ip": ip}
         save(data)
     _reg_ip[ip].append(now)
-    _notify(f"👤 Khách mới đăng ký chờ duyệt:\n{name} · {phone} · @{tg}\nTên đăng nhập: {user}\nDuyệt tại: https://pinyin.id.vn/quan-ly")
+    _notify(f"👤 Khách mới đăng ký chờ duyệt:\n{name} · Zalo {phone}" + (f" · Telegram @{tg}" if tg else "")
+            + f"\nTên đăng nhập: {user}\nDuyệt tại: https://pinyin.id.vn/quan-ly")
     return True, "Đăng ký thành công! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được sau khi được duyệt."
 
 
@@ -229,8 +230,8 @@ def register_page(logo, msg="", ok=False, f=None):
         inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Đăng ký tài khoản xem phân tích. Tài khoản cần được duyệt trước khi dùng.</p>
 <form method="post" action="/dang-ky" autocomplete="on">
 <label>Họ tên</label><input name="name" value="{v('name')}" required maxlength="60">
-<label>Số điện thoại</label><input name="phone" value="{v('phone')}" required inputmode="tel" maxlength="15">
-<label>Telegram</label><input name="tg" value="{v('tg')}" required placeholder="@tennguoidung" maxlength="41">
+<label>Số điện thoại Zalo <span style="color:var(--no)">*</span></label><input name="phone" value="{v('phone')}" required inputmode="tel" maxlength="15" placeholder="Số có dùng Zalo để liên hệ">
+<label>Telegram (không bắt buộc)</label><input name="tg" value="{v('tg')}" placeholder="@tennguoidung" maxlength="41">
 <label>Tên đăng nhập</label><input name="user" value="{v('user')}" required placeholder="chữ thường, số, _ (3–20 ký tự)" maxlength="20" autocomplete="username">
 <label>Mật khẩu</label><input type="password" name="pw" required minlength="6" autocomplete="new-password">
 <label>Nhập lại mật khẩu</label><input type="password" name="pw2" required minlength="6" autocomplete="new-password">
@@ -249,7 +250,7 @@ async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'}
   let a=u.tt=='cho'?`${d}<button onclick="act('${u.user}','duyet')">Duyệt</button><button class="red" onclick="act('${u.user}','xoa')">Từ chối</button>`:
    u.tt=='khoa'?`${d}<button onclick="act('${u.user}','mo')">Mở khóa</button><button class="red" onclick="act('${u.user}','xoa')">Xóa</button>`:
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
-  return `<tr><td><b>${e(u.ten)}</b><br><span class="m">${e(u.user)}</span></td><td>${e(u.sdt)}<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a></td>
+  return `<tr><td><b>${e(u.ten)}</b><br><span class="m">${e(u.user)}</span></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
    <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
 async function act(user,a){const days=+($('d_'+user)||{}).value||30;
  if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;
