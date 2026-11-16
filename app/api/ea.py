@@ -84,6 +84,8 @@ async def sync(request: Request):
                 pend.append({"ticket": int(_f(l[1])), "t": l[2], "lot": _f(l[3]), "e": _f(l[4]), "sl": _f(l[5]), "tp": _f(l[6])})
             elif t == "R" and len(l) >= 4:
                 s["res"][l[1]] = {"ok": l[2] == "1", "msg": "|".join(l[3:]), "t": time.time()}
+            elif t == "R" and len(l) == 3 and l[2][:2] in ("1/", "0/"):      # EA 1.0: "R|id|1/thông báo"
+                s["res"][l[1]] = {"ok": l[2][0] == "1", "msg": l[2][2:], "t": time.time()}
         s["pos"], s["pend"], s["ind"] = pos, pend, ind
         g = {**GUARD_DEF, **(u.get("ea_guard") or {})}
         out = ["G|%d|%s|%s|%d|%s|%s|%d" % (g["be_on"], g["be_at"], g["be_lock"], g["tr_on"], g["tr_at"], g["tr_step"], g["half"])]

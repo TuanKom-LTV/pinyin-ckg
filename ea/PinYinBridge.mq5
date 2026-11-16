@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.00"
+#property version   "1.10"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.0"
+#define EA_VER   "1.1"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -215,7 +215,7 @@ void Exec(string &f[])
    else if(c == "CANCEL") r = DoCancel((ulong)StringToInteger(n > 3 ? f[3] : "0"));
    else if(c == "BE")     r = DoBe((ulong)StringToInteger(n > 3 ? f[3] : "0"));
    else r = "0|Lệnh không hỗ trợ: " + c;
-   results += "R|" + id + "|" + Clean(r) + "\n";
+   results += "R|" + id + "|" + StringSubstr(r, 0, 1) + "|" + Clean(StringSubstr(r, 2)) + "\n";   // r = "1|thông báo"
 }
 
 //---------------- Lá chắn (chạy ngay trên MT5 của khách) ----------------

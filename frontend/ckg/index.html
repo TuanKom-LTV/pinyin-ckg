@@ -73,6 +73,9 @@ body.v-ai #top2{display:none!important}
  body.fx #gb2>.c:nth-child(1){grid-column:1;grid-row:3}body.fx #gb2>.c:nth-child(2){grid-column:2;grid-row:3}}
 
 #qk.eaoff .qsec:not(#qea),#qk.eaoff #qacc{display:none}#qk.eaoff #qea{display:block!important}.eakey{font-family:ui-monospace,Consolas,monospace;font-size:15px;font-weight:800;color:#facc15;background:#0a101b;border:1px dashed #facc15;border-radius:8px;padding:8px 10px;word-break:break-all}
+body:not(.v-ck) #botc,body:not(.v-ck) #histc{display:none!important}
+body.v-ck .w>.c:not(#botc):not(#histc),body.v-ck .w>.g,body.v-ck #gb1,body.v-ck #gb2,body.v-ck #tabs{display:none!important}
+#botc{padding:0;border:0;background:none}#botc .ac{margin-top:0!important}
 #newsp{display:none}body.v-news #newsp{display:block}
 body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body.v-news #top2,body.v-news .w>.c.keep,body.v-news #tabs{display:none!important}
 .nwbar{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:10px}#nwccy button{padding:4px 10px;font-size:12px}
@@ -136,7 +139,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <select id="sd" style="width:auto" onchange="render()"><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2" selected>Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select>
 <input id="sh" type="range" min="0" max="24" step="any" value="12.5" style="width:150px;padding:0" oninput="render()"> <b id="shl"></b> <button id="pb" onclick="play()">▶ Chạy</button></label></div>
 
-<div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button><button data-v="news" onclick="setView('news')">📰 Tin tức tuần</button></div>
+<div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button><button data-v="news" onclick="setView('news')">📰 Tin tức tuần</button><button data-v="ck" id="cktab" style="display:none" onclick="setView('ck')">🚀 Buồng lái</button></div>
 <div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
 
 
@@ -194,11 +197,12 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 </div>
 </div>
 
+<div class="c" id="botc"><div id="gbot" style="display:none"></div></div>
 <div class="c" id="kb"><h2>6 · Kịch bản theo cây quyết định (4 sơ đồ tư duy)</h2><div class="g"><div><div class="mut" id="kwh"></div><div id="kw"></div></div><div><div class="mut" id="kdh"></div><div id="kd"></div></div></div>
 <div class="mut" style="margin-top:8px">Giả định tạm: CK tuần = P1 đến P7 của WPH7; CK ngày = 5 chu kỳ đầu (04-10h, 10-14h, 14-17h, 17-20h, 20-23h); chu kỳ tăng nếu nến đóng cao hơn giá mở của chính chu kỳ đó; hệ số cấp số nhân lấy theo ô "Gấp lot khi đảo". QLV, GMC giữ nguyên chữ trong sơ đồ.</div></div>
 <div class="c" id="gg" style="display:none"><div class="top" style="margin-bottom:10px"><h2 style="margin:0">Phân tích chi tiết các chỉ báo · XAUUSD (<span id="gtfl">M1</span>)</h2><div class="btns" id="gtfb" style="margin:0"><button data-g="M1" onclick="setGTF('M1')">M1</button><button data-g="M5" onclick="setGTF('M5')">M5</button></div></div>
 <label class="mut" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">Bước TP ($, tạm đặt)<input id="gs" type="number" step=".5" value="2" style="width:90px" oninput="render()"></label>
-<label class="mut" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">Giá vào lệnh cách EMA ($)<input id="ged" type="number" step=".1" min="0" value="0.2" style="width:90px" oninput="render()"></label><div id="gp"></div><div id="gbot" style="display:none"></div></div>
+<label class="mut" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">Giá vào lệnh cách EMA ($)<input id="ged" type="number" step=".1" min="0" value="0.2" style="width:90px" oninput="render()"></label><div id="gp"></div></div>
 <div class="c" id="gstat"><h2>📊 Thống kê từng pha tuần (pip)</h2><div class="sc" id="sw"></div><div class="row" style="margin-top:14px;align-items:center"><h2 style="margin:0">Thống kê từng chu kỳ trong ngày</h2><select id="sdv" style="width:auto" onchange="render()"><option value="-1">Hôm nay</option><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2">Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select></div><div class="sc" id="sdy"></div><div class="mut">Dấu … là đang chạy. M = mở, Đ = đóng, C = cao nhất, T = thấp nhất, BĐ = biên độ (pip). <span id="pn">1 pip = 0.0001</span>.</div></div>
 <div class="c" id="oldck" style="display:none!important"><h2 id="cph">🚀 Buồng lái · 1 tài khoản (mô phỏng)</h2>
 <div class="g" style="margin-bottom:8px"><label class="mut">Vốn (USD) để kiểm giới hạn<input id="cap" type="number" value="1000" oninput="render()"><span id="capn" style="font-size:11px"></span></label>
@@ -206,7 +210,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div id="mm" class="mut"></div><div id="acc" style="margin:8px 0"></div>
 <div class="btns"><button class="bs" onclick="op_('SELL')">SELL</button><button class="bb" onclick="op_('BUY')">BUY</button><button id="clb" onclick="cl_()">Chốt</button><button onclick="rv()">Cắt và đảo</button></div>
 <div id="oth" class="mut" style="margin-top:8px"></div></div>
-<div class="c"><div class="top"><h2 style="margin:0">📜 Lịch sử lệnh (như History của MT5)</h2><button id="hclr" onclick="H.length=0;hist()">Xóa lịch sử</button></div>
+<div class="c" id="histc"><div class="top"><h2 style="margin:0">📜 Lịch sử lệnh (như History của MT5)</h2><button id="hclr" onclick="H.length=0;hist()">Xóa lịch sử</button></div>
 <div id="hs" class="row" style="flex-wrap:wrap;gap:4px 16px;margin:8px 0"></div><div class="sc"><table id="ht"></table></div></div>
 <p class="mut">Bản giao diện theo kịch bản đã duyệt. Khi chưa nối máy chủ MT5, giá và nến là giả lập; khi nối rồi (huy hiệu LIVE màu xanh), giá và nến là dữ liệu MT5 thật. Khi trang chạy từ máy chủ PinYin có MT5, buồng lái gửi LỆNH THẬT sang MT5 (mỗi lệnh đều có hộp xác nhận); khi không nối máy chủ, lệnh chỉ là mô phỏng. Các mốc đánh dấu "tạm" là giả định cần sếp chốt.</p>
 </div>
@@ -607,7 +611,7 @@ let ABLA=true;function botLotUI(v){if(v==='auto'){ABLA=true;$('ablot').value=''}
 function botFill(){const c=AB.cfg;$('ablots').innerHTML=['auto',.01,.02,.05,.1].map(x=>`<button class="qopt" data-l="${x}" onclick="botLotUI(${x=='auto'?"'auto'":x})">${x=='auto'?'Theo vốn':x.toFixed(2)}</button>`).join('');if(c.lot){ABLA=false;$('ablot').value=c.lot}else{ABLA=true;$('ablot').value=''}botLotUI(ABLA?'auto':c.lot);$('abtf').value=c.tf;$('abst2').value=c.step;$('abtp').value=c.tp;$('bslm').value=c.sl_mode||'4n';$('bsl').value=c.sl_usd??3;$('btpm').value=c.tp_mode||'step';$('btp').value=c.tp_usd??5;$('bbeat').value=c.be_at??1.5;$('bbelk').value=c.be_lock??.25;$('btrat').value=c.tr_at??2.2;$('btrst').value=c.tr_step??.6;$('bhalf').checked=c.half!==false;bModes()}
 function bModes(){$('bslw').style.display=$('bslm').value=='usd'?'':'none';$('btpw').style.display=$('btpm').value=='usd'?'':'none'}
 function bAdj(id,d){$(id).value=Math.max(.5,+(+$(id).value+d).toFixed(2))}
-async function botTick(){if(!LV||VIEW||cs!='XAUUSD'){$('gbot').style.display='none';return}
+async function botTick(){if(!LV||VIEW||cs!='XAUUSD'||VIEWMODE!='ck'){$('gbot').style.display='none';return}
  let a;try{a=await jget('api/auto')}catch(e){return}if(!a||!a.ok)return;const first=!AB;AB=a;$('gbot').style.display='';if(first)botFill();
  [['bbe',a.cfg.be_on],['btr',a.cfg.tr_on]].forEach(([i,v])=>{$(i).classList.toggle('on',!!v);$(i).textContent=v?'BẬT':'TẮT'});
  const on=a.cfg.on;$('abst').className='bdg '+(on?'ok':'wn');$('abst').textContent=on?'ĐANG BẬT':'ĐANG TẮT';
@@ -651,7 +655,7 @@ function qGuardView(){const g=QG;[['qbe',g.be_on],['qtr',g.tr_on]].forEach(([i,o
  const set=(i,v)=>{if(document.activeElement!==$(i))$(i).value=v};set('qbeat',g.be_at);set('qbelk',g.be_lock);set('qtrat',g.tr_at);set('qtrst',g.tr_step);$('qhalf').checked=!!g.half}
 function qFit(){}
 let CVH=0;try{new ResizeObserver(e=>{const h=Math.round(e[0].contentRect.height)+'x'+Math.round(e[0].contentRect.width);if(CVH&&h!=CVH){try{redraw()}catch(x){}}CVH=h}).observe(document.querySelector('.cvw'))}catch(e){}
-async function qTick(){const show=LV&&cs=='XAUUSD'&&(EAMODE||(!VIEW&&!!TR));$('qk').style.display=show?'':'none';if($('ws').classList.contains('two')!=show){$('ws').classList.toggle('two',show);redraw()}qFit();if(!show)return;if(QSYM!=cs)qLoad();
+async function qTick(){const show=LV&&cs=='XAUUSD'&&VIEWMODE=='ck'&&(EAMODE||(!VIEW&&!!TR));$('qk').style.display=show?'':'none';if($('ws').classList.contains('two')!=show){$('ws').classList.toggle('two',show);redraw()}qFit();if(!show)return;if(QSYM!=cs)qLoad();
  let t;try{t=await jget(QAPI+'tick?sym='+cs+'&tf='+$('qtf').value)}catch(e){return}if(EAMODE){const off=!t||!t.ok;$('qk').classList.toggle('eaoff',off);if(off||QEAOPEN)qEaInfo(t&&t.ea);if(off)return}if(!t||!t.ok||t.sym!=cs)return;QT=t;if(!QBUSY){QG=t.guard;qGuardView()}
  const a=t.acc;if(a){$('qdemo').textContent=a.demo?'🔒 CHẾ ĐỘ DEMO':'⚠️ TÀI KHOẢN THẬT';$('qdemo').style.color=$('qdemo').style.borderColor=a.demo?'var(--wn)':'var(--no)';
   const lg=String(a.login);$('qacc').innerHTML=`<span>🎯 Tài khoản ${a.demo?'Demo':'Thật'} (${a.currency}): <b style="color:var(--acc)">#•••${lg.slice(-3)}</b> <span class="wn" style="margin-left:6px">${a.server}</span> · vốn <b>${a.equity.toFixed(2)}</b></span><span style="display:flex;gap:8px;align-items:center"><span class="ok">● ĐỒNG BỘ GIÁ SỐNG</span>${EAMODE?`<button class="qx" style="border-color:var(--h2);color:var(--h2)" onclick="QEAOPEN=!QEAOPEN;$('qea').style.display=QEAOPEN?'':'none'">🔑 Mã EA</button>`:`<button class="qx" style="border-color:var(--h2);color:var(--h2)" onclick="qLgOpen()">🔄 Đổi tài khoản</button>`}</span>`+(EAMODE&&!a.algo?'<div class="no" style="width:100%;font-size:12px">⚠️ MT5 của bạn đang TẮT nút Algo Trading, EA không vào lệnh được.</div>':'')}
@@ -694,7 +698,7 @@ async function qOrder(side){if(QBUSY||!QT)return;const lot=+$('qlot').value,sl=+
 async function qAct(path,msg,ticket){if(QBUSY)return;if(!confirm(msg))return;QBUSY=true;try{const r=await jpost(QAPI+path,{sym:cs,ticket:ticket||null});r&&r.ok?qMsg(1,r.msg):qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false;qBook()}}
 async function qGuard(ch){QBUSY=true;try{const r=await jpost(QAPI+'guard',{sym:cs,...ch});if(r&&r.ok){QG=r.guard;qGuardView();qMsg(1,'Đã lưu lá chắn cho '+cs+(QG.be_on||QG.tr_on?' (máy chủ đang canh lệnh, đóng trang vẫn chạy)':''))}else qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false}}
 async function meInit(){let m;try{m=await jget('/api/me')}catch(e){return}if(!m||!m.ok)return;const b=$('meb');
- if(m.user&&m.gd){EAMODE=true;QAPI='api/ea/q/'}if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}
+ if(m.user&&m.gd){EAMODE=true;QAPI='api/ea/q/'}if(m.role=='chu'||(m.user&&m.gd)){$('cktab').style.display=''}if(EAMODE)$('histc').style.display='none';try{if(localStorage.getItem('ckg-view')=='ck'&&VIEWMODE!='ck')setView('ck')}catch(e){}if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}
  else if(m.role=='chu'){b.innerHTML=`<a class="tg" style="background:#1c2a3d" href="/quan-ly">👥 Khách hàng${m.cho_duyet?` <b style="background:var(--no);border-radius:9px;padding:0 7px">${m.cho_duyet}</b>`:''}</a>`}}
 let TR=null,BUSY=false,VIEW=false;// VIEW: đăng nhập bằng mật khẩu chỉ xem
 async function jpost(u,b){const c=new AbortController(),tm=setTimeout(()=>c.abort(),u.indexOf('api/ai')>=0?240000:u.indexOf('api/q/login')>=0?70000:20000);try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});return await r.json()}finally{clearTimeout(tm)}}
@@ -741,8 +745,8 @@ function nwRender(){if(!NW)return;const z=v=>String(v).padStart(2,'0'),now=Date.
  $('nwlist').innerHTML=h||'<div class="mut" style="padding:10px 0">Không còn tin '+(NWF.imp=='h'?'mạnh':'mạnh/vừa')+' nào'+(NWF.ccy!='ALL'?' của '+NWF.ccy:'')+' trong tuần. Bật "Hiện cả tin đã ra" để xem lại.</div>';
  const u=new Date(NW.upd*1000+252e5);$('nwupd').textContent=`${shown} tin · nguồn ${NW.src||'-'} · cập nhật ${z(u.getUTCHours())}:${z(u.getUTCMinutes())}`+(NW.cu?' (dùng bản lưu)':'')}
 setInterval(()=>{if(VIEWMODE=='news')nwRender()},30000);setInterval(()=>{if(VIEWMODE=='news')newsLoad()},15*60000);
-function setView(v){VIEWMODE=v;document.body.classList.toggle('v-ai',v=='ai');document.body.classList.toggle('v-news',v=='news');[...$('menu').children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));try{localStorage.setItem('ckg-view',v)}catch(e){}
- if(v=='ai')aiLoad();else if(v=='news')newsLoad();else render()}
+function setView(v){if(v=='ck'&&$('cktab').style.display=='none')v='ckg';VIEWMODE=v;document.body.classList.toggle('v-ai',v=='ai');document.body.classList.toggle('v-news',v=='news');document.body.classList.toggle('v-ck',v=='ck');if(v=='ck'&&cs!='XAUUSD')setPair('XAUUSD');[...$('menu').children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));try{localStorage.setItem('ckg-view',v)}catch(e){}
+ if(v=='ai')aiLoad();else if(v=='news')newsLoad();else{render();qTick();botTick()}}
 function aiEsc(t){return t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function aiMd(t){t=t.replace(/\$([^$\n]{1,40})\$/g,'$1').replace(/\\geq?\b/g,'≥').replace(/\\leq?\b/g,'≤').replace(/\\times\b/g,'×').replace(/\\approx\b/g,'≈').replace(/\\%/g,'%');
  const L=aiEsc(t).split(/\r?\n/);let h='',ul=false;const inl=x=>x.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
@@ -764,7 +768,7 @@ async function aiRun(fresh){if(AIBUSY||!LV)return;AIBUSY=true;const s0=cs;[$('ai
   if(s0!=cs)return;if(r&&r.ok)aiShow(r);else $('aist').innerHTML='<span class="no">'+aiEsc((r&&r.loi)||'Không rõ lỗi')+'</span>'}
  catch(e){$('aist').innerHTML='<span class="no">Lỗi kết nối máy chủ: '+aiEsc(e.message)+'</span>'}
  finally{AIBUSY=false;[$('aib'),$('aib2')].forEach(b=>b.disabled=false)}}
-tpslLoad();setPair('XAUUSD');setTheme(_m);meInit();liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai'||v=='news')setView(v)});
+tpslLoad();setPair('XAUUSD');setTheme(_m);meInit();liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai'||v=='news'||v=='ck')setView(v)});
 </script>
 </body>
 </html>
