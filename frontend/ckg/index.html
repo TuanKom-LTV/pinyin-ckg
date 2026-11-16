@@ -24,6 +24,25 @@ body.v-ai .w>.c:not(.keep):not(#aip),body.v-ai .w>.g,body.v-ai .w>p{display:none
 .aiout .kl.ok{border-left-color:var(--ok)}.aiout .kl.no{border-left-color:var(--no)}.aiout .kl.wn{border-left-color:var(--wn)}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--bd);border-top-color:var(--acc);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}@keyframes sp{to{transform:rotate(360deg)}}
 .tg{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;background:#229ED9;color:#fff!important;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap}.tg:hover{background:#1b8bc0}
+
+.qk{border:1.5px solid var(--acc)}.qk h2{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.qbadge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:8px;border:1px solid var(--wn);color:var(--wn)}
+.qrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border:1px solid var(--bd);border-radius:10px;margin:8px 0;font-size:13px}
+.qsec{border:1px solid var(--bd);border-radius:12px;padding:12px;margin:10px 0}
+.qlbl{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:8px}
+.qgrid{display:grid;gap:8px;grid-template-columns:repeat(4,1fr)}.qgrid3{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
+.qopt{padding:10px 6px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx);font:inherit;font-weight:700;cursor:pointer;text-align:center}
+.qopt small{display:block;font-weight:400;font-size:11px;color:var(--mut);margin-top:2px}.qopt.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset;color:var(--acc)}
+.qbig{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:10px}.qbig button{padding:16px 8px;border-radius:12px;font:inherit;font-size:20px;font-weight:800;cursor:pointer;border:1.5px solid}
+.qbig small{display:block;font-size:12px;font-weight:500;margin-top:4px;opacity:.9}.qb{background:rgba(22,163,74,.13);border-color:var(--ok)!important;color:var(--ok)}.qs{background:rgba(220,38,38,.13);border-color:var(--no)!important;color:var(--no)}
+.qstep{display:grid;grid-template-columns:38px 1fr 38px;gap:6px}.qstep input{text-align:center;font-weight:800;font-size:16px}.qstep button{font:inherit;font-weight:800;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);cursor:pointer}
+.qpre{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}.qpre button{padding:4px;font-size:12px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--mut);cursor:pointer}.qpre button.on{border-color:var(--acc);color:var(--acc)}
+.q2{display:grid;gap:10px;grid-template-columns:1fr 1fr}.qg{border:1px solid var(--bd);border-radius:10px;padding:10px;font-size:12px}.qg .hd{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin-bottom:6px}
+.qtg{padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--mut)}.qtg.on{border-color:var(--ok);color:var(--ok);background:rgba(22,163,74,.12)}
+.qg input[type=number]{width:62px;padding:3px 5px;font-size:12px}.qwide{width:100%;padding:12px;border-radius:10px;font:inherit;font-weight:800;cursor:pointer;border:1px solid var(--acc);background:transparent;color:var(--acc);margin-top:10px}
+.qpl{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;margin-top:6px;font-size:13px;flex-wrap:wrap}
+.qx{padding:3px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid var(--no);color:var(--no);background:transparent}
+@media(max-width:600px){.qgrid{grid-template-columns:repeat(2,1fr)}.q2{grid-template-columns:1fr}.qbig button{font-size:17px}}
 .brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
 h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
 h2{font-size:13px;letter-spacing:.06em;color:var(--mut);margin:0 0 10px;text-transform:uppercase}
@@ -89,6 +108,23 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="c" id="gstat"><h2>📊 Thống kê từng pha tuần (pip)</h2><div class="sc" id="sw"></div><div class="row" style="margin-top:14px;align-items:center"><h2 style="margin:0">Thống kê từng chu kỳ trong ngày</h2><select id="sdv" style="width:auto" onchange="render()"><option value="-1">Hôm nay</option><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2">Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select></div><div class="sc" id="sdy"></div><div class="mut">Dấu … là đang chạy. M = mở, Đ = đóng, C = cao nhất, T = thấp nhất, BĐ = biên độ (pip). <span id="pn">1 pip = 0.0001</span>.</div></div>
 <div class="c"><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><canvas id="cv" style="touch-action:none;cursor:grab"></canvas><div class="mut" style="font-size:12px;margin-top:4px">Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
 
+<div class="c qk" id="qk" style="display:none"><h2 style="margin:0 0 4px"><span>🚀 BUỒNG LÁI THAO TÁC LỆNH (ĐIỀU KHIỂN MT5 TỪ XA)</span><span class="qbadge" id="qdemo">…</span></h2>
+<div class="qrow" id="qacc">…</div>
+<div class="qsec"><div class="qlbl"><span>1. CHỌN KHỐI LƯỢNG GIAO DỊCH (LOT)</span><span style="color:var(--acc)"><input id="qlot" type="number" step=".01" min=".01" value="0.02" style="width:74px;padding:2px 6px;text-align:right" oninput="qSave()"> lot</span></div>
+<div class="qgrid" id="qlots"></div>
+<div class="qlbl" style="margin-top:12px"><span>⚙️ CHẾ ĐỘ BÓP CÒ LỆNH</span><span id="qmodeinfo" style="color:var(--acc);font-weight:600"></span></div>
+<div class="qgrid3" id="qmodes"><button class="qopt" data-m="ema9" onclick="qMode('ema9')">⚡ EMA9<small>Đón hồi EMA9</small></button><button class="qopt" data-m="zone" onclick="qMode('zone')">🎯 HỘI TỤ<small>Đón tại cản 10 nến</small></button><button class="qopt" data-m="now" onclick="qMode('now')">🚀 NGAY<small>Lệnh thị trường SL/TP</small></button></div>
+<div id="qmodeopt" class="mut" style="font-size:12px;margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>Khung <select id="qtf" style="width:auto;padding:2px 6px" onchange="qSave()"><option>M1</option><option>M5</option><option>M15</option></select></label><label id="qoffw">Giá vào cách EMA9 <input id="qoff" type="number" step=".1" min="0" style="width:64px;padding:2px 6px" oninput="qSave()"> <span class="qu"></span></label></div>
+<div class="qbig"><button class="qb" onclick="qOrder('BUY')">🟢 BUY (MUA)<small id="qbsub">…</small></button><button class="qs" onclick="qOrder('SELL')">🔴 SELL (BÁN)<small id="qssub">…</small></button></div>
+<label class="mut" style="font-size:12px;display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="qconf" checked onchange="qSave()"> Hỏi xác nhận trước khi gửi lệnh</label><div id="qmsg" style="font-size:13px;margin-top:6px"></div></div>
+<div class="qsec"><div class="qlbl"><span>🛡 CẤU HÌNH BỘ 4 LÁ CHẮN (SL · TP · AUTO BE · TRAILING)</span><span class="ok" style="font-weight:600">BE/Trailing chạy trên máy chủ</span></div>
+<div class="q2"><div><div class="qlbl"><span class="no">🔴 DỪNG LỖ (SL)</span><span class="no qu"></span></div><div class="qstep"><button onclick="qAdj('qsl',-1)">−</button><input id="qsl" type="number" step=".5" min="0" oninput="qSave()"><button onclick="qAdj('qsl',1)">+</button></div><div class="qpre" id="qslp"></div></div>
+<div><div class="qlbl"><span class="ok">🟢 CHỐT LỜI (TP)</span><span class="ok qu"></span></div><div class="qstep"><button onclick="qAdj('qtp',-1)">−</button><input id="qtp" type="number" step=".5" min="0" oninput="qSave()"><button onclick="qAdj('qtp',1)">+</button></div><div class="qpre" id="qtpp"></div></div></div>
+<div class="q2" style="margin-top:10px"><div class="qg"><div class="hd"><span>⚖️ AUTO DỜI HÒA (BE)</span><span class="qtg" id="qbe" onclick="qGuard({be_on:!QG.be_on})">TẮT</span></div>Khi lãi đạt +<input id="qbeat" type="number" step=".1" onchange="qGuard({be_at:+this.value})"><span class="qu"></span> → dời SL khóa +<input id="qbelk" type="number" step=".05" onchange="qGuard({be_lock:+this.value})"><span class="qu"></span></div>
+<div class="qg"><div class="hd"><span>📈 TRAILING &amp; CHỐT 50%</span><span class="qtg" id="qtr" onclick="qGuard({tr_on:!QG.tr_on})">TẮT</span></div>Bắt đầu +<input id="qtrat" type="number" step=".1" onchange="qGuard({tr_at:+this.value})"><span class="qu"></span> → bước dịch <input id="qtrst" type="number" step=".1" onchange="qGuard({tr_step:+this.value})"><span class="qu"></span><label style="display:flex;gap:5px;align-items:center;margin-top:6px"><input type="checkbox" id="qhalf" onchange="qGuard({half:this.checked})"> Chốt 50% khi bắt đầu trailing</label></div></div>
+<button class="qwide" onclick="qAct('be','Dời SL hòa vốn ngay cho các lệnh '+cs+' đang lãi?')">🛡 DỜI SL HÒA VỐN (BE) NGAY SANG MT5</button></div>
+<div class="qsec"><div class="qlbl"><span>📊 VỊ THẾ ĐANG MỞ (<span id="qn">0</span>)</span><span id="qpl"></span></div><div id="qbook" class="mut" style="font-size:13px">Chưa có lệnh.</div>
+<div class="q2" style="margin-top:10px"><button class="qwide" style="margin:0;border-color:var(--ok);color:var(--ok)" onclick="qAct('half','Chốt 50% khối lượng tất cả lệnh '+cs+'?')">✂️ Chốt 50% khối lượng</button><button class="qwide" style="margin:0;border-color:var(--no);color:var(--no)" onclick="qAct('closeall','ĐÓNG TOÀN BỘ lệnh buồng lái trên '+cs+'?')">⛔ Đóng toàn bộ</button></div></div></div>
 <div class="c"><h2 id="cph">🚀 Buồng lái · 1 tài khoản (mô phỏng)</h2>
 <div class="g" style="margin-bottom:8px"><label class="mut">Vốn (USD) để kiểm giới hạn<input id="cap" type="number" value="1000" oninput="render()"><span id="capn" style="font-size:11px"></span></label>
 <label class="mut">Lot · Mục tiêu chốt (pip) · Gấp lot khi đảo<div class="f" style="grid-template-columns:1fr 1fr 1fr"><input id="lt" type="number" step=".01" value="0.03" oninput="render()"><input id="tp" type="number" value="30" oninput="render()"><select id="mu"><option>2</option><option>3</option></select></div></label><div class="mut" id="tpslrow" style="display:none;grid-column:1/-1;font-size:13px;gap:6px 16px;flex-wrap:wrap;align-items:center"><label><input type="checkbox" id="tpon" onchange="tpslSave()"> Gửi TP lên MT5 (= ô Mục tiêu chốt)</label><label><input type="checkbox" id="slon" onchange="tpslSave()"> Gửi SL lên MT5, cách <input id="slp" type="number" min="0" step="1" value="30" style="width:70px;padding:3px 6px" oninput="tpslSave()"> pip</label></div></div>
@@ -396,7 +432,7 @@ async function liveTick(sym){sym=sym||cs;try{const d=ST[sym],since=d.live&&d.las
   if(js&&js.ok&&applyData(sym,js)&&sym==cs)render()}catch(e){}srcBadge()}
 async function liveInit(){try{const s=await jget('api/status');if(!s||!s.ok)return;LV=true}catch(e){return}
  liveTick();chartTick();setInterval(()=>{liveTick();chartTick()},3000);setInterval(srcBadge,1000);
- await acctTick();await ratesTick();await histTick();render();setInterval(ratesTick,60000);setInterval(async()=>{await acctTick();render()},3000);setInterval(async()=>{await histTick();hist()},15000);botInit();setInterval(botTick,3000)}
+ await acctTick();await ratesTick();await histTick();render();setInterval(ratesTick,60000);setInterval(async()=>{await acctTick();render()},3000);setInterval(async()=>{await histTick();hist()},15000);botInit();setInterval(botTick,3000);qTick();setInterval(qTick,1000);setInterval(qBook,2000)}
 // ===== Buồng lái nối MT5: gửi lệnh thật =====
 
 // ===== Tỷ giá thật: giá trị pip cặp JPY + quy đổi vốn tài khoản sang USD =====
@@ -456,6 +492,46 @@ async function botToggle(){if(!AB)return;const on=!AB.cfg.on,v=botVals();
  if(!on&&!confirm('TẮT bot? Lệnh bot đang mở vẫn giữ nguyên trên MT5 (SL/TP vẫn chạy).'))return;
  await botPost({...v,on})}
 async function botTg(){const t=($('abtok').value||'').trim();if(!t)return;try{const r=await jpost('api/auto/telegram',{token:t});if(r&&r.ok){alert('Đã kết nối bot @'+r.bot+'. Kiểm tra tin nhắn trên Telegram.');AB=null;botTick()}else alert(r&&r.loi||'Không kết nối được.')}catch(e){alert('Lỗi: '+e.message)}}
+
+// ===== Buồng lái nhanh (điều khiển MT5 từ xa) =====
+let QT=null,QG={},QM='now',QBUSY=false,QSYM=null;
+const QCFG=()=>cs.startsWith('XAU')?{sl:[1.5,2,2.5,3],tp:[3,4,5,7],dsl:2.5,dtp:5,step:.5,off:.2}:{sl:[10,15,20,30],tp:[15,20,30,50],dsl:20,dtp:30,step:5,off:2};
+function qLoad(){let v={};try{v=JSON.parse(localStorage.getItem('ckg-q-'+cs)||'{}')}catch(e){}const c=QCFG();
+ $('qsl').value=v.sl??c.dsl;$('qtp').value=v.tp??c.dtp;$('qlot').value=v.lot??0.02;$('qconf').checked=v.cf??true;$('qtf').value=v.tf||'M1';$('qoff').value=v.off??c.off;
+ $('qsl').step=$('qtp').step=c.step;
+ $('qslp').innerHTML=c.sl.map(x=>`<button onclick="$('qsl').value=${x};qSave()">${x}</button>`).join('');
+ $('qtpp').innerHTML=c.tp.map(x=>`<button onclick="$('qtp').value=${x};qSave()">${x}</button>`).join('');
+ $('qlots').innerHTML=[.01,.02,.05,.1].map(x=>`<button class="qopt" data-l="${x}" onclick="$('qlot').value=${x};qSave()">${x.toFixed(2)}</button>`).join('');
+ QSYM=cs;QM=v.m||'now';qMode(QM,1)}
+function qSave(){try{localStorage.setItem('ckg-q-'+cs,JSON.stringify({sl:+$('qsl').value,tp:+$('qtp').value,lot:+$('qlot').value,m:QM,cf:$('qconf').checked,tf:$('qtf').value,off:+$('qoff').value}))}catch(e){}qView()}
+function qMode(m,quiet){QM=m;[...$('qmodes').children].forEach(b=>b.classList.toggle('on',b.dataset.m==m));$('qoffw').style.display=m=='ema9'?'':'none';if(quiet)qView();else qSave()}
+function qAdj(id,d){$(id).value=Math.max(0,+(+$(id).value+d*QCFG().step).toFixed(2));qSave()}
+function qEntry(side){if(!QT)return null;const b=side=='BUY';if(QM=='now')return b?QT.ask:QT.bid;
+ if(QM=='ema9')return QT.ema9==null?null:QT.ema9+(b?1:-1)*(+$('qoff').value)*QT.unit;return b?QT.lo10:QT.hi10}
+function qView(){const l=+$('qlot').value;[...$('qlots').children].forEach(b=>b.classList.toggle('on',Math.abs(+b.dataset.l-l)<1e-9));
+ ['qsl','qtp'].forEach(i=>[...$(i+'p').children].forEach(b=>b.classList.toggle('on',+b.textContent==+$(i).value)));
+ if(!QT)return;const d=QT.digits,un=QT.unit_name,sl=+$('qsl').value,tp=+$('qtp').value;document.querySelectorAll('#qk .qu').forEach(e=>e.textContent=un);
+ const sub=s=>{const e=qEntry(s);if(e==null)return'-';const b=s=='BUY',pre=QM=='now'?(b?'Ask: ':'Bid: '):(QM=='ema9'?'Chờ @ ':'Cản @ ');return `${pre}${e.toFixed(d)} | SL ${sl}${un} · TP ${tp}${un}`};
+ $('qbsub').textContent=sub('BUY');$('qssub').textContent=sub('SELL');
+ $('qmodeinfo').textContent=QM=='now'?'🚀 NGAY (Market SL/TP)':QM=='ema9'?`⚡ EMA9 ${$('qtf').value}: ${QT.ema9!=null?QT.ema9.toFixed(d):'-'}`:`🎯 Cản 10 nến ${$('qtf').value}: ${QT.lo10!=null?QT.lo10.toFixed(d):'-'} / ${QT.hi10!=null?QT.hi10.toFixed(d):'-'}`}
+function qGuardView(){const g=QG;[['qbe',g.be_on],['qtr',g.tr_on]].forEach(([i,on])=>{$(i).classList.toggle('on',!!on);$(i).textContent=on?'BẬT':'TẮT'});
+ const set=(i,v)=>{if(document.activeElement!==$(i))$(i).value=v};set('qbeat',g.be_at);set('qbelk',g.be_lock);set('qtrat',g.tr_at);set('qtrst',g.tr_step);$('qhalf').checked=!!g.half}
+async function qTick(){const show=LV&&!VIEW&&!!TR;$('qk').style.display=show?'':'none';if(!show)return;if(QSYM!=cs)qLoad();
+ let t;try{t=await jget('api/q/tick?sym='+cs+'&tf='+$('qtf').value)}catch(e){return}if(!t||!t.ok||t.sym!=cs)return;QT=t;if(!QBUSY){QG=t.guard;qGuardView()}
+ const a=t.acc;if(a){$('qdemo').textContent=a.demo?'🔒 CHẾ ĐỘ DEMO':'⚠️ TÀI KHOẢN THẬT';$('qdemo').style.color=$('qdemo').style.borderColor=a.demo?'var(--wn)':'var(--no)';
+  const lg=String(a.login);$('qacc').innerHTML=`<span>🎯 Tài khoản ${a.demo?'Demo':'Thật'} (${a.currency}): <b style="color:var(--acc)">#•••${lg.slice(-3)}</b> <span class="wn" style="margin-left:6px">${a.server}</span> · vốn <b>${a.equity.toFixed(2)}</b></span><span class="ok">● ĐỒNG BỘ GIÁ SỐNG</span>`}
+ qView()}
+async function qBook(){if($('qk').style.display=='none')return;let b;try{b=await jget('api/q/book?sym='+cs)}catch(e){return}if(!b||!b.ok)return;const d=QT?QT.digits:2,f=v=>v?(+v).toFixed(d):'-';
+ const tot=b.pos.reduce((s,x)=>s+x.profit,0);$('qn').textContent=b.pos.length+(b.pend.length?' + '+b.pend.length+' chờ':'');
+ $('qpl').innerHTML=b.pos.length?`<b class="${tot>=0?'ok':'no'}">${tot>=0?'+':''}${tot.toFixed(2)} ${TR?TR.currency:''}</b>`:'';
+ $('qbook').innerHTML=(b.pos.map(x=>`<div class="qpl"><span><b class="${x.t=='BUY'?'ok':'no'}">${x.t}</b> ${x.lot} lot ${cs} @ ${f(x.e)} <span class="mut">(SL ${f(x.sl)} | TP ${f(x.tp)})</span>${x.half?' <span class="mut">· đã chốt 50%</span>':''} <b class="${x.profit>=0?'ok':'no'}">${x.profit>=0?'+':''}${x.profit.toFixed(2)}</b></span><span style="display:flex;gap:6px"><button class="qx" style="border-color:var(--ok);color:var(--ok)" onclick="qAct('half','Chốt 50% lệnh #${x.ticket}?',${x.ticket})">½</button><button class="qx" onclick="qAct('closeall','Đóng lệnh #${x.ticket}?',${x.ticket})">✕ Đóng</button></span></div>`).join('')+
+  b.pend.map(x=>`<div class="qpl"><span>⏳ <b>${x.t}</b> ${x.lot} lot @ ${f(x.e)} <span class="mut">(SL ${f(x.sl)} | TP ${f(x.tp)})</span></span><button class="qx" onclick="qAct('cancel','Hủy lệnh chờ #${x.ticket}?',${x.ticket})">Hủy</button></div>`).join(''))||'Chưa có lệnh.'}
+function qMsg(ok,m){$('qmsg').innerHTML=`<span class="${ok?'ok':'no'}">${ok?'✅':'⚠️'} ${String(m).replace(/</g,'&lt;')}</span>`}
+async function qOrder(side){if(QBUSY||!QT)return;const lot=+$('qlot').value,sl=+$('qsl').value,tp=+$('qtp').value,e=qEntry(side),un=QT.unit_name,mn={now:'NGAY (thị trường)',ema9:'EMA9 (lệnh chờ)',zone:'HỘI TỤ (lệnh chờ tại cản)'}[QM];
+ if($('qconf').checked&&!confirm(`${QT.acc&&QT.acc.demo?'[MT5 DEMO] ':'[⚠️ TÀI KHOẢN THẬT] '}${side} ${cs} ${lot} lot · ${mn}\nGiá vào ≈ ${e!=null?e.toFixed(QT.digits):'-'} · SL ${sl}${un} · TP ${tp}${un}`+(typeof tierWarn=='function'?tierWarn(lot):'')))return;
+ QBUSY=true;try{const r=await jpost('api/q/order',{sym:cs,side,lot,mode:QM,sl,tp,off:+$('qoff').value,tf:$('qtf').value});r&&r.ok?qMsg(1,r.msg+(r.sl?' · SL '+r.sl:'')+(r.tp?' · TP '+r.tp:'')):qMsg(0,r&&r.loi||'Không gửi được')}catch(e){qMsg(0,e.message)}finally{QBUSY=false;qBook()}}
+async function qAct(path,msg,ticket){if(QBUSY)return;if(!confirm(msg))return;QBUSY=true;try{const r=await jpost('api/q/'+path,{sym:cs,ticket:ticket||null});r&&r.ok?qMsg(1,r.msg):qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false;qBook()}}
+async function qGuard(ch){QBUSY=true;try{const r=await jpost('api/q/guard',{sym:cs,...ch});if(r&&r.ok){QG=r.guard;qGuardView();qMsg(1,'Đã lưu lá chắn cho '+cs+(QG.be_on||QG.tr_on?' (máy chủ đang canh lệnh, đóng trang vẫn chạy)':''))}else qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false}}
 let TR=null,BUSY=false,VIEW=false;// VIEW: đăng nhập bằng mật khẩu chỉ xem
 async function jpost(u,b){const c=new AbortController(),tm=setTimeout(()=>c.abort(),u.indexOf('api/ai')>=0?240000:20000);try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});return await r.json()}finally{clearTimeout(tm)}}
 async function acctTick(){try{const a=await jget('api/account');if(!a||!a.ok){TR=null;return}TR=a;Object.keys(ST).forEach(k=>{const ps=a.positions.filter(x=>x.sym==k);if(!ps.length){ST[k].pos=null;return}const lot=ps.reduce((s,x)=>s+x.lot,0);ST[k].pos={list:ps,tp:ps[0].tp,sl:ps[0].sl,t:ps[0].t,lot:+lot.toFixed(2),e:ps.reduce((s,x)=>s+x.e*x.lot,0)/lot,ms:Math.min(...ps.map(x=>x.ms)),profit:ps.reduce((s,x)=>s+x.profit,0),n:ps.length,live:true}})}catch(e){if(String(e.message)=='403'){VIEW=true;TR=null}}}
