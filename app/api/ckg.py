@@ -169,6 +169,18 @@ def _mid(sym):
     return (t.bid + t.ask) / 2 if t and t.bid > 0 and t.ask > 0 else None
 
 
+@router.get("/ckg/api/symbols")
+def ckg_symbols():
+    """Bảng dịch tên cặp tiền: tên chuẩn PinYin → tên thật trên sàn đang đăng nhập."""
+    from app.services.symbols import mapping
+    try:
+        with mt5_service.session():
+            a = mt5.account_info()
+            return {"ok": True, "server": a.server if a else None, "map": mapping()}
+    except Exception as e:
+        return {"ok": False, "loi": str(e)}
+
+
 @router.get("/ckg/api/rates")
 def ckg_rates(ccy: str = "USD"):
     """Tỷ giá thật để tính giá trị pip (cặp JPY) và quy đổi vốn tài khoản sang USD."""

@@ -1,4 +1,6 @@
 import MetaTrader5 as mt5
+from app.services import symbols as _symbols
+_symbols.install()   # tên chuẩn (XAUUSD) ↔ tên trên sàn (XAUUSD.sc, XAUUSDm, GOLD...)
 from datetime import datetime, timezone
 from contextlib import contextmanager
 from threading import RLock
