@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.20"
+#property version   "1.30"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.2"
+#define EA_VER   "1.3"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -230,18 +230,20 @@ bool Guarded(ulong t)
 
 void AutoSlTp(ulong k)
 {
-   string gv = "PY_S_" + IntegerToString((long)k);
-   if(GlobalVariableCheck(gv)) return;
-   GlobalVariableSet(gv, 1);
+   string gv = "PY_S_" + IntegerToString((long)k);       // giá trị = số lần đã thử (xong thì đặt 99)
+   double tries = GlobalVariableCheck(gv) ? GlobalVariableGet(gv) : 0;
+   if(tries >= 5) return;
    double sl = PositionGetDouble(POSITION_SL), tp = PositionGetDouble(POSITION_TP);
-   if(sl > 0 && tp > 0) return;
+   if(sl > 0 && tp > 0) { GlobalVariableSet(gv, 99); return; }
+   GlobalVariableSet(gv, tries + 1);
    bool buy = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY;
    double op = PositionGetDouble(POSITION_PRICE_OPEN), u = Unit(), mind = MinDist(); int dg = Dg();
    MqlTick t; if(!SymbolInfoTick(Sym, t) || t.bid <= 0) return;
    double px = buy ? t.bid : t.ask, ns = sl, nt = tp;
    if(sl == 0 && gSl > 0) { ns = NormalizeDouble(buy ? op - gSl * u : op + gSl * u, dg); if((buy && px - ns < mind) || (!buy && ns - px < mind)) ns = NormalizeDouble(buy ? px - mind : px + mind, dg); }
    if(tp == 0 && gTp > 0) { nt = NormalizeDouble(buy ? op + gTp * u : op - gTp * u, dg); if((buy && nt - px < mind) || (!buy && px - nt < mind)) nt = tp; }
-   if(ns != sl || nt != tp) trade.PositionModify(k, ns, nt);
+   if(ns == sl && nt == tp) { GlobalVariableSet(gv, 99); return; }
+   if(trade.PositionModify(k, ns, nt) && OkRet()) GlobalVariableSet(gv, 99);     // lỗi thì giây sau thử lại (tối đa 5 lần)
 }
 
 void Guard()

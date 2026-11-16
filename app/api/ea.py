@@ -20,6 +20,7 @@ from app.core import users
 
 router = APIRouter(tags=["PinYin · cầu nối EA khách"])
 EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.ex5"
+EA_LATEST = "1.3"          # phiên bản EA mới nhất trên máy chủ
 ONLINE_SEC = 8
 WAIT_SEC = 10
 GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
@@ -39,7 +40,15 @@ def status_of(uid):
     if not s or not s["acc"]:
         return None
     a = s["acc"]
-    return {"on": time.time() - s["last"] < ONLINE_SEC, "login": a["login"], "server": a["server"], "demo": a["demo"]}
+    return {"on": time.time() - s["last"] < ONLINE_SEC, "login": a["login"], "server": a["server"], "demo": a["demo"],
+            "ver": s["ver"], "old": _old(s["ver"])}
+
+
+def _old(v):
+    try:
+        return tuple(int(x) for x in (v or "0").split(".")) < tuple(int(x) for x in EA_LATEST.split("."))
+    except Exception:
+        return True
 
 
 def _f(v, d=0.0):
@@ -168,6 +177,7 @@ def tick(request: Request, sym: str = "XAUUSD", tf: str = "M1"):
     return {"ok": True, "sym": "XAUUSD", "bid": y.get("bid"), "ask": y.get("ask"), "digits": y.get("digits", 2),
             "unit": y.get("unit", 1.0), "unit_name": "$", "stops": y.get("stops"), "vmin": y.get("vmin"), "vstep": y.get("vstep"),
             "ema9": ind.get("ema9"), "hi10": ind.get("hi10"), "lo10": ind.get("lo10"), "tf": tf, "broker_sym": y.get("name"),
+            "ea_ver": s["ver"], "ea_old": _old(s["ver"]), "ea_latest": EA_LATEST,
             "guard": {**GUARD_DEF, **(u.get("ea_guard") or {})},
             "acc": {"login": a["login"], "server": a["server"], "currency": a["currency"], "equity": a["equity"],
                     "demo": a["demo"], "algo": a["algo"]}}
