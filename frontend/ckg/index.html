@@ -69,6 +69,16 @@ body.v-ai #top2{display:none!important}
  body.fx #chartc .cvw{flex:1;height:auto;min-height:380px}
  body.fx #gb1>.c:nth-child(1){grid-column:2;grid-row:1}body.fx #gb1>.c:nth-child(2){grid-column:2;grid-row:2}
  body.fx #gb2>.c:nth-child(1){grid-column:1;grid-row:3}body.fx #gb2>.c:nth-child(2){grid-column:2;grid-row:3}}
+
+#newsp{display:none}body.v-news #newsp{display:block}
+body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body.v-news #top2,body.v-news .w>.c.keep,body.v-news #tabs{display:none!important}
+.nwbar{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:10px}#nwccy button{padding:4px 10px;font-size:12px}
+.nwday{margin:14px 0 4px;font-weight:800;color:var(--h2);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.nwr{display:grid;grid-template-columns:62px 52px 74px minmax(0,1fr) 90px 90px 96px;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid var(--bd);font-size:13px}
+.nwr.hd{color:var(--mut);font-size:11px;text-transform:uppercase;border-top:0;padding-top:0}.nwr.past{opacity:.45}.nwr.nx{background:rgba(34,211,238,.08);border-left:3px solid var(--h2)}
+.nwi{font-weight:800;font-size:12px}.nwi.h{color:#ff5c5c}.nwi.m{color:#f59e0b}.nwc{font-weight:800}.nwt b{display:block}.nwt span{color:var(--mut);font-size:12px}
+.nwnext{border:1px solid var(--h2);border-radius:12px;padding:10px 14px;margin:6px 0 4px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+@media(max-width:800px){.nwr{grid-template-columns:52px 46px 1fr;row-gap:2px}.nwr.hd{display:none}.nwr .nwf,.nwr .nwp,.nwr .nwcd{grid-column:3;font-size:12px}.nwr .nwi{grid-column:1}.nwr .nwt{grid-column:2/4;grid-row:2}}
 .brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
 h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
 h2{font-size:13.5px;font-weight:800;letter-spacing:.05em;color:var(--h2);margin:0 0 10px;text-transform:uppercase;border-left:3px solid var(--h2);padding-left:9px;line-height:1.35}:root{--h2:#1d4ed8}[data-theme="dark"]{--h2:#22d3ee}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--h2:#22d3ee}}[data-theme="dark"] .c{background:#0d1320;border-color:#1c2a3d}[data-theme="dark"] .c .ac,[data-theme="dark"] .c input,[data-theme="dark"] .c select{background:#0a101b;border-color:#1c2a3d}.qk h2,#chartc h2{border-left:0;padding-left:0}
@@ -97,7 +107,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="w">
 <div class="top"><div class="brand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="tagline">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div></div><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="tg" href="https://t.me/TuanKom" target="_blank" rel="noopener" title="Liên hệ Telegram @TuanKom"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>Liên hệ Telegram</a><div class="btns" id="thb" style="display:none"></div><span id="meb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></span></div></div>
 
-<div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button></div>
+<div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button><button data-v="news" onclick="setView('news')">📰 Tin tức tuần</button></div>
 <div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
 <div class="c keep" style="margin-top:12px"><div class="top"><div><div id="nm" class="mut">GBPUSD</div><div class="px" id="px">-</div></div>
 <div style="text-align:right"><div id="clk" class="mut"></div><div class="mut">Giờ VN (GMT+7)</div></div></div>
@@ -105,6 +115,11 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <select id="sd" style="width:auto" onchange="render()"><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2" selected>Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select>
 <input id="sh" type="range" min="0" max="24" step="any" value="12.5" style="width:150px;padding:0" oninput="render()"> <b id="shl"></b> <button id="pb" onclick="play()">▶ Chạy</button></label></div>
 
+<div class="c" id="newsp"><div class="top" style="margin-bottom:8px"><h2 style="margin:0">📰 Lịch tin kinh tế trong tuần</h2><span id="nwupd" class="mut" style="font-size:12px"></span></div>
+<div class="nwbar"><div class="btns" id="nwimp" style="margin:0"><button data-i="hm" onclick="nwSet('imp','hm')">🔴🟠 Mạnh + Vừa</button><button data-i="h" onclick="nwSet('imp','h')">🔴 Chỉ tin mạnh</button></div>
+<div class="btns" id="nwccy" style="margin:0"></div><label class="mut" style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="nwpast" onchange="nwSet('past',this.checked)"> Hiện cả tin đã ra</label></div>
+<div id="nwnext"></div><div id="nwlist" class="mut">Đang tải lịch tin…</div>
+<p class="mut" style="font-size:12px;margin:10px 0 0">Nguồn: Forex Factory, dự phòng Myfxbook · giờ Việt Nam (GMT+7) · 🔴 Mạnh = tin có thể làm giá biến động mạnh, 🟠 Vừa = biến động vừa. Tin USD ảnh hưởng trực tiếp tới XAUUSD. Nên đứng ngoài hoặc dời SL trước giờ ra tin mạnh.</p></div>
 <div class="c" id="aip"><div class="top"><h2 style="margin:0">🤖 Phân Tích AI · <span id="ais">GBPUSD</span></h2>
 <div class="btns" style="margin:0"><button id="aib" class="bb" style="background:var(--acc)" onclick="aiRun(false)">⚡ Phân tích ngay</button><button id="aib2" onclick="aiRun(true)" title="Bỏ qua bản lưu, gọi AI phân tích mới">🔄 Phân tích lại</button></div></div>
 <div id="aist" class="mut" style="margin:8px 0"></div><div id="aiout" class="aiout"></div>
@@ -606,8 +621,37 @@ let _m='dark';// chỉ dùng giao diện tối
 
 // ===== Menu Phân Tích AI (Gemini, gọi qua máy chủ PinYin) =====
 let VIEWMODE='ckg',AIBUSY=false;
-function setView(v){VIEWMODE=v;document.body.classList.toggle('v-ai',v=='ai');[...$('menu').children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));try{localStorage.setItem('ckg-view',v)}catch(e){}
- if(v=='ai')aiLoad();else render()}
+
+// ===== Tab Tin tức tuần (lịch kinh tế, lọc tin mạnh + vừa) =====
+let NW=null,NWF={imp:'hm',ccy:'ALL',past:false};try{Object.assign(NWF,JSON.parse(localStorage.getItem('ckg-nw')||'{}'))}catch(e){}
+const NWVI=[[/Non-Farm Employment Change/i,'Bảng lương phi nông nghiệp (NFP)'],[/Unemployment Rate/i,'Tỷ lệ thất nghiệp'],[/Core CPI/i,'Lạm phát lõi CPI'],[/\bCPI\b/i,'Chỉ số giá tiêu dùng (lạm phát)'],
+ [/Core PCE/i,'Lạm phát lõi PCE (Fed theo dõi)'],[/PPI/i,'Chỉ số giá sản xuất'],[/Federal Funds Rate|FOMC Statement/i,'Lãi suất Fed'],[/FOMC Meeting Minutes/i,'Biên bản họp Fed'],[/FOMC|Fed Chair|Powell/i,'Phát biểu Fed'],
+ [/Official Bank Rate|Cash Rate|Main Refinancing Rate|Overnight Rate|Policy Rate|Interest Rate/i,'Quyết định lãi suất'],[/Monetary Policy/i,'Chính sách tiền tệ'],[/GDP/i,'Tăng trưởng GDP'],[/Retail Sales/i,'Doanh số bán lẻ'],
+ [/Unemployment Claims/i,'Đơn xin trợ cấp thất nghiệp'],[/ADP Non-Farm/i,'Việc làm ADP'],[/JOLTS/i,'Cơ hội việc làm JOLTS'],[/ISM Manufacturing/i,'PMI sản xuất ISM'],[/ISM Services/i,'PMI dịch vụ ISM'],[/Flash Manufacturing PMI|Manufacturing PMI/i,'PMI sản xuất'],
+ [/Flash Services PMI|Services PMI/i,'PMI dịch vụ'],[/Employment Change/i,'Thay đổi việc làm'],[/Claimant Count/i,'Số người nhận trợ cấp'],[/Average Hourly Earnings|Average Earnings/i,'Thu nhập bình quân'],[/Consumer Sentiment|Consumer Confidence/i,'Niềm tin người tiêu dùng'],
+ [/Trade Balance/i,'Cán cân thương mại'],[/Speaks|Testifies|Press Conference/i,'Phát biểu / họp báo'],[/Durable Goods/i,'Đơn hàng hàng bền'],[/Building Permits|Housing Starts|Home Sales/i,'Thị trường nhà ở'],[/Bank Holiday/i,'Nghỉ lễ ngân hàng']];
+function nwVi(t){for(const[r,v]of NWVI)if(r.test(t))return v;return''}
+function nwSet(k,v){NWF[k]=v;try{localStorage.setItem('ckg-nw',JSON.stringify(NWF))}catch(e){}nwRender()}
+async function newsLoad(){try{const j=await jget('api/news',20000);if(j&&j.ok){NW=j;nwRender()}else $('nwlist').innerHTML='<span class="no">'+(j&&j.loi||'Không tải được lịch tin.')+'</span>'}catch(e){$('nwlist').innerHTML='<span class="no">Không tải được lịch tin: '+e.message+'</span>'}}
+function nwRender(){if(!NW)return;const z=v=>String(v).padStart(2,'0'),now=Date.now(),DN=['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+ [...$('nwimp').children].forEach(b=>b.classList.toggle('on',b.dataset.i==NWF.imp));$('nwpast').checked=!!NWF.past;
+ const all=NW.items.filter(x=>NWF.imp=='h'?x.impact=='High':(x.impact=='High'||x.impact=='Medium')).map(x=>({...x,ms:Date.parse(x.date)})).filter(x=>!isNaN(x.ms)).sort((a,b)=>a.ms-b.ms);
+ const cc=['ALL',...new Set(all.map(x=>x.ccy))];if(!cc.includes(NWF.ccy))NWF.ccy='ALL';
+ $('nwccy').innerHTML=cc.map(c=>`<button class="${NWF.ccy==c?'on':''}" onclick="nwSet('ccy','${c}')">${c=='ALL'?'Tất cả':c}${c=='USD'?' · ảnh hưởng vàng':''}</button>`).join('');
+ const L=all.filter(x=>NWF.ccy=='ALL'||x.ccy==NWF.ccy),nx=L.find(x=>x.ms>now-60000),vn=ms=>new Date(ms+252e5);
+ const cd=ms=>{const d=ms-now;if(d<-60000)return'<span class="mut">Đã ra</span>';if(d<60000)return'<b class="no">ĐANG RA</b>';const m=Math.floor(d/6e4),h=Math.floor(m/60),dd=Math.floor(h/24);return`<b>${dd?dd+' ngày ':''}${dd?h%24+'h':h?h+'h'+z(m%60):m+' phút'}</b>`};
+ const imp=x=>x.impact=='High'?'<span class="nwi h">🔴 MẠNH</span>':'<span class="nwi m">🟠 VỪA</span>';
+ $('nwnext').innerHTML=nx?`<div class="nwnext"><span>⏭ Tin ${nx.impact=='High'?'<b class="no">MẠNH</b>':'<b class="wn">VỪA</b>'} tiếp theo: <b>${nx.ccy} · ${nx.title}</b>${nwVi(nx.title)?' <span class="mut">('+nwVi(nx.title)+')</span>':''} lúc <b>${z(vn(nx.ms).getUTCHours())}:${z(vn(nx.ms).getUTCMinutes())} ${DN[vn(nx.ms).getUTCDay()]}</b></span><span>còn ${cd(nx.ms)}</span></div>`:'';
+ let h='',day='',shown=0;
+ L.forEach(x=>{const past=x.ms<now-60000;if(past&&!NWF.past)return;const d=vn(x.ms),dk=DN[d.getUTCDay()]+' '+z(d.getUTCDate())+'/'+z(d.getUTCMonth()+1);
+  if(dk!=day){day=dk;h+=`<div class="nwday">${dk}</div><div class="nwr hd"><span>Giờ</span><span>Tiền tệ</span><span>Mức độ</span><span>Tin</span><span>Dự báo</span><span>Kỳ trước</span><span>Còn</span></div>`}
+  const vi=nwVi(x.title);shown++;
+  h+=`<div class="nwr ${past?'past':''} ${x===nx?'nx':''}"><b>${z(d.getUTCHours())}:${z(d.getUTCMinutes())}</b><span class="nwc">${x.ccy}</span>${imp(x)}<span class="nwt"><b>${aiEsc(x.title)}</b>${vi?'<span>'+vi+'</span>':''}</span><span class="nwf">Dự báo: ${aiEsc(x.forecast||'-')}</span><span class="nwp">Trước: ${aiEsc(x.previous||'-')}${x.actual?'<br><b style="color:var(--h2)">Thực tế: '+aiEsc(x.actual)+'</b>':''}</span><span class="nwcd">${cd(x.ms)}</span></div>`});
+ $('nwlist').innerHTML=h||'<div class="mut" style="padding:10px 0">Không còn tin '+(NWF.imp=='h'?'mạnh':'mạnh/vừa')+' nào'+(NWF.ccy!='ALL'?' của '+NWF.ccy:'')+' trong tuần. Bật "Hiện cả tin đã ra" để xem lại.</div>';
+ const u=new Date(NW.upd*1000+252e5);$('nwupd').textContent=`${shown} tin · nguồn ${NW.src||'-'} · cập nhật ${z(u.getUTCHours())}:${z(u.getUTCMinutes())}`+(NW.cu?' (dùng bản lưu)':'')}
+setInterval(()=>{if(VIEWMODE=='news')nwRender()},30000);setInterval(()=>{if(VIEWMODE=='news')newsLoad()},15*60000);
+function setView(v){VIEWMODE=v;document.body.classList.toggle('v-ai',v=='ai');document.body.classList.toggle('v-news',v=='news');[...$('menu').children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));try{localStorage.setItem('ckg-view',v)}catch(e){}
+ if(v=='ai')aiLoad();else if(v=='news')newsLoad();else render()}
 function aiEsc(t){return t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function aiMd(t){t=t.replace(/\$([^$\n]{1,40})\$/g,'$1').replace(/\\geq?\b/g,'≥').replace(/\\leq?\b/g,'≤').replace(/\\times\b/g,'×').replace(/\\approx\b/g,'≈').replace(/\\%/g,'%');
  const L=aiEsc(t).split(/\r?\n/);let h='',ul=false;const inl=x=>x.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
@@ -629,7 +673,7 @@ async function aiRun(fresh){if(AIBUSY||!LV)return;AIBUSY=true;const s0=cs;[$('ai
   if(s0!=cs)return;if(r&&r.ok)aiShow(r);else $('aist').innerHTML='<span class="no">'+aiEsc((r&&r.loi)||'Không rõ lỗi')+'</span>'}
  catch(e){$('aist').innerHTML='<span class="no">Lỗi kết nối máy chủ: '+aiEsc(e.message)+'</span>'}
  finally{AIBUSY=false;[$('aib'),$('aib2')].forEach(b=>b.disabled=false)}}
-tpslLoad();setPair('XAUUSD');setTheme(_m);meInit();liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai')setView('ai')});
+tpslLoad();setPair('XAUUSD');setTheme(_m);meInit();liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai'||v=='news')setView(v)});
 </script>
 </body>
 </html>

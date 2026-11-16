@@ -14,6 +14,7 @@ from app.api.trade import router as trade_router
 from app.api.ckg_auto import router as ckg_auto_router, start as start_auto_bot
 from app.api.ckg_quick import router as ckg_quick_router, start as start_guard
 from app.api.khach import router as khach_router
+from app.api.ckg_news import router as ckg_news_router
 from app.core.auth import auth_middleware
 
 
@@ -41,6 +42,7 @@ app.include_router(trade_router)
 app.include_router(ckg_auto_router)
 app.include_router(ckg_quick_router)
 app.include_router(khach_router)
+app.include_router(ckg_news_router)
 
 
 @app.on_event("startup")
