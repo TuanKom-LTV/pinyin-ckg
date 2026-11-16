@@ -172,7 +172,7 @@ Object.keys(PR).forEach(k=>ST[k]=mk(k));
 function setPair(sym){ST[cs].W=W;ST[cs].ref=ref;ST[cs].d1=['o','h','l','cl'].map(i=>$(i).value);cs=sym;const c=PR[sym],d=ST[sym];P=c.pip;SP=c.sp*c.pip;DG=c.dg;PV=c.pv;wk=d.wk;W=d.W;ref=d.ref;
  ['o','h','l','cl'].forEach((i,j)=>{$(i).value=d.d1[j];$(i).step=c.pip});$('pn').textContent='1 pip = '+c.pip;
  [...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.s==sym));G=sym=='XAUUSD';['gb1','gb2','gstat','kb'].forEach(i=>$(i).style.display=G?'none':'');document.body.classList.toggle('fx',!G);$('gg').style.display=G?'':'none';$('ct').textContent=G?'Nến M15 · EMA9 · EMA21 · VWAP · FVG ('+SRC()+')':'Nến M5 · giá và ngày giờ ('+SRC()+')';$('inj').style.display=ST[sym].live?'none':'';PAN=0;YM=null;indBar();render();if(typeof chartTick=='function')chartTick();if(typeof VIEWMODE!='undefined'&&VIEWMODE=='ai')aiLoad();if(LV&&!ST[sym].live)liveTick(sym)}
-$('tabs').innerHTML=Object.keys(PR).map(k=>`<button data-s="${k}" onclick="setPair('${k}')">${k}</button>`).join('');
+$('tabs').innerHTML=['XAUUSD',...Object.keys(PR).filter(k=>k!='XAUUSD')].map(k=>`<button data-s="${k}" onclick="setPair('${k}')">${k}</button>`).join('');
 const T=()=>{let d,h;if($('sm').checked){d=+$('sd').value;h=+$('sh').value}else if(WS!=null){const w=(Date.now()+252e5-MON().getTime())/36e5;d=Math.floor(w/24);h=w-d*24}else{const n=new Date(Date.now()+252e5);d=(n.getUTCDay()+6)%7;h=n.getUTCHours()+n.getUTCMinutes()/60}return{dow:d,h,w:d*24+h}};
 const hm=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
 const cl=s=>s=='ok'?'ok':s=='warn'?'wn':'no',ic=s=>s=='ok'?'✅':s=='warn'?'⚠️':'⛔';
@@ -626,7 +626,7 @@ async function aiRun(fresh){if(AIBUSY||!LV)return;AIBUSY=true;const s0=cs;[$('ai
   if(s0!=cs)return;if(r&&r.ok)aiShow(r);else $('aist').innerHTML='<span class="no">'+aiEsc((r&&r.loi)||'Không rõ lỗi')+'</span>'}
  catch(e){$('aist').innerHTML='<span class="no">Lỗi kết nối máy chủ: '+aiEsc(e.message)+'</span>'}
  finally{AIBUSY=false;[$('aib'),$('aib2')].forEach(b=>b.disabled=false)}}
-tpslLoad();setPair('GBPUSD');setTheme(_m);liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai')setView('ai')});
+tpslLoad();setPair('XAUUSD');setTheme(_m);liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai')setView('ai')});
 </script>
 </body>
 </html>
