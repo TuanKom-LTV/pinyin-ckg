@@ -72,6 +72,7 @@ body.v-ai #top2{display:none!important}
  body.fx #gb1>.c:nth-child(1){grid-column:2;grid-row:1}body.fx #gb1>.c:nth-child(2){grid-column:2;grid-row:2}
  body.fx #gb2>.c:nth-child(1){grid-column:1;grid-row:3}body.fx #gb2>.c:nth-child(2){grid-column:2;grid-row:3}}
 
+#qk.eaoff .qsec:not(#qea),#qk.eaoff #qacc{display:none}#qk.eaoff #qea{display:block!important}.eakey{font-family:ui-monospace,Consolas,monospace;font-size:15px;font-weight:800;color:#facc15;background:#0a101b;border:1px dashed #facc15;border-radius:8px;padding:8px 10px;word-break:break-all}
 #newsp{display:none}body.v-news #newsp{display:block}
 body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body.v-news #top2,body.v-news .w>.c.keep,body.v-news #tabs{display:none!important}
 .nwbar{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:10px}#nwccy button{padding:4px 10px;font-size:12px}
@@ -151,6 +152,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div id="top2"><div class="ws" id="ws"><div class="c" id="chartc"><div class="btns" id="cmode" style="margin:0 0 10px;align-items:center"><button data-c="pin" onclick="setCM('pin')">📊 Biểu đồ PinYin</button><button data-c="tv" onclick="setCM('tv')">📈 TradingView</button><span class="ok" style="font-size:12px;margin-left:4px">● TRỰC TIẾP</span><span id="cmnote" class="mut" style="font-size:11px"></span></div><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" id="cind" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><div class="cvw" id="cvbox"><canvas id="cv" style="touch-action:none;cursor:grab"></canvas></div><div class="cvw" id="tvbox" style="display:none"></div><div class="mut" id="chint" style="font-size:12px;margin-top:4px">Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
 <div class="c qk" id="qk" style="display:none"><h2 style="margin:0 0 4px"><span>🚀 BUỒNG LÁI THAO TÁC LỆNH (ĐIỀU KHIỂN MT5 TỪ XA)</span><span class="qbadge" id="qdemo">…</span></h2>
 <div class="qrow" id="qacc">…</div>
+<div class="qsec" id="qea" style="display:none"></div>
 <div class="qsec" id="qlg" style="display:none"><div class="qlbl"><span>🔄 ĐĂNG NHẬP TÀI KHOẢN MT5 KHÁC</span><button class="qx" onclick="$('qlg').style.display='none'">✕</button></div>
 <div id="qlgr" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="qlgn" type="number" placeholder="Số tài khoản (login)" autocomplete="off">
@@ -649,17 +651,32 @@ function qGuardView(){const g=QG;[['qbe',g.be_on],['qtr',g.tr_on]].forEach(([i,o
  const set=(i,v)=>{if(document.activeElement!==$(i))$(i).value=v};set('qbeat',g.be_at);set('qbelk',g.be_lock);set('qtrat',g.tr_at);set('qtrst',g.tr_step);$('qhalf').checked=!!g.half}
 function qFit(){}
 let CVH=0;try{new ResizeObserver(e=>{const h=Math.round(e[0].contentRect.height)+'x'+Math.round(e[0].contentRect.width);if(CVH&&h!=CVH){try{redraw()}catch(x){}}CVH=h}).observe(document.querySelector('.cvw'))}catch(e){}
-async function qTick(){const show=LV&&!VIEW&&!!TR&&cs=='XAUUSD';$('qk').style.display=show?'':'none';if($('ws').classList.contains('two')!=show){$('ws').classList.toggle('two',show);redraw()}qFit();if(!show)return;if(QSYM!=cs)qLoad();
- let t;try{t=await jget('api/q/tick?sym='+cs+'&tf='+$('qtf').value)}catch(e){return}if(!t||!t.ok||t.sym!=cs)return;QT=t;if(!QBUSY){QG=t.guard;qGuardView()}
+async function qTick(){const show=LV&&cs=='XAUUSD'&&(EAMODE||(!VIEW&&!!TR));$('qk').style.display=show?'':'none';if($('ws').classList.contains('two')!=show){$('ws').classList.toggle('two',show);redraw()}qFit();if(!show)return;if(QSYM!=cs)qLoad();
+ let t;try{t=await jget(QAPI+'tick?sym='+cs+'&tf='+$('qtf').value)}catch(e){return}if(EAMODE){const off=!t||!t.ok;$('qk').classList.toggle('eaoff',off);if(off||QEAOPEN)qEaInfo(t&&t.ea);if(off)return}if(!t||!t.ok||t.sym!=cs)return;QT=t;if(!QBUSY){QG=t.guard;qGuardView()}
  const a=t.acc;if(a){$('qdemo').textContent=a.demo?'🔒 CHẾ ĐỘ DEMO':'⚠️ TÀI KHOẢN THẬT';$('qdemo').style.color=$('qdemo').style.borderColor=a.demo?'var(--wn)':'var(--no)';
-  const lg=String(a.login);$('qacc').innerHTML=`<span>🎯 Tài khoản ${a.demo?'Demo':'Thật'} (${a.currency}): <b style="color:var(--acc)">#•••${lg.slice(-3)}</b> <span class="wn" style="margin-left:6px">${a.server}</span> · vốn <b>${a.equity.toFixed(2)}</b></span><span style="display:flex;gap:8px;align-items:center"><span class="ok">● ĐỒNG BỘ GIÁ SỐNG</span><button class="qx" style="border-color:var(--h2);color:var(--h2)" onclick="qLgOpen()">🔄 Đổi tài khoản</button></span>`}
+  const lg=String(a.login);$('qacc').innerHTML=`<span>🎯 Tài khoản ${a.demo?'Demo':'Thật'} (${a.currency}): <b style="color:var(--acc)">#•••${lg.slice(-3)}</b> <span class="wn" style="margin-left:6px">${a.server}</span> · vốn <b>${a.equity.toFixed(2)}</b></span><span style="display:flex;gap:8px;align-items:center"><span class="ok">● ĐỒNG BỘ GIÁ SỐNG</span>${EAMODE?`<button class="qx" style="border-color:var(--h2);color:var(--h2)" onclick="QEAOPEN=!QEAOPEN;$('qea').style.display=QEAOPEN?'':'none'">🔑 Mã EA</button>`:`<button class="qx" style="border-color:var(--h2);color:var(--h2)" onclick="qLgOpen()">🔄 Đổi tài khoản</button>`}</span>`+(EAMODE&&!a.algo?'<div class="no" style="width:100%;font-size:12px">⚠️ MT5 của bạn đang TẮT nút Algo Trading, EA không vào lệnh được.</div>':'')}
  qView()}
-async function qBook(){if($('qk').style.display=='none')return;let b;try{b=await jget('api/q/book?sym='+cs)}catch(e){return}if(!b||!b.ok)return;const d=QT?QT.digits:2,f=v=>v?(+v).toFixed(d):'-';
+async function qBook(){if($('qk').style.display=='none')return;let b;try{b=await jget(QAPI+'book?sym='+cs)}catch(e){return}if(!b||!b.ok)return;const d=QT?QT.digits:2,f=v=>v?(+v).toFixed(d):'-';
  const tot=b.pos.reduce((s,x)=>s+x.profit,0);$('qn').textContent=b.pos.length+(b.pend.length?' + '+b.pend.length+' chờ':'');
  $('qpl').innerHTML=b.pos.length?`<b class="${tot>=0?'ok':'no'}">${tot>=0?'+':''}${tot.toFixed(2)} ${TR?TR.currency:''}</b>`:'';
  $('qbook').innerHTML=(b.pos.map(x=>`<div class="qpl"><span><b class="${x.t=='BUY'?'ok':'no'}">${x.t}</b> ${x.lot} lot ${cs} @ ${f(x.e)} <span class="mut">(SL ${f(x.sl)} | TP ${f(x.tp)})</span>${x.half?' <span class="mut">· đã chốt 50%</span>':''} <b class="${x.profit>=0?'ok':'no'}">${x.profit>=0?'+':''}${x.profit.toFixed(2)}</b></span><span style="display:flex;gap:6px"><button class="qx" style="border-color:var(--ok);color:var(--ok)" onclick="qAct('half','Chốt 50% lệnh #${x.ticket}?',${x.ticket})">½</button><button class="qx" onclick="qAct('closeall','Đóng lệnh #${x.ticket}?',${x.ticket})">✕ Đóng</button></span></div>`).join('')+
   b.pend.map(x=>`<div class="qpl"><span>⏳ <b>${x.t}</b> ${x.lot} lot @ ${f(x.e)} <span class="mut">(SL ${f(x.sl)} | TP ${f(x.tp)})</span></span><button class="qx" onclick="qAct('cancel','Hủy lệnh chờ #${x.ticket}?',${x.ticket})">Hủy</button></div>`).join(''))||'Chưa có lệnh.'}
 
+
+// ===== Khách giao dịch qua EA trên MT5 của chính họ =====
+let EAMODE=false,QAPI='api/q/',QEAOPEN=false,QEAI=null;
+async function qEaInfo(st){if(!QEAI){try{QEAI=await jget('api/ea/info',8000)}catch(e){return}}if(!QEAI||!QEAI.ok)return;
+ const on=st&&st.on,k=String(QEAI.key||'').replace(/[<>&"]/g,'');
+ $('qea').innerHTML=`<div class="qlbl"><span>🔌 KẾT NỐI MT5 CỦA BẠN</span><span class="${on?'ok':'no'}">${on?'● EA ONLINE':'● EA OFFLINE'}</span></div>
+ ${on?'':'<div class="mut" style="font-size:13px;margin-bottom:8px">Buồng lái sẽ mở khi EA PinYinBridge chạy trên MT5 của bạn. Làm 1 lần theo các bước:</div>'}
+ <ol style="margin:0 0 8px;padding-left:20px;font-size:13px;line-height:1.8">
+ <li><a href="/ea/download">⬇️ Tải EA PinYinBridge.ex5</a> → trong MT5 bấm <b>File → Open Data Folder</b> → chép file vào <b>MQL5\\Experts</b> → bấm chuột phải <b>Expert Advisors → Refresh</b>.</li>
+ <li>MT5: <b>Tools → Options → Expert Advisors</b> → tích <b>Allow algorithmic trading</b> và <b>Allow WebRequest for listed URL</b> → thêm <b>https://pinyin.id.vn</b> → OK.</li>
+ <li>Mở chart <b>XAUUSD</b> (bất kỳ khung) → kéo <b>PinYinBridge</b> vào chart → tab <b>Inputs</b> dán Mã kết nối bên dưới → tab Common tích <b>Allow Algo Trading</b> → OK.</li>
+ <li>Bật nút <b>Algo Trading</b> trên thanh công cụ MT5 (màu xanh). Góc chart hiện "✅ Đã kết nối PinYin" là xong.</li></ol>
+ <div class="mut" style="font-size:12px;margin-bottom:4px">Mã kết nối của bạn (giữ bí mật):</div><div class="eakey">${k}</div>
+ <button class="qx" style="margin-top:8px;border-color:var(--h2);color:var(--h2)" onclick="navigator.clipboard.writeText('${k}').then(()=>this.textContent='✅ Đã chép')">📋 Chép mã</button>
+ <div class="mut" style="font-size:12px;margin-top:8px">Mật khẩu MT5 của bạn không gửi qua PinYin. Lệnh vào trên tài khoản đang đăng nhập trong MT5 của bạn. MT5 phải mở thì buồng lái mới dùng được. Lá chắn BE/Trailing chạy ngay trong EA.</div>`}
 async function qLgOpen(){$('qlg').style.display='';$('qlgm').textContent='';let j;try{j=await jget('api/q/accounts',8000)}catch(e){return}if(!j||!j.ok)return;
  const e=v=>String(v).replace(/[<>&"']/g,'');
  $('qlgr').innerHTML=(j.recent||[]).map(a=>`<button class="qx" style="border-color:var(--bd);color:var(--tx)" onclick="$('qlgn').value=${+a.login};$('qlgs').value='${e(a.server)}';$('qlgp').value=''">${a.demo?'🟡':'🔴'} #${+a.login} · ${e(a.server)}${j.cur&&j.cur.login==a.login&&j.cur.server==a.server?' (đang dùng)':''}</button>`).join('')||'<span class="mut" style="font-size:12px">Chưa có tài khoản nào đã lưu.</span>';
@@ -672,12 +689,12 @@ async function qLogin(){const login=+$('qlgn').value,password=$('qlgp').value,se
  catch(e){$('qlgm').innerHTML='<span class="no">⚠️ '+e.message+'</span>'}}
 function qMsg(ok,m){$('qmsg').innerHTML=`<span class="${ok?'ok':'no'}">${ok?'✅':'⚠️'} ${String(m).replace(/</g,'&lt;')}</span>`}
 async function qOrder(side){if(QBUSY||!QT)return;const lot=+$('qlot').value,sl=+$('qsl').value,tp=+$('qtp').value,e=qEntry(side),un=QT.unit_name,mn={now:'NGAY (thị trường)',ema9:'EMA9 (lệnh chờ)',zone:'HỘI TỤ (lệnh chờ tại cản)'}[QM];
- if($('qconf').checked&&!confirm(`${QT.acc&&QT.acc.demo?'[MT5 DEMO] ':'[⚠️ TÀI KHOẢN THẬT] '}${side} ${cs} ${lot} lot · ${mn}\nGiá vào ≈ ${e!=null?e.toFixed(QT.digits):'-'} · SL ${sl}${un} · TP ${tp}${un}`+(typeof tierWarn=='function'?tierWarn(lot):'')))return;
- QBUSY=true;try{const r=await jpost('api/q/order',{sym:cs,side,lot,mode:QM,sl,tp,off:+$('qoff').value,tf:$('qtf').value});r&&r.ok?qMsg(1,r.msg+(r.sl?' · SL '+r.sl:'')+(r.tp?' · TP '+r.tp:'')):qMsg(0,r&&r.loi||'Không gửi được')}catch(e){qMsg(0,e.message)}finally{QBUSY=false;qBook()}}
-async function qAct(path,msg,ticket){if(QBUSY)return;if(!confirm(msg))return;QBUSY=true;try{const r=await jpost('api/q/'+path,{sym:cs,ticket:ticket||null});r&&r.ok?qMsg(1,r.msg):qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false;qBook()}}
-async function qGuard(ch){QBUSY=true;try{const r=await jpost('api/q/guard',{sym:cs,...ch});if(r&&r.ok){QG=r.guard;qGuardView();qMsg(1,'Đã lưu lá chắn cho '+cs+(QG.be_on||QG.tr_on?' (máy chủ đang canh lệnh, đóng trang vẫn chạy)':''))}else qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false}}
+ if($('qconf').checked&&!confirm(`${QT.acc&&QT.acc.demo?'[MT5 DEMO] ':'[⚠️ TÀI KHOẢN THẬT] '}${side} ${cs} ${lot} lot · ${mn}\nGiá vào ≈ ${e!=null?e.toFixed(QT.digits):'-'} · SL ${sl}${un} · TP ${tp}${un}`+(!EAMODE&&typeof tierWarn=='function'?tierWarn(lot):'')))return;
+ QBUSY=true;try{const r=await jpost(QAPI+'order',{sym:cs,side,lot,mode:QM,sl,tp,off:+$('qoff').value,tf:$('qtf').value});r&&r.ok?qMsg(1,r.msg+(r.sl?' · SL '+r.sl:'')+(r.tp?' · TP '+r.tp:'')):qMsg(0,r&&r.loi||'Không gửi được')}catch(e){qMsg(0,e.message)}finally{QBUSY=false;qBook()}}
+async function qAct(path,msg,ticket){if(QBUSY)return;if(!confirm(msg))return;QBUSY=true;try{const r=await jpost(QAPI+path,{sym:cs,ticket:ticket||null});r&&r.ok?qMsg(1,r.msg):qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false;qBook()}}
+async function qGuard(ch){QBUSY=true;try{const r=await jpost(QAPI+'guard',{sym:cs,...ch});if(r&&r.ok){QG=r.guard;qGuardView();qMsg(1,'Đã lưu lá chắn cho '+cs+(QG.be_on||QG.tr_on?' (máy chủ đang canh lệnh, đóng trang vẫn chạy)':''))}else qMsg(0,r&&r.loi||'Lỗi')}catch(e){qMsg(0,e.message)}finally{QBUSY=false}}
 async function meInit(){let m;try{m=await jget('/api/me')}catch(e){return}if(!m||!m.ok)return;const b=$('meb');
- if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}
+ if(m.user&&m.gd){EAMODE=true;QAPI='api/ea/q/'}if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}
  else if(m.role=='chu'){b.innerHTML=`<a class="tg" style="background:#1c2a3d" href="/quan-ly">👥 Khách hàng${m.cho_duyet?` <b style="background:var(--no);border-radius:9px;padding:0 7px">${m.cho_duyet}</b>`:''}</a>`}}
 let TR=null,BUSY=false,VIEW=false;// VIEW: đăng nhập bằng mật khẩu chỉ xem
 async function jpost(u,b){const c=new AbortController(),tm=setTimeout(()=>c.abort(),u.indexOf('api/ai')>=0?240000:u.indexOf('api/q/login')>=0?70000:20000);try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});return await r.json()}finally{clearTimeout(tm)}}

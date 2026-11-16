@@ -58,7 +58,7 @@ def me(request: Request):
     if u:
         email, d = users.by_id(u)
         d = d or {}
-        out.update(user=email, ten=d.get("ten"), het_han=users.fmt_date(d.get("het_han")))
+        out.update(user=email, ten=d.get("ten"), het_han=users.fmt_date(d.get("het_han")), gd=users.can_trade(u))
     elif role == "chu":
         out["cho_duyet"] = sum(1 for x in users.load().values() if x["tt"] == "cho")
     return out
@@ -75,7 +75,11 @@ def admin(request: Request):
 def admin_list(request: Request):
     if not _owner(request):
         return JSONResponse({"ok": False, "loi": "Không có quyền."}, status_code=403)
-    return {"ok": True, "users": users.admin_list()}
+    from app.api.ea import status_of
+    L = users.admin_list()
+    for x in L:
+        x["ea"] = status_of(x.pop("id", None)) if x.get("gd") else None
+    return {"ok": True, "users": L}
 
 
 @router.get("/quan-ly/api/mail")

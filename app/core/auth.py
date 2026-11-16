@@ -29,7 +29,7 @@ COOKIE = "pinyin_auth"
 SESSION_DAYS = 30
 MAX_FAILS = 5
 LOCK_SECONDS = 15 * 60
-PUBLIC_PATHS = {"/login", "/logout", "/dang-ky", "/xac-minh", "/gui-lai-xac-minh", "/static/images/favicon.svg"}
+PUBLIC_PATHS = {"/login", "/logout", "/dang-ky", "/xac-minh", "/gui-lai-xac-minh", "/ea/sync", "/static/images/favicon.svg"}
 
 _fails: dict[str, list[float]] = {}
 
@@ -198,7 +198,9 @@ async def auth_middleware(request: Request, call_next):
 
     role, cust = _who(request.cookies.get(COOKIE))
     request.state.user = cust
-    if role == "xem" and viewer_blocked(path, request.method):
+    # khách được cấp quyền giao dịch: dùng buồng lái EA của chính mình
+    ea_ok = bool(cust) and path.startswith("/ckg/api/ea/") and users.can_trade(cust)
+    if role == "xem" and not ea_ok and viewer_blocked(path, request.method):
         return JSONResponse(
             {"ok": False, "xem": True,
              "loi": ("Tài khoản chỉ xem: chỉ đọc được bản phân tích AI gần nhất, không yêu cầu phân tích mới."

@@ -232,6 +232,22 @@ def session_key(uid):
     return (u["mk"][-16:] if u else None)
 
 
+def can_trade(uid):
+    """Khách được chủ cấp quyền giao dịch qua EA và tài khoản còn hạn."""
+    u = by_id(uid)[1]
+    return bool(u) and status_of(u) == "ok" and bool(u.get("gd"))
+
+
+def by_key(key):
+    """Mã kết nối EA → (email, bản ghi)."""
+    if not key or len(key) < 16:
+        return None, None
+    for k, u in load().items():
+        if u.get("ea_key") and hmac.compare_digest(u["ea_key"], key):
+            return k, u
+    return None, None
+
+
 def active(uid):
     u = by_id(uid)[1]
     return bool(u) and status_of(u) == "ok"
@@ -246,6 +262,7 @@ def admin_list():
                     "tao": fmt_date(u["tao"]), "het_han": fmt_date(u.get("het_han")),
                     "con": (max(0, int((u["het_han"] - time.time()) // 86400)) if u.get("het_han") else None),
                     "dang_nhap": datetime.fromtimestamp(u["dang_nhap"], VN).strftime("%d/%m %H:%M") if u.get("dang_nhap") else "-",
+                    "gd": bool(u.get("gd")), "id": u.get("id"),
                     "_tao": u["tao"]})
     order = {"cho": 0, "xac_minh": 1, "ok": 2, "het": 3, "khoa": 4}
     out.sort(key=lambda x: (order.get(x["tt"], 9), -x["_tao"]))
@@ -275,6 +292,16 @@ def admin_act(user, act, days=30):
             if not u.get("het_han") or u["het_han"] < now:
                 u["het_han"] = int(now + days * 86400)
             msg = f"Đã mở khóa {user}, hạn đến {fmt_date(u['het_han'])}."
+        elif act == "gd_on":
+            u["gd"] = True
+            u["ea_key"] = u.get("ea_key") or ("PY-" + secrets.token_urlsafe(18))
+            msg = f"Đã cho {user} giao dịch qua EA."
+        elif act == "gd_off":
+            u["gd"] = False
+            msg = f"Đã tắt quyền giao dịch của {user}."
+        elif act == "key_moi":
+            u["ea_key"] = "PY-" + secrets.token_urlsafe(18)
+            msg = f"Đã cấp mã kết nối EA mới cho {user} (mã cũ hết dùng)."
         elif act == "xoa":
             data.pop(user)
             save(data)
@@ -358,7 +385,7 @@ async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'}
    u.tt=='khoa'?`${d}<button onclick="act('${u.user}','mo')">Mở khóa</button><button class="red" onclick="act('${u.user}','xoa')">Xóa</button>`:
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
   return `<tr><td><b>${e(u.ten)}</b><br><a class="m" href="mailto:${e(u.user)}">${e(u.user)}</a></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
-   <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
+   <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${u.gd?`<b class="ok">✅ Được giao dịch</b><br><span class="m">${u.ea?(u.ea.on?'🟢 EA online · #'+e(u.ea.login)+' · '+e(u.ea.server)+(u.ea.demo?' (demo)':' (THẬT)'):'⚪ EA offline'+(u.ea.login?' · #'+e(u.ea.login):'')):'⚪ chưa nối EA'}</span><br><button class="red" onclick="act('${u.user}','gd_off')">Tắt giao dịch</button>`:(u.tt=='ok'?`<button onclick="act('${u.user}','gd_on')">Cho giao dịch</button>`:'<span class="m">-</span>')}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
 async function act(user,a){const days=+($('d_'+user)||{}).value||30;
  if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;
  const r=await fetch('/quan-ly/api/act',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,act:a,days})});const j=await r.json();
@@ -379,7 +406,7 @@ def admin_page(logo):
     body = f"""<div class="box"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
 <h1>{logo}<span>Quản lý khách hàng</span></h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="copyLink()">📋 Chép link đăng ký</button><a class="btn" style="background:#1c2a3d" href="/ckg/">← Về trang phân tích</a></div></div>
 <div id="mailbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px"></div><p id="sum" style="margin-top:6px"></p><div id="msg" style="min-height:22px;font-size:14px"></div>
-<div style="overflow-x:auto"><table><thead><tr><th>Khách</th><th>Liên hệ</th><th>Trạng thái</th><th>Hạn dùng</th><th>Hoạt động</th><th></th></tr></thead><tbody id="tb"><tr><td>Đang tải…</td></tr></tbody></table></div>
+<div style="overflow-x:auto"><table><thead><tr><th>Khách</th><th>Liên hệ</th><th>Trạng thái</th><th>Hạn dùng</th><th>Hoạt động</th><th>Giao dịch EA</th><th></th></tr></thead><tbody id="tb"><tr><td>Đang tải…</td></tr></tbody></table></div>
 <p style="margin-top:14px">Khách đăng ký tại <b>https://pinyin.id.vn/dang-ky</b> → chờ duyệt ở đây (Telegram báo khi có người đăng ký). Khách chỉ có quyền XEM: không vào lệnh, không thấy tài khoản MT5, không thấy bot.</p></div>
 <style>table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{text-align:left;padding:9px 8px;border-top:1px solid var(--bd);vertical-align:middle}}th{{color:var(--h2);font-size:12px;text-transform:uppercase;letter-spacing:.04em}}
 .m{{color:var(--mut);font-size:12px}}.act{{white-space:nowrap}}.act select{{width:auto;padding:5px;margin-right:6px}}.act button{{padding:6px 10px;margin-right:4px;font-size:12px}}.red{{background:transparent;border:1px solid var(--no);color:var(--no)}}
