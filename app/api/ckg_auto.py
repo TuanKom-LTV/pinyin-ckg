@@ -46,7 +46,10 @@ LOOP_SEC = 2
 
 router = APIRouter(prefix="/ckg/api", tags=["PinYin CKG · bot tự động"])
 
-DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1}
+DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1,
+           # lá chắn cho bot: SL/TP theo tín hiệu hoặc cố định $, hòa vốn tự động, trailing + chốt 50%
+           "sl_mode": "4n", "sl_usd": 3.0, "tp_mode": "step", "tp_usd": 5.0,
+           "be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True}
 _lock = threading.RLock()
 _log = deque(maxlen=60)
 _state = {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}
@@ -213,7 +216,7 @@ def _close_pos(p, why):
     log(f"Đóng #{p.ticket} {'BUY' if buy else 'SELL'} {p.volume} lot @ {res.price} ({why}), lãi/lỗ {p.profit + p.swap:.2f}", "close")
 
 
-def _open(sg, lot, tp_n):
+def _open(sg, lot, tp_n, c=None):
     info = mt5.symbol_info(SYM)
     lot = _norm_lot(info, lot)
     tick = mt5.symbol_info_tick(SYM)
@@ -222,7 +225,9 @@ def _open(sg, lot, tp_n):
     buy = sg["t"] > 0
     price = tick.ask if buy else tick.bid
     min_dist = (info.trade_stops_level + 1) * info.point
-    sl, tp = sg["sl"], sg["tp"][tp_n - 1]
+    c = c or DEFAULT
+    sl = price - sg["t"] * c["sl_usd"] if c.get("sl_mode") == "usd" else sg["sl"]
+    tp = price + sg["t"] * c["tp_usd"] if c.get("tp_mode") == "usd" else sg["tp"][tp_n - 1]
     # Giá đã chạy qua SL/TP trong lúc chờ thì bỏ tín hiệu (không vào lệnh sai)
     if (buy and (price - sl < min_dist or tp - price < min_dist)) or (not buy and (sl - price < min_dist or price - tp < min_dist)):
         raise RuntimeError(f"Giá hiện {price} đã quá gần/vượt SL {sl:.2f} hoặc TP {tp:.2f}, bỏ tín hiệu.")
@@ -295,7 +300,7 @@ def _step():
             if len(mine) >= b[1]:
                 log(f"Không vào thêm: bot đã có {len(mine)}/{b[1]} lệnh theo bảng vốn.", "err")
                 return
-            _open(sg, b[2], int(c["tp"]))
+            _open(sg, b[2], int(c["tp"]), c)
         except Exception as e:                   # lỗi theo từng tín hiệu: luôn báo
             log(f"Bỏ tín hiệu {sg['side']}: {e}", "err")
 
@@ -346,6 +351,17 @@ class AutoIn(BaseModel):
     tf: str | None = None
     step: float | None = None
     tp: int | None = None
+    sl_mode: str | None = None
+    sl_usd: float | None = None
+    tp_mode: str | None = None
+    tp_usd: float | None = None
+    be_on: bool | None = None
+    be_at: float | None = None
+    be_lock: float | None = None
+    tr_on: bool | None = None
+    tr_at: float | None = None
+    tr_step: float | None = None
+    half: bool | None = None
 
 
 class TgIn(BaseModel):
@@ -387,6 +403,26 @@ def auto_set(x: AutoIn):
         if x.tp not in (1, 2, 3):
             return {"ok": False, "loi": "TP chỉ 1, 2 hoặc 3."}
         c["tp"] = x.tp
+    if x.sl_mode is not None:
+        if x.sl_mode not in ("4n", "usd"):
+            return {"ok": False, "loi": "Kiểu SL không hợp lệ."}
+        c["sl_mode"] = x.sl_mode
+    if x.tp_mode is not None:
+        if x.tp_mode not in ("step", "usd"):
+            return {"ok": False, "loi": "Kiểu TP không hợp lệ."}
+        c["tp_mode"] = x.tp_mode
+    for k in ("sl_usd", "tp_usd", "be_at", "be_lock", "tr_at", "tr_step"):
+        v = getattr(x, k)
+        if v is not None:
+            if not (0.05 <= v <= 200):
+                return {"ok": False, "loi": f"Giá trị {k} phải từ 0.05 đến 200 $."}
+            c[k] = round(v, 2)
+    for k in ("be_on", "tr_on", "half"):
+        v = getattr(x, k)
+        if v is not None:
+            c[k] = v
+    if c["be_lock"] >= c["be_at"]:
+        return {"ok": False, "loi": "Mức khóa hòa vốn phải nhỏ hơn mức kích hoạt."}
     if x.on is not None:
         c["on"] = x.on
     _save(c)

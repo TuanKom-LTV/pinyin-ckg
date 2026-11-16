@@ -97,6 +97,7 @@ body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body
  background:linear-gradient(90deg,#22d3ee,#a3e635 55%,#f97316);box-shadow:0 0 18px rgba(34,211,238,.35);transition:transform .15s}.htg:hover{transform:translateY(-1px)}
 .hsim{display:block;margin-top:10px;font-size:12px}.hsim select,.hsim button{padding:3px 6px}
 @media(max-width:700px){.hero{padding:12px}.htitle{font-size:13px}.hpx .px{font-size:26px}.htg{width:100%;justify-content:center}}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:4px}.bsh{border-left:1px solid var(--bd);padding-left:18px}.bsh select{width:100%}.bsh .qg input[type=number]{width:58px;padding:3px 5px;font-size:12px}@media(max-width:900px){.bgrid{grid-template-columns:1fr}.bsh{border-left:0;padding-left:0;border-top:1px solid var(--bd);padding-top:12px}}
 .brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
 h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
 h2{font-size:13.5px;font-weight:800;letter-spacing:.05em;color:var(--h2);margin:0 0 10px;text-transform:uppercase;border-left:3px solid var(--h2);padding-left:9px;line-height:1.35}:root{--h2:#1d4ed8}[data-theme="dark"]{--h2:#22d3ee}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--h2:#22d3ee}}[data-theme="dark"] .c{background:#0d1320;border-color:#1c2a3d}[data-theme="dark"] .c .ac,[data-theme="dark"] .c input,[data-theme="dark"] .c select{background:#0a101b;border-color:#1c2a3d}.qk h2,#chartc h2{border-left:0;padding-left:0}
@@ -574,7 +575,7 @@ async function liveCloseOne(tk){const q=ST[cs].pos,x=q&&q.list?q.list.find(o=>o.
 // ===== Bot tự động XAUUSD (EMA9 × EMA21) chạy trên máy chủ =====
 let AB=null,ABUSY=false;
 function botInit(){const e=$('gbot');if(!e||e.dataset.ok)return;e.dataset.ok=1;
- e.innerHTML=`<div class="ac" style="margin-top:12px;border-width:2px" id="abx"><div class="hd"><span style="font-size:15px">🤖 Bot tự động vào lệnh XAUUSD</span><span class="bdg" id="abst">…</span></div>
+ e.innerHTML=`<div class="ac" style="margin-top:12px;border-width:2px" id="abx"><div class="hd"><span style="font-size:15px">🤖 Bot tự động vào lệnh XAUUSD</span><span class="bdg" id="abst">…</span></div><div class="bgrid"><div>
  <div class="mut" style="font-size:12px;margin:4px 0 8px">Chạy trên máy chủ 24/7, không cần mở trang. Tín hiệu EMA9 × EMA21 trên nến đã đóng · SL đáy/đỉnh 4 nến · TP theo Bước TP · có tín hiệu ngược thì chốt lệnh cũ, vào lệnh mới · lot theo bảng vốn.</div>
  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
   <label class="mut">Khung <select id="abtf" style="width:auto"><option>M1</option><option>M5</option></select></label>
@@ -582,11 +583,21 @@ function botInit(){const e=$('gbot');if(!e||e.dataset.ok)return;e.dataset.ok=1;
   <label class="mut">Chốt ở <select id="abtp" style="width:auto"><option value="1">TP1</option><option value="2">TP2</option><option value="3">TP3</option></select></label>
   <button onclick="botSave()">Lưu cài đặt</button><button id="abon" onclick="botToggle()" style="font-weight:700">…</button></div>
  <div id="abmsg" class="mut" style="font-size:12px;margin-top:8px"></div><div id="abtg" style="margin-top:8px"></div><div id="abpos"></div>
- <details style="margin-top:8px"><summary class="mut" style="cursor:pointer">Nhật ký bot</summary><div id="ablog" style="font-size:12px;max-height:220px;overflow:auto"></div></details></div>`;
+ <details style="margin-top:8px"><summary class="mut" style="cursor:pointer">Nhật ký bot</summary><div id="ablog" style="font-size:12px;max-height:220px;overflow:auto"></div></details></div><div class="bsh"><div class="qlbl"><span>🛡 LÁ CHẮN CHO BOT</span><span class="ok" style="font-weight:600">chạy trên máy chủ</span></div>
+ <div class="q2"><div><div class="qlbl"><span class="no">🔴 DỪNG LỖ (SL)</span></div><select id="bslm" onchange="bModes()"><option value="4n">Đáy/đỉnh 4 nến (theo tín hiệu)</option><option value="usd">Cố định theo $</option></select>
+  <div class="qstep" id="bslw" style="margin-top:6px"><button onclick="bAdj('bsl',-.5)">−</button><input id="bsl" type="number" step=".5" min=".5"><button onclick="bAdj('bsl',.5)">+</button></div></div>
+ <div><div class="qlbl"><span class="ok">🟢 CHỐT LỜI (TP)</span></div><select id="btpm" onchange="bModes()"><option value="step">Theo Bước TP (TP1/TP2/TP3)</option><option value="usd">Cố định theo $</option></select>
+  <div class="qstep" id="btpw" style="margin-top:6px"><button onclick="bAdj('btp',-.5)">−</button><input id="btp" type="number" step=".5" min=".5"><button onclick="bAdj('btp',.5)">+</button></div></div></div>
+ <div class="q2" style="margin-top:10px"><div class="qg"><div class="hd"><span>⚖️ AUTO DỜI HÒA (BE)</span><span class="qtg" id="bbe" onclick="botPost({be_on:!AB.cfg.be_on})">TẮT</span></div>Khi lãi đạt +<input id="bbeat" type="number" step=".1">$ → dời SL khóa +<input id="bbelk" type="number" step=".05">$</div>
+ <div class="qg"><div class="hd"><span>📈 TRAILING &amp; CHỐT 50%</span><span class="qtg" id="btr" onclick="botPost({tr_on:!AB.cfg.tr_on})">TẮT</span></div>Bắt đầu +<input id="btrat" type="number" step=".1">$ → bước dịch <input id="btrst" type="number" step=".1">$<label style="display:flex;gap:5px;align-items:center;margin-top:6px"><input type="checkbox" id="bhalf"> Chốt 50% khi bắt đầu trailing</label></div></div>
+ <div class="mut" style="font-size:12px;margin-top:8px">Sửa số rồi bấm <b>Lưu cài đặt</b>. Nút BẬT/TẮT lưu ngay. BE/Trailing áp dụng cả cho lệnh bot đang mở.</div></div></div></div>`;
  botTick()}
-function botFill(){const c=AB.cfg;$('abtf').value=c.tf;$('abst2').value=c.step;$('abtp').value=c.tp}
+function botFill(){const c=AB.cfg;$('abtf').value=c.tf;$('abst2').value=c.step;$('abtp').value=c.tp;$('bslm').value=c.sl_mode||'4n';$('bsl').value=c.sl_usd??3;$('btpm').value=c.tp_mode||'step';$('btp').value=c.tp_usd??5;$('bbeat').value=c.be_at??1.5;$('bbelk').value=c.be_lock??.25;$('btrat').value=c.tr_at??2.2;$('btrst').value=c.tr_step??.6;$('bhalf').checked=c.half!==false;bModes()}
+function bModes(){$('bslw').style.display=$('bslm').value=='usd'?'':'none';$('btpw').style.display=$('btpm').value=='usd'?'':'none'}
+function bAdj(id,d){$(id).value=Math.max(.5,+(+$(id).value+d).toFixed(2))}
 async function botTick(){if(!LV||VIEW||cs!='XAUUSD'){$('gbot').style.display='none';return}
  let a;try{a=await jget('api/auto')}catch(e){return}if(!a||!a.ok)return;const first=!AB;AB=a;$('gbot').style.display='';if(first)botFill();
+ [['bbe',a.cfg.be_on],['btr',a.cfg.tr_on]].forEach(([i,v])=>{$(i).classList.toggle('on',!!v);$(i).textContent=v?'BẬT':'TẮT'});
  const on=a.cfg.on;$('abst').className='bdg '+(on?'ok':'wn');$('abst').textContent=on?'ĐANG BẬT':'ĐANG TẮT';
  $('abon').textContent=on?'⏹ Tắt bot':'▶ Bật bot';$('abon').style.background=on?'var(--no)':'var(--ok)';$('abon').style.color='#fff';$('abx').style.borderColor=on?'var(--ok)':'var(--bd)';
  const sg=a.sig;$('abmsg').innerHTML=`${a.msg} · cài đặt đang chạy: <b>${a.cfg.tf} · Bước ${a.cfg.step}$ · chốt TP${a.cfg.tp}</b> · lot theo vốn: <b>${a.lot??'-'}</b>`+(sg?` · tín hiệu gần nhất: <b class="${sg.t>0?'ok':'no'}">${sg.side} @ ${(+sg.e).toFixed(2)}</b> (${sg.at})`:'');
@@ -595,7 +606,7 @@ async function botTick(){if(!LV||VIEW||cs!='XAUUSD'){$('gbot').style.display='no
  $('abpos').innerHTML=a.pos.length?`<div class="sc" style="margin-top:8px"><table class="pt"><tr><th>Ticket</th><th>Loại</th><th>Lot</th><th>Giá vào</th><th>SL</th><th>TP</th><th>Lãi/lỗ</th></tr>`+a.pos.map(x=>`<tr><td data-l="Ticket">#${x.ticket}</td><td data-l="Loại" class="${x.t=='BUY'?'ok':'no'}"><b>${x.t}</b></td><td data-l="Lot">${x.lot}</td><td data-l="Giá vào">${x.e.toFixed(2)}</td><td data-l="SL">${x.sl?x.sl.toFixed(2):'-'}</td><td data-l="TP">${x.tp?x.tp.toFixed(2):'-'}</td><td data-l="Lãi/lỗ" class="${x.profit>=0?'ok':'no'}"><b>${x.profit.toFixed(2)}</b></td></tr>`).join('')+'</table></div>':'<div class="mut" style="font-size:12px;margin-top:6px">Bot chưa có lệnh mở.</div>';
  const ic={open:'🟢',close:'🔵',err:'⚠️',info:'ℹ️'};$('ablog').innerHTML=a.log.length?a.log.map(e=>`<div style="padding:3px 0;border-top:1px solid var(--bd)">${ic[e.k]||''} <span class="mut">${e.t}</span> ${e.m.replace(/</g,'&lt;')}</div>`).join(''):'<div class="mut">Chưa có hoạt động.</div>'}
 async function botPost(b){if(ABUSY)return null;ABUSY=true;try{const r=await jpost('api/auto',b);if(!r||!r.ok){alert('Lỗi: '+(r&&r.loi||'không gửi được'));return null}AB=null;await botTick();return r}catch(e){alert('Lỗi: '+e.message);return null}finally{ABUSY=false}}
-function botVals(){return{tf:$('abtf').value,step:+$('abst2').value,tp:+$('abtp').value}}
+function botVals(){return{tf:$('abtf').value,step:+$('abst2').value,tp:+$('abtp').value,sl_mode:$('bslm').value,sl_usd:+$('bsl').value,tp_mode:$('btpm').value,tp_usd:+$('btp').value,be_at:+$('bbeat').value,be_lock:+$('bbelk').value,tr_at:+$('btrat').value,tr_step:+$('btrst').value,half:$('bhalf').checked}}
 async function botSave(){if(await botPost(botVals()))alert('Đã lưu. Bot dùng cài đặt mới từ tín hiệu tiếp theo.')}
 async function botToggle(){if(!AB)return;const on=!AB.cfg.on,v=botVals();
  if(on&&!confirm(`BẬT bot tự động vào lệnh XAUUSD trên MT5${TR&&TR.demo?' (DEMO)':''}?\n\nKhung ${v.tf} · Bước TP ${v.step}$ · chốt TP${v.tp} · lot ${AB.lot??'-'} theo vốn.\nBot chỉ vào lệnh ở tín hiệu MỚI kể từ lúc bật, chạy cả khi đóng trang.`))return;

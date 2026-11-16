@@ -347,13 +347,25 @@ def q_guard(x: QGuard):
 
 # ---------- Lá chắn chạy nền ----------
 
+BOT_MAGIC = 260117
+
+
+def _bot_guard():
+    try:
+        from app.api.ckg_auto import _cfg
+        return _cfg()
+    except Exception:
+        return {}
+
+
 def _guard_step():
-    ps = [p for p in (mt5.positions_get() or []) if p.magic == MAGIC]
+    bg = _bot_guard()
+    ps = [p for p in (mt5.positions_get() or []) if p.magic in (MAGIC, BOT_MAGIC)]
     live = {p.ticket for p in ps}
     _half_done.intersection_update(live)
     for p in ps:
-        g = _guard(p.symbol)
-        if not (g["be_on"] or g["tr_on"]):
+        g = bg if p.magic == BOT_MAGIC else _guard(p.symbol)
+        if not (g.get("be_on") or g.get("tr_on")):
             continue
         info = mt5.symbol_info(p.symbol)
         tk = mt5.symbol_info_tick(p.symbol)
@@ -373,7 +385,7 @@ def _guard_step():
                 h = _half_vol(p)
                 if h:
                     _close_vol(p, h)
-                    _notify(f"{p.symbol} #{p.ticket} lãi {gain:.2f} → chốt 50% ({h} lot)")
+                    _notify(f"{'BOT ' if p.magic == BOT_MAGIC else ''}{p.symbol} #{p.ticket} lãi {gain:.2f} → chốt 50% ({h} lot)")
             new = round(px - g["tr_step"] * u if buy else px + g["tr_step"] * u, d)
             if better(new) and room(new):
                 _set_sl(p, new)
@@ -382,7 +394,7 @@ def _guard_step():
             new = round(p.price_open + g["be_lock"] * u if buy else p.price_open - g["be_lock"] * u, d)
             if better(new) and room(new):
                 _set_sl(p, new)
-                _notify(f"{p.symbol} #{p.ticket} lãi {gain:.2f} → dời SL hòa vốn {new}")
+                _notify(f"{'BOT ' if p.magic == BOT_MAGIC else ''}{p.symbol} #{p.ticket} lãi {gain:.2f} → dời SL hòa vốn {new}")
 
 
 def _loop():
@@ -390,7 +402,8 @@ def _loop():
     while True:
         try:
             g = _guards()                       # chưa bật lá chắn nào: không gọi MT5
-            if any(v.get("be_on") or v.get("tr_on") for v in g.values()):
+            bg = _bot_guard()
+            if any(v.get("be_on") or v.get("tr_on") for v in g.values()) or bg.get("be_on") or bg.get("tr_on"):
                 with _lock, mt5_service.session():
                     _guard_step()
         except Exception as e:
