@@ -273,6 +273,8 @@ def ckg_data(sym: str = "GBPUSD", since: int = Query(default=0, ge=0)):
                 "lech_gio_may_chu_giay": off,
                 "nguon_lech_gio": off_src,
             }
+            if tick and tick.bid > 0:
+                js["ba"] = [tick.bid, tick.ask]
 
             d1 = _last_closed(mt5.TIMEFRAME_D1, sym, off, 86400)
             w1 = _last_closed(mt5.TIMEFRAME_W1, sym, off, 7 * 86400)

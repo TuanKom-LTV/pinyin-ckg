@@ -81,6 +81,22 @@ body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body
 .nwi{font-weight:800;font-size:12px}.nwi.h{color:#ff5c5c}.nwi.m{color:#f59e0b}.nwc{font-weight:800}.nwt b{display:block}.nwt span{color:var(--mut);font-size:12px}
 .nwnext{border:1px solid var(--h2);border-radius:12px;padding:10px 14px;margin:6px 0 4px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
 @media(max-width:800px){.nwr{grid-template-columns:52px 46px 1fr;row-gap:2px}.nwr.hd{display:none}.nwr .nwf,.nwr .nwp,.nwr .nwcd{grid-column:3;font-size:12px}.nwr .nwi{grid-column:1}.nwr .nwt{grid-column:2/4;grid-row:2}}
+
+.hero{position:relative;margin-top:4px;padding:16px 18px;border:1px solid #1c2a3d;border-radius:16px;background:linear-gradient(135deg,#0d1424 0%,#0b1220 60%,#0d1a2a 100%);overflow:hidden}
+.hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#22d3ee,#3b82f6,#a855f7,#22d3ee)}
+.hrow1{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}.hbrand{min-width:0}
+.hbrand .logo{font-size:23px}.htitle{margin-top:6px;font-size:16px;font-weight:800;letter-spacing:.02em;background:linear-gradient(90deg,#67e8f9,#22d3ee,#a3e635);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hstat{margin-top:5px;font-size:13px;color:#c3cddd;line-height:1.6}.hstat b{font-weight:800}.hstat .sep{color:#3b4a63;margin:0 6px}
+.hside{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hrow2{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.hpx{display:flex;gap:18px;align-items:center;padding:10px 16px;border:1px solid #1c2a3d;border-radius:12px;background:#0a101b}
+.hsym{font-size:11px;font-weight:800;color:#c3cddd;letter-spacing:.05em}.hpx .px{font-size:30px;font-weight:900;color:#facc15;line-height:1.1;font-family:ui-monospace,Consolas,monospace}
+.hba{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#8b95a7;line-height:1.6}.hba b{color:#e8ecf3}#hask{color:#67e8f9}
+.htime{font-size:13px}.htime #clk{font-family:ui-monospace,Consolas,monospace;font-weight:800;color:#a3e635}
+.htg{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;font-weight:900;font-size:15px;letter-spacing:.03em;color:#0b0e14;text-decoration:none;
+ background:linear-gradient(90deg,#22d3ee,#a3e635 55%,#f97316);box-shadow:0 0 18px rgba(34,211,238,.35);transition:transform .15s}.htg:hover{transform:translateY(-1px)}
+.hsim{display:block;margin-top:10px;font-size:12px}.hsim select,.hsim button{padding:3px 6px}
+@media(max-width:700px){.hero{padding:12px}.htitle{font-size:13px}.hpx .px{font-size:26px}.htg{width:100%;justify-content:center}}
 .brand{display:flex;flex-direction:column;gap:4px}.tagline{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:var(--mut);line-height:1.3}
 h1.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1}h1.logo svg{display:block;flex:none}
 h2{font-size:13.5px;font-weight:800;letter-spacing:.05em;color:var(--h2);margin:0 0 10px;text-transform:uppercase;border-left:3px solid var(--h2);padding-left:9px;line-height:1.35}:root{--h2:#1d4ed8}[data-theme="dark"]{--h2:#22d3ee}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--h2:#22d3ee}}[data-theme="dark"] .c{background:#0d1320;border-color:#1c2a3d}[data-theme="dark"] .c .ac,[data-theme="dark"] .c input,[data-theme="dark"] .c select{background:#0a101b;border-color:#1c2a3d}.qk h2,#chartc h2{border-left:0;padding-left:0}
@@ -107,15 +123,20 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 </head>
 <body>
 <div class="w">
-<div class="top"><div class="brand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="tagline">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div></div><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="tg" href="https://t.me/TuanKom" target="_blank" rel="noopener" title="Liên hệ Telegram @TuanKom"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>Liên hệ Telegram</a><div class="btns" id="thb" style="display:none"></div><span id="meb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></span></div></div>
+<div class="hero">
+<div class="hrow1"><div class="hbrand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="htitle">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div><div class="hstat" id="hstat">📊 Đang đọc thị trường…</div></div>
+<div class="hside"><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div class="btns" id="thb" style="display:none"></div><span id="meb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></span></div></div>
+<div class="hrow2"><div class="hpx"><div><div class="hsym"><span id="nm">XAUUSD</span> · SPREAD <span id="hspr">-</span></div><div class="px" id="px">-</div></div>
+<div class="hba">Bid: <b id="hbid">-</b><br>Ask: <b id="hask">-</b></div></div>
+<div class="htime"><div id="clk"></div><div id="hses" class="mut"></div></div>
+<a class="htg" href="https://t.me/TuanKom" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>LIÊN HỆ TELEGRAM @TUANKOM</a></div>
+<label class="mut hsim"><input type="checkbox" id="sm" onchange="render()"> Giờ giả lập để xem thử:
+<select id="sd" style="width:auto" onchange="render()"><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2" selected>Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select>
+<input id="sh" type="range" min="0" max="24" step="any" value="12.5" style="width:150px;padding:0" oninput="render()"> <b id="shl"></b> <button id="pb" onclick="play()">▶ Chạy</button></label></div>
 
 <div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button><button data-v="news" onclick="setView('news')">📰 Tin tức tuần</button></div>
 <div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
-<div class="c keep" style="margin-top:12px"><div class="top"><div><div id="nm" class="mut">GBPUSD</div><div class="px" id="px">-</div></div>
-<div style="text-align:right"><div id="clk" class="mut"></div><div class="mut">Giờ VN (GMT+7)</div></div></div>
-<label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="sm" onchange="render()"> Giờ giả lập để xem thử:
-<select id="sd" style="width:auto" onchange="render()"><option value="0">Thứ 2</option><option value="1">Thứ 3</option><option value="2" selected>Thứ 4</option><option value="3">Thứ 5</option><option value="4">Thứ 6</option></select>
-<input id="sh" type="range" min="0" max="24" step="any" value="12.5" style="width:150px;padding:0" oninput="render()"> <b id="shl"></b> <button id="pb" onclick="play()">▶ Chạy</button></label></div>
+
 
 <div class="c" id="newsp"><div class="top" style="margin-bottom:8px"><h2 style="margin:0">📰 Lịch tin kinh tế trong tuần</h2><span id="nwupd" class="mut" style="font-size:12px"></span></div>
 <div class="nwbar"><div class="btns" id="nwimp" style="margin:0"><button data-i="hm" onclick="nwSet('imp','hm')">🔴🟠 Mạnh + Vừa</button><button data-i="h" onclick="nwSet('imp','h')">🔴 Chỉ tin mạnh</button></div>
@@ -197,7 +218,7 @@ const cum=[5,9,13,17,21,25,30],PT=['Quan sát','Ưu tiên','Ưu tiên','Xác nh�
 const CY=[[4,10],[10,14],[14,17],[17,20],[20,23],[23,28]];
 function render(){
  const t=T(),dir=W,sell=dir=='SELL',ag=sell?'tăng':'giảm',al=sell?'giảm':'tăng',ix=Math.max(0,Math.min(1439,Math.floor((t.w-4)*12))),dayS=Math.floor(ix/288)*288,open=wk[dayS].o;p=wk[ix].c;m5=wk.slice(Math.max(0,ix-59),ix+1);
- $('px').textContent=p.toFixed(DG);$('nm').textContent=cs;$('clk').textContent=new Date().toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});$('shl').textContent=['T2','T3','T4','T5','T6'][+$('sd').value]+' '+hm(+$('sh').value);
+ $('px').textContent=p.toFixed(DG);$('nm').textContent=cs;$('clk').textContent=heroClock();$('shl').textContent=['T2','T3','T4','T5','T6'][+$('sd').value]+' '+hm(+$('sh').value);
  d1Src();$('wu').classList.toggle('on',W=='BUY');$('wd').classList.toggle('on',W=='SELL');
  if(!G){
  // 1 hướng + nến mộng
@@ -409,7 +430,25 @@ function tvSync(){if(CM!='tv')return;$('ct').textContent='TradingView · '+(TVSY
   studies:[{id:'MAExp@tv-basicstudies',inputs:{length:9}},{id:'MAExp@tv-basicstudies',inputs:{length:21}},{id:'MAExp@tv-basicstudies',inputs:{length:50}},{id:'MAExp@tv-basicstudies',inputs:{length:200}}]});
  w.appendChild(sc)}
 setTimeout(cmView,0);
-function redraw(){if(CM=='tv'){tvSync();cmNote()}else draw(DOPEN,IX);const b=$('yab');if(b)b.classList.toggle('on',!YM)}
+
+// ===== Khối đầu trang: giá Bid/Ask, phiên, nhịp thị trường =====
+function heroClock(){const d=new Date(Date.now()+252e5),z=v=>String(v).padStart(2,'0'),h=d.getUTCHours(),wd=d.getUTCDay();
+ const off=(wd==6&&h>=4)||wd==0||(wd==1&&h<5);
+ const ses=off?'Thị trường đóng cửa (cuối tuần)':h>=5&&h<14?'Phiên Á (Tokyo)':h>=14&&h<19?'Phiên Âu (London)':h>=19&&h<23?'Phiên Âu – Mỹ (giao thoa, biến động mạnh)':h>=23||h<4?'Phiên Mỹ (New York)':'Chuyển phiên';
+ const e=$('hses');if(e)e.textContent=ses;return `${z(h)}:${z(d.getUTCMinutes())}:${z(d.getUTCSeconds())} ${z(d.getUTCDate())}/${z(d.getUTCMonth()+1)}/${d.getUTCFullYear()} VN`}
+function heroBA(){const d=ST[cs];if(!d||!d.ba){$('hbid').textContent=$('hask').textContent='-';$('hspr').textContent='-';return}
+ const[b,a]=d.ba;$('hbid').textContent=b.toFixed(DG);$('hask').textContent=a.toFixed(DG);$('hspr').textContent=cs.startsWith('XAU')?(a-b).toFixed(2)+'$':((a-b)/P).toFixed(1)+' pip'}
+function heroStat(){try{const c=tfc(IX).filter(x=>x.full);if(c.length<30){return}
+ const cl=c.map(x=>x.c),e9=ema(cl,9).at(-1),e21=ema(cl,21).at(-1),px=p,up=px>e9&&e9>e21,dn=px<e9&&e9<e21;
+ const nh=up?'<b class="ok">XU HƯỚNG TĂNG</b> (giá trên EMA9 &amp; EMA21)':dn?'<b class="no">XU HƯỚNG GIẢM</b> (giá dưới EMA9 &amp; EMA21)':'<b class="wn">GIẰNG CO</b> (giá quanh đường trung bình)';
+ const ref=G&&GV!=null?['VWAP',GV]:(ST[cs]&&ST[cs].d1?['giá mở D1',+ST[cs].d1[0]]:null);
+ const tk=ref?(px>=ref[1]?`🟢 Thanh khoản: <b class="ok">TRÊN ${ref[0]}</b> (ưu tiên MUA)`:`🔴 Thanh khoản: <b class="no">DƯỚI ${ref[0]}</b> (ưu tiên BÁN)`):'';
+ const a=c.slice(-10),b=c.slice(-20,-10),hA=Math.max(...a.map(x=>x.h)),lA=Math.min(...a.map(x=>x.l)),hB=Math.max(...b.map(x=>x.h)),lB=Math.min(...b.map(x=>x.l));
+ const st=hA>hB&&lA>lB?'<b class="ok">TĂNG ↗</b>':hA<hB&&lA<lB?'<b class="no">GIẢM ↘</b>':'<b class="wn">ĐI NGANG ↔</b>';
+ const tg=up||(!dn&&hA>hB)?hA:dn||lA<lB?lA:null;
+ $('hstat').innerHTML=[`📊 Nhịp ${cs} ${TF}: ${nh}`,tk,`Cấu trúc: ${st}`,tg!=null?`🎯 Mục tiêu: <b>${tg.toFixed(DG)}</b>`:''].filter(Boolean).join('<span class="sep">|</span>')}catch(e){}}
+setInterval(()=>{heroBA()},1000);
+function redraw(){heroStat();if(CM=='tv'){tvSync();cmNote()}else draw(DOPEN,IX);const b=$('yab');if(b)b.classList.toggle('on',!YM)}
 function cmNote(){$('cmnote').textContent='· giá nguồn '+(TVSYM[cs]||'').split(':')[0]+', có thể lệch vài pip so với MT5'}
 // PAN > 0: lùi về nến cũ; PAN < 0: chừa khoảng trống bên phải (tối đa ~70% khung) như TradingView
 function view(len){const z=zn();PAN=Math.max(-Math.floor(z*.7),Math.min(Math.round(PAN),Math.max(0,len-z)));CLEN=len;const e0=len-PAN,off=Math.max(0,e0-z),end=Math.min(e0,len);return{off,n:end-off,end}}
@@ -470,6 +509,7 @@ function applyData(sym,js){if(js.ws)WS=js.ws;const d=ST[sym],s0=wkStartSec();if(
  const f5=fillArr(d.r5,1440);if(!f5)return false;
  d.wk=f5;d.m1=fillArr(d.r1,7200);d.live=true;d.upd=js.upd;d.off=js.now-Date.now();
  if(js.m5.length)d.lastT=js.m5[js.m5.length-1][0];
+ if(js.ba)d.ba=js.ba;
  if(js.d1&&js.d1t&&d.d1t!==js.d1t){d.d1t=js.d1t;d.d1=js.d1.map(v=>(+v).toFixed(PR[sym].dg));if(sym==cs)['o','h','l','cl'].forEach((i,j)=>$(i).value=d.d1[j])}
  if(js.w1&&js.w1t&&d.w1t!==js.w1t){d.w1t=js.w1t;d.wOC=js.w1;d.W=js.w1[1]>=js.w1[0]?'BUY':'SELL';if(sym==cs)W=d.W}
  if(sym==cs){wk=d.wk;$('inj').style.display='none'}return true}
