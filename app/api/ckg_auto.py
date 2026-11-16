@@ -28,7 +28,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.api.ckg import server_offset
-from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION
+from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION, MAX_LOT
 from app.services.mt5_service import mt5_service
 
 
@@ -49,7 +49,8 @@ router = APIRouter(prefix="/ckg/api", tags=["PinYin CKG · bot tự động"])
 DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1,
            # lá chắn cho bot: SL/TP theo tín hiệu hoặc cố định $, hòa vốn tự động, trailing + chốt 50%
            "sl_mode": "4n", "sl_usd": 3.0, "tp_mode": "step", "tp_usd": 5.0,
-           "be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True}
+           "be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
+           "lot": None}   # lot cố định; None = theo bảng vốn
 _lock = threading.RLock()
 _log = deque(maxlen=60)
 _state = {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}
@@ -288,19 +289,21 @@ def _step():
         if block:
             log(f"Không vào lệnh: {block}", "err")
             return
-        if not b:
+        fixed = c.get("lot")
+        if not b and not fixed:
             log(f"Không vào lệnh: vốn {cap or 0:.0f}$ dưới mức 100$ của bảng vốn.", "err")
             return
+        lot, maxn = (fixed, b[1] if b else 1) if fixed else (b[2], b[1])
         try:
             mine = _bot_positions()
             for p in mine:                       # tín hiệu ngược chiều: chốt lệnh cũ
                 if (p.type == mt5.POSITION_TYPE_BUY) != (sg["t"] > 0):
                     _close_pos(p, "tín hiệu ngược chiều")
             mine = _bot_positions()
-            if len(mine) >= b[1]:
-                log(f"Không vào thêm: bot đã có {len(mine)}/{b[1]} lệnh theo bảng vốn.", "err")
+            if len(mine) >= maxn:
+                log(f"Không vào thêm: bot đã có {len(mine)}/{maxn} lệnh theo bảng vốn.", "err")
                 return
-            _open(sg, b[2], int(c["tp"]), c)
+            _open(sg, lot, int(c["tp"]), c)
         except Exception as e:                   # lỗi theo từng tín hiệu: luôn báo
             log(f"Bỏ tín hiệu {sg['side']}: {e}", "err")
 
@@ -362,6 +365,8 @@ class AutoIn(BaseModel):
     tr_at: float | None = None
     tr_step: float | None = None
     half: bool | None = None
+    lot: float | None = None
+    lot_auto: bool | None = None
 
 
 class TgIn(BaseModel):
@@ -423,6 +428,12 @@ def auto_set(x: AutoIn):
             c[k] = v
     if c["be_lock"] >= c["be_at"]:
         return {"ok": False, "loi": "Mức khóa hòa vốn phải nhỏ hơn mức kích hoạt."}
+    if x.lot_auto:
+        c["lot"] = None
+    elif x.lot is not None:
+        if not (0.01 <= x.lot <= MAX_LOT):
+            return {"ok": False, "loi": f"Lot từ 0.01 đến {MAX_LOT}."}
+        c["lot"] = round(x.lot, 2)
     if x.on is not None:
         c["on"] = x.on
     _save(c)
