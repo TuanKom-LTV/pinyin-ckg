@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -95,7 +95,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 </head>
 <body>
 <div class="w">
-<div class="top"><div class="brand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="tagline">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div></div><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="tg" href="https://t.me/TuanKom" target="_blank" rel="noopener" title="Liên hệ Telegram @TuanKom"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>Liên hệ Telegram</a><div class="btns" id="thb" style="margin:0"><button data-m="light" onclick="setTheme('light')">☀️ Sáng</button><button data-m="dark" onclick="setTheme('dark')">🌙 Tối</button></div></div></div>
+<div class="top"><div class="brand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="tagline">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div></div><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="tg" href="https://t.me/TuanKom" target="_blank" rel="noopener" title="Liên hệ Telegram @TuanKom"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.4l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.3-.5-1.8-1.4-1.1zM8.6 14l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>Liên hệ Telegram</a><div class="btns" id="thb" style="display:none"></div></div></div>
 
 <div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button></div>
 <div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
@@ -599,8 +599,7 @@ function liveOpen(t){const lot=+$('lt').value;tradeCall('order',{sym:cs,side:t,l
 async function liveClose(){const q=ST[cs].pos;if(!q){alert('Không có lệnh PinYin nào đang mở trên '+cs);return}if(await tradeCall('close',{sym:cs},`Chốt ${q.n>1?'tất cả '+q.n+' lệnh':'lệnh'} ${cs} ${q.t} ${q.lot} lot (hiện ${q.profit.toFixed(2)} ${TR.currency})?`))ref=p}
 async function liveReverse(q){const m=+$('mu').value,nl=+(q.lot*m).toFixed(2);if(await tradeCall('reverse',{sym:cs,mult:m,...tpslArgs()},`Cắt lệnh ${cs} ${q.t} ${q.lot} lot rồi vào ${q.t=='BUY'?'SELL':'BUY'} ${nl} lot?`+tpslText())){ref=p;$('lt').value=nl}}
 
-let _m=null;try{_m=localStorage.getItem('ckg-theme')}catch(e){}
-if(_m!='light'&&_m!='dark')_m=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+let _m='dark';// chỉ dùng giao diện tối
 
 // ===== Menu Phân Tích AI (Gemini, gọi qua máy chủ PinYin) =====
 let VIEWMODE='ckg',AIBUSY=false;

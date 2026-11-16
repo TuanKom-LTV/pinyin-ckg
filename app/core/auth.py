@@ -113,8 +113,7 @@ def _login_page(msg: str = "", nxt: str = "/") -> HTMLResponse:
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>PinYin · Đăng nhập</title>
 <meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="{FAVICON}">
 <style>
-:root{{--bg:#f4f5f7;--card:#fff;--tx:#14181f;--mut:#667085;--bd:#e3e6eb;--acc:#2563eb;--no:#d92d20}}
-@media (prefers-color-scheme:dark){{:root{{--bg:#0b0e14;--card:#131824;--tx:#e8ecf3;--mut:#8b95a7;--bd:#222a3a;--acc:#5b8cff;--no:#ff5c5c}}}}
+:root{{color-scheme:dark;--bg:#0b0e14;--card:#0d1320;--tx:#e8ecf3;--mut:#8b95a7;--bd:#1c2a3d;--acc:#2563eb;--no:#ff5c5c}}
 *{{box-sizing:border-box}}body{{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px}}
 form{{width:100%;max-width:340px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:22px}}
 h1{{font-size:19px;margin:0 0 4px}}h1.lg{{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800}}h1.lg svg{{width:38px;height:38px;flex:none}}p{{margin:0 0 16px;color:var(--mut);font-size:13px}}
