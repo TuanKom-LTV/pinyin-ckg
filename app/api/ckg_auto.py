@@ -879,3 +879,100 @@ def auto_telegram(x: TgIn):
         return {"ok": True, "bot": me["result"]["username"]}
     except Exception as e:
         return {"ok": False, "loi": str(e)}
+
+
+# ---------- Backtest lịch sử (chạy lại luật của bot trên nến đã qua, lệnh giả) ----------
+
+class BtIn(BaseModel):
+    days: int = 30
+    cfg: dict = {}                      # cài đặt bot muốn thử (giống ô cài đặt trên trang); thiếu thì lấy cài đặt đang lưu
+    lot: float | None = None            # lot cố định; None = theo bảng vốn
+    cap: float = 1000                   # vốn ban đầu (đơn vị tiền của tài khoản)
+    comm: float = 0.0                   # phí mỗi lot (khứ hồi)
+    sweep: dict | None = None           # {"key": "dca.gap", "values": [0.2, 0.5, 1]} → so sánh nhiều giá trị
+
+
+BT_PER_DAY = {"M1": 1440, "M5": 288, "M15": 96}
+BT_SWEEP = {"tp", "ha_sl_buffer", "ha_sl_lookback", "be_at", "be_lock", "tr_at", "tr_step",
+            *("dca." + k for k in DCA_NUM)}
+
+
+@router.post("/auto/backtest")
+def auto_backtest(x: BtIn):
+    from app.services.backtest import run as bt_run
+    c = _cfg()
+    over = dict(x.cfg or {})
+    dca_over = over.pop("dca", None) or {}
+    c.update({k: v for k, v in over.items() if k in DEFAULT and k not in ("on", "dca")})
+    c["dca"] = {**c["dca"], **{k: v for k, v in dca_over.items() if k in DCA_DEF}}
+    if c.get("strategy") not in ("ha", "dca"):
+        return {"ok": False, "loi": "Backtest hỗ trợ PinYin HA Pro và PinYin HA Pro DCA."}
+    if c["tf"] not in TFS:
+        return {"ok": False, "loi": "Khung chỉ M1, M5 hoặc M15."}
+    if not (1 <= x.days <= 730):
+        return {"ok": False, "loi": "Số ngày từ 1 đến 730."}
+    if x.cap <= 0 or x.comm < 0 or (x.lot is not None and not (0.01 <= x.lot <= 1000)):
+        return {"ok": False, "loi": "Vốn / phí / lot không hợp lệ."}
+    sw = None
+    if x.sweep:
+        key, vals = str(x.sweep.get("key", "")), x.sweep.get("values") or []
+        if key not in BT_SWEEP or not (1 <= len(vals) <= 10):
+            return {"ok": False, "loi": "So sánh: chọn thông số hợp lệ và 1–10 giá trị."}
+        try:
+            sw = (key, [float(v) for v in vals])
+        except (TypeError, ValueError):
+            return {"ok": False, "loi": "So sánh: giá trị phải là số."}
+    tf_code = TFS[c["tf"]][0]
+    want = min(200000, x.days * BT_PER_DAY[c["tf"]] + 400)
+    try:
+        with mt5_service.session():
+            if not mt5.symbol_select(SYM, True):
+                return {"ok": False, "loi": "Broker không có XAUUSD."}
+            off, _ = server_offset()
+            r = None
+            n_try = want
+            while n_try >= 500:          # xin quá số nến MT5 đang giữ thì MT5 trả rỗng: giảm dần tới mức có
+                r = mt5.copy_rates_from_pos(SYM, tf_code, 1, n_try)          # bỏ nến đang chạy
+                if r is not None and len(r):
+                    break
+                n_try = min(n_try - 1, 99000) if n_try > 99000 else n_try // 2
+            info = mt5.symbol_info(SYM)
+            a = mt5.account_info()
+            px = float(r[-1]["close"]) if r is not None and len(r) else 0
+            vpu = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, SYM, 1.0, px, px + 1.0) if px else None
+    except Exception as e:
+        return {"ok": False, "loi": str(e)}
+    if r is None or len(r) < 500:
+        return {"ok": False, "loi": "MT5 chưa có đủ lịch sử nến (mở biểu đồ XAUUSD khung này trên MT5 và kéo về quá khứ)."}
+    if not vpu:
+        vpu = float(info.trade_contract_size or 100)
+    bars = [(int(q["time"]) - off, float(q["open"]), float(q["high"]), float(q["low"]), float(q["close"]),
+             float(q["tick_volume"]), int(q["time"]) // 86400) for q in r]
+    spr = [float(q["spread"]) * info.point for q in r]
+    t_from = bars[-1][0] - x.days * 86400
+    warm = next((i for i, b in enumerate(bars) if b[0] >= t_from), 0)
+    warm = max(warm, 300)
+    common = {"lot": x.lot, "cap0": x.cap, "vpu": vpu, "comm": x.comm, "warm": warm,
+              "step": info.volume_step or 0.01, "vmin": info.volume_min or 0.01}
+    rng = {"from": datetime.fromtimestamp(bars[warm][0], VN).strftime("%d/%m/%Y %H:%M"),
+           "to": datetime.fromtimestamp(bars[-1][0], VN).strftime("%d/%m/%Y %H:%M"),
+           "bars": len(bars) - warm, "short": bars[0][0] > t_from - 300 * TFS[c["tf"]][1]}
+    meta = {"ccy": a.currency if a else "", "vpu": round(vpu, 4), "spread_avg": round(sum(spr[warm:]) / max(1, len(spr) - warm), 3)}
+    try:
+        if not sw:
+            res = bt_run(bars, spr, c, **common)
+            return {"ok": True, "range": rng, "meta": meta, "cfg": c, "res": res}
+        key, vals = sw
+        rows = []
+        for v in vals:
+            cc = json.loads(json.dumps(c))
+            if key.startswith("dca."):
+                k2 = key[4:]
+                cc["dca"][k2] = DCA_NUM[k2][2](v)
+            else:
+                cc[key] = int(v) if key in ("tp", "ha_sl_lookback") else v
+            s = bt_run(bars, spr, cc, **common)
+            rows.append({"v": v, **{k: s[k] for k in ("net", "net_pct", "n", "winrate", "pf", "mdd", "mdd_pct", "streak", "avg_win", "avg_loss")}})
+        return {"ok": True, "range": rng, "meta": meta, "cfg": c, "sweep": {"key": key, "rows": rows}}
+    except Exception as e:
+        return {"ok": False, "loi": f"Lỗi backtest: {e}"}

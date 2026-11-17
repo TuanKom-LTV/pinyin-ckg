@@ -73,9 +73,9 @@ body.v-ai #top2{display:none!important}
  body.fx #gb2>.c:nth-child(1){grid-column:1;grid-row:3}body.fx #gb2>.c:nth-child(2){grid-column:2;grid-row:3}}
 
 #qk.eaoff .qsec:not(#qea),#qk.eaoff #qacc{display:none}#qk.eaoff #qea{display:block!important}.eakey{font-family:ui-monospace,Consolas,monospace;font-size:15px;font-weight:800;color:#facc15;background:#0a101b;border:1px dashed #facc15;border-radius:8px;padding:8px 10px;word-break:break-all}
-body:not(.v-bot) #botc,body:not(.v-bot) #histc{display:none!important}
+body:not(.v-bot) #botc,body:not(.v-bot) #histc,body:not(.v-bot) #btc{display:none!important}
 body.v-ck .w>.c,body.v-ck .w>.g,body.v-ck #gb1,body.v-ck #gb2,body.v-ck #tabs{display:none!important}
-body.v-bot .w>.c:not(#botc):not(#histc),body.v-bot .w>.g,body.v-bot #top2,body.v-bot #tabs{display:none!important}
+body.v-bot .w>.c:not(#botc):not(#histc):not(#btc),body.v-bot .w>.g,body.v-bot #top2,body.v-bot #tabs{display:none!important}
 #botc{padding:0;border:0;background:none}#botc .ac{margin-top:0!important}
 #newsp{display:none}body.v-news #newsp{display:block}
 body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body.v-news #top2,body.v-news .w>.c.keep,body.v-news #tabs{display:none!important}
@@ -202,6 +202,18 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 </div>
 
 <div class="c" id="botc"><div id="gbot" style="display:none"></div></div>
+<div class="c" id="btc"><div class="top"><h2 style="margin:0">🧪 Backtest lịch sử</h2><span class="mut" style="font-size:12px">chạy lại đúng luật của bot trên nến MT5 đã qua · lệnh giả, không gửi lệnh</span></div>
+<div class="mut" style="font-size:12px;margin:6px 0 10px">Dùng cài đặt đang nhập ở ô <b>Bot tự động</b> phía trên (chiến lược, khung, lot, DCA, lá chắn BE/Trailing đã lưu). Sửa số ở trên rồi chạy lại để so sánh, chưa cần bấm Lưu.</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+ <label class="mut">Khoảng <select id="btd" style="width:auto"><option value="7">7 ngày</option><option value="30" selected>30 ngày</option><option value="90">3 tháng</option><option value="180">6 tháng</option><option value="365">1 năm</option><option value="730">2 năm</option></select></label>
+ <label class="mut">Vốn ban đầu <input id="btcap" type="number" step="100" min="1" style="width:96px"></label>
+ <label class="mut">Phí mỗi lot <input id="btcm" type="number" step=".5" min="0" value="0" style="width:64px"></label>
+ <button onclick="btRun()" style="font-weight:700">▶ Chạy backtest</button></div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px">
+ <label class="mut">So sánh thông số <select id="btsk" style="width:auto"></select></label>
+ <label class="mut">các giá trị <input id="btsv" placeholder="vd: 0.2, 0.5, 1" style="width:150px"></label>
+ <button onclick="btRun(1)">⚖️ So sánh</button></div>
+<div id="btm" class="mut" style="font-size:13px;margin-top:8px"></div><div id="btres"></div></div>
 <div class="c" id="kb"><h2>6 · Kịch bản theo cây quyết định (4 sơ đồ tư duy)</h2><div class="g"><div><div class="mut" id="kwh"></div><div id="kw"></div></div><div><div class="mut" id="kdh"></div><div id="kd"></div></div></div>
 <div class="mut" style="margin-top:8px">Giả định tạm: CK tuần = P1 đến P7 của WPH7; CK ngày = 5 chu kỳ đầu (04-10h, 10-14h, 14-17h, 17-20h, 20-23h); chu kỳ tăng nếu nến đóng cao hơn giá mở của chính chu kỳ đó; hệ số cấp số nhân lấy theo ô "Gấp lot khi đảo". QLV, GMC giữ nguyên chữ trong sơ đồ.</div></div>
 <div class="c" id="gg" style="display:none"><div class="top" style="margin-bottom:10px"><h2 style="margin:0">Phân tích chi tiết các chỉ báo · XAUUSD (<span id="gtfl">M1</span>)</h2><div class="btns" id="gtfb" style="margin:0"><button data-g="M1" onclick="setGTF('M1')">M1</button><button data-g="M5" onclick="setGTF('M5')">M5</button></div></div>
@@ -609,6 +621,48 @@ async function liveCloseOne(tk){const q=ST[cs].pos,x=q&&q.list?q.list.find(o=>o.
 
 // ===== Bot tự động XAUUSD (EMA9 × EMA21) chạy trên máy chủ =====
 let AB=null,ABUSY=false;
+
+// ===== Backtest lịch sử =====
+const BTK={dca:[['dca.legs','Số lệnh tối đa'],['dca.gap','Lệnh DCA tốt hơn (×ATR)'],['dca.min_bars','Cách tối thiểu (nến)'],['dca.sl_buf','SL cộng thêm ($)'],['dca.sl_k','k ATR của SL'],['dca.tp1r','TP1 (R)'],['dca.tp1p','% chốt TP1'],['dca.tp2r','TP2 (R)'],['dca.tp2p','% chốt TP2'],['dca.time','Hết giờ (nến)'],['dca.stretch','Giãn VWAP tối đa (σ)'],['dca.soft_sig','SL mềm (σ)'],['dca.risk','Rủi ro tổng (%)']],
+ ha:[['tp','Chốt ở TP (1–4)'],['ha_sl_buffer','SL cộng thêm ($)'],['ha_sl_lookback','SL theo N nến'],['be_at','BE khi lãi ($)'],['tr_at','Trailing bắt đầu ($)'],['tr_step','Bước trailing ($)']]};
+let BTS='';function btKeys(){const s=$('abstr')?$('abstr').value:'dca';if(s==BTS)return;BTS=s;$('btsk').innerHTML=(BTK[s]||[]).map(k=>`<option value="${k[0]}">${k[1]}</option>`).join('')||'<option value="">(chỉ HA Pro / DCA)</option>'}
+function btInit(){if(!$('btcap').value)$('btcap').value=TR&&TR.equity?Math.round(TR.equity):1000;btKeys()}
+async function btRun(sw){btInit();const v=botVals(),cfg={...v};delete cfg.lot;delete cfg.lot_auto;
+ if(cfg.strategy=='ema'){$('btm').innerHTML='<span class="no">Backtest chỉ hỗ trợ PinYin HA Pro và PinYin HA Pro DCA.</span>';return}
+ const b={days:+$('btd').value,cfg,lot:v.lot_auto?null:v.lot,cap:+$('btcap').value||1000,comm:+$('btcm').value||0};
+ if(sw){const vals=$('btsv').value.split(/[,; ]+/).filter(x=>x!=='').map(Number);if(!vals.length||vals.some(isNaN)){$('btm').innerHTML='<span class="no">Nhập các giá trị cần so sánh, cách nhau dấu phẩy.</span>';return}b.sweep={key:$('btsk').value,values:vals}}
+ $('btm').innerHTML='⏳ Đang chạy backtest '+b.days+' ngày '+cfg.tf+(sw?' · so sánh '+b.sweep.values.length+' giá trị':'')+'…';$('btres').innerHTML='';
+ let j;try{j=await jpost('api/auto/backtest',b)}catch(e){$('btm').innerHTML='<span class="no">⚠️ '+e.message+'</span>';return}
+ if(!j||!j.ok){$('btm').innerHTML='<span class="no">⚠️ '+String(j&&j.loi||'Lỗi').replace(/</g,'&lt;')+'</span>';return}
+ const R=j.range,M=j.meta,cu=M.ccy||'',nm=cfg.strategy=='dca'?'PinYin HA Pro DCA':'PinYin HA Pro';
+ $('btm').innerHTML=`<b>${nm}</b> · ${cfg.tf} · ${R.from} → ${R.to} (${R.bars.toLocaleString()} nến) · lot ${b.lot?b.lot:'theo bảng vốn'}${cfg.strategy=='dca'&&cfg.dca.risk>0?' · rủi ro '+cfg.dca.risk+'%':''} · spread TB ${M.spread_avg}$ · 1 lot × 1$ = ${M.vpu} ${cu}`+(R.short?' · <span class="wn">MT5 không đủ lịch sử cho cả khoảng đã chọn</span>':'');
+ const f=x=>(+x).toLocaleString(undefined,{maximumFractionDigits:2}),cl=x=>x>0?'ok':x<0?'no':'mut';
+ if(j.sweep){const kn=(BTK[cfg.strategy]||[]).find(k=>k[0]==j.sweep.key),rows=j.sweep.rows,best=Math.max(...rows.map(r=>r.net));
+  $('btres').innerHTML=`<div class="sc" style="margin-top:10px"><table class="pt"><tr><th>${kn?kn[1]:j.sweep.key}</th><th>Lãi/lỗ</th><th>%</th><th>Số ${cfg.strategy=='dca'?'chiến dịch':'lệnh'}</th><th>Thắng</th><th>PF</th><th>Sụt vốn tối đa</th><th>Thua liên tiếp</th><th>TB thắng / thua</th></tr>`+
+  rows.map(r=>`<tr${r.net==best?' style="background:rgba(22,163,74,.12)"':''}><td data-l="Giá trị"><b>${r.v}</b>${r.net==best?' 🏆':''}</td><td data-l="Lãi/lỗ" class="${cl(r.net)}"><b>${f(r.net)}</b></td><td data-l="%" class="${cl(r.net)}">${r.net_pct}%</td><td data-l="Số">${r.n}</td><td data-l="Thắng">${r.winrate}%</td><td data-l="PF">${r.pf??'-'}</td><td data-l="Sụt vốn" class="no">${f(r.mdd)} (${r.mdd_pct}%)</td><td data-l="Thua liên tiếp">${r.streak}</td><td data-l="TB">${f(r.avg_win)} / ${f(r.avg_loss)}</td></tr>`).join('')+
+  '</table></div><div class="mut" style="font-size:12px;margin-top:6px">🏆 = lãi nhiều nhất. Nên chọn giá trị vừa lãi vừa <b>sụt vốn thấp</b>, và thử lại trên khoảng thời gian khác để chắc không phải may mắn.</div>';return}
+ const s=j.res,card=(t,v,c,sub)=>`<div class="ac"><div class="mut" style="font-size:12px">${t}</div><div style="font-size:20px;font-weight:800" class="${c||''}">${v}</div>${sub?`<div class="mut" style="font-size:12px">${sub}</div>`:''}</div>`;
+ let h=`<div class="cards4" style="margin-top:10px">`+card('Lãi / lỗ ròng',f(s.net)+' '+cu,cl(s.net),s.net_pct+'% vốn · cuối '+f(s.end))+card('Số '+(cfg.strategy=='dca'?'chiến dịch':'lệnh'),s.n,'',s.n_orders+' lệnh MT5'+(s.open_left?' · '+s.open_left+' còn mở cuối kỳ':''))+
+  card('Tỷ lệ thắng',s.winrate+'%','',s.win+' thắng · '+(s.n-s.win)+' thua')+card('Profit factor',s.pf??'-',s.pf>=1.3?'ok':s.pf<1?'no':'wn','tổng lãi ÷ tổng lỗ (≥1.3 là tốt)')+
+  card('Sụt vốn tối đa',f(s.mdd)+' '+cu,'no',s.mdd_pct+'% từ đỉnh')+card('TB thắng / thua',f(s.avg_win)+' / '+f(s.avg_loss),'','tốt nhất '+f(s.best)+' · tệ nhất '+f(s.worst))+card('Thua liên tiếp dài nhất',s.streak,s.streak>=8?'no':'')+'</div>';
+ h+=`<div class="ac" style="margin-top:10px"><div class="hd"><span>📈 Đường vốn</span></div><canvas id="btcv" style="width:100%;height:220px"></canvas></div>`;
+ h+=`<div class="g2s" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:10px"><div class="ac"><div class="hd"><span>Theo lý do đóng lệnh</span></div><div class="sc"><table class="pt"><tr><th>Lý do</th><th>Số lần</th><th>Lãi/lỗ</th></tr>`+
+  s.why.map(w=>`<tr><td data-l="Lý do">${w.why}</td><td data-l="Số lần">${w.n}</td><td data-l="Lãi/lỗ" class="${cl(w.pnl)}"><b>${f(w.pnl)}</b></td></tr>`).join('')+`</table></div></div>`+
+  `<div class="ac"><div class="hd"><span>Theo tháng</span></div><div class="sc"><table class="pt"><tr><th>Tháng</th><th>Số</th><th>Thắng</th><th>Lãi/lỗ</th></tr>`+
+  s.months.map(m=>`<tr><td data-l="Tháng">${m.m}</td><td data-l="Số">${m.n}</td><td data-l="Thắng">${m.n?Math.round(m.w/m.n*100):0}%</td><td data-l="Lãi/lỗ" class="${cl(m.pnl)}"><b>${f(m.pnl)}</b></td></tr>`).join('')+`</table></div></div></div>`;
+ h+=`<details style="margin-top:10px"><summary class="mut" style="cursor:pointer">Danh sách ${cfg.strategy=='dca'?'chiến dịch':'lệnh'} (mới nhất trước, tối đa 300)</summary><div class="sc" style="max-height:360px;overflow:auto"><table class="pt"><tr><th>Mở</th><th>Đóng</th><th>Loại</th><th>Lệnh</th><th>Lot</th><th>Lãi/lỗ</th><th>Lý do cuối</th></tr>`+
+  s.list.map(t=>`<tr><td data-l="Mở">${t.t0}</td><td data-l="Đóng">${t.t1}</td><td data-l="Loại" class="${t.side=='BUY'?'ok':'no'}"><b>${t.side}</b></td><td data-l="Lệnh">${t.legs}</td><td data-l="Lot">${t.lot}</td><td data-l="Lãi/lỗ" class="${cl(t.pnl)}"><b>${f(t.pnl)}</b></td><td data-l="Lý do">${t.why}</td></tr>`).join('')+'</table></div></details>';
+ h+=`<div class="mut" style="font-size:12px;margin-top:8px">Giả định: giá vào/thoát chủ động = giá đóng nến (+spread thật từng nến); nến quét cả SL và TP thì tính chạm SL trước; SL hòa vốn/trailing có hiệu lực từ nến sau. Kết quả quá khứ không bảo đảm tương lai, có thể lệch vài lệnh so với chạy thật do trượt giá và giá trong nến.</div>`;
+ $('btres').innerHTML=h;btCurve(s.curve,b.cap)}
+function btCurve(cv,cap){const c=$('btcv');if(!c||!cv.length)return;const W=c.clientWidth,H=220,r=devicePixelRatio||1;c.width=W*r;c.height=H*r;const x=c.getContext('2d');x.scale(r,r);
+ const st=getComputedStyle(document.body),col=n=>st.getPropertyValue(n).trim()||'#888';const vs=cv.map(p=>p[1]),mn=Math.min(cap,...vs),mx=Math.max(cap,...vs),pad=(mx-mn)*.08||1,L=56;
+ const Y=v=>H-18-(v-(mn-pad))/((mx+pad)-(mn-pad))*(H-30),X=i=>L+i/(cv.length-1||1)*(W-L-6);
+ x.font='11px sans-serif';x.fillStyle=col('--mut');x.strokeStyle=col('--bd');x.lineWidth=1;
+ for(let g=0;g<=4;g++){const v=mn-pad+(mx-mn+2*pad)*g/4,y=Y(v);x.beginPath();x.moveTo(L,y);x.lineTo(W-6,y);x.stroke();x.fillText(Math.round(v).toLocaleString(),4,y+4)}
+ x.setLineDash([4,3]);x.strokeStyle=col('--mut');x.beginPath();x.moveTo(L,Y(cap));x.lineTo(W-6,Y(cap));x.stroke();x.setLineDash([]);
+ const last=vs[vs.length-1];x.strokeStyle=last>=cap?col('--ok'):col('--no');x.lineWidth=2;x.beginPath();cv.forEach((p,i)=>i?x.lineTo(X(i),Y(p[1])):x.moveTo(X(i),Y(p[1])));x.stroke();
+ const d=t=>new Date(t*1000).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'});x.fillStyle=col('--mut');x.fillText(d(cv[0][0]),L,H-4);const e=d(cv[cv.length-1][0]);x.fillText(e,W-6-x.measureText(e).width,H-4)}
+setInterval(()=>{if(VIEWMODE=='bot'&&$('btsk'))btKeys()},1500);
 function botInit(){const e=$('gbot');if(!e||e.dataset.ok)return;e.dataset.ok=1;
  e.innerHTML=`<div class="ac" style="margin-top:12px;border-width:2px" id="abx"><div class="hd"><span style="font-size:15px">🤖 Bot tự động vào lệnh XAUUSD</span><span class="bdg" id="abst">…</span></div><div class="bgrid"><div>
  <div class="mut" style="font-size:12px;margin:4px 0 8px">Chạy trên máy chủ 24/7, không cần mở trang. <span id="abdesc"></span></div>
@@ -758,7 +812,7 @@ async function meInit(){let m;try{m=await jget('/api/me')}catch(e){return}if(!m|
  if(m.user&&m.gd){EAMODE=true;QAPI='api/ea/q/'}if(m.role=='chu'||(m.user&&m.gd)){$('cktab').style.display=''}if(m.role=='chu')$('bottab').style.display='';if(EAMODE)$('histc').style.display='none';try{const lv=localStorage.getItem('ckg-view');if((lv=='ck'||lv=='bot')&&VIEWMODE!=lv)setView(lv)}catch(e){}if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}
  else if(m.role=='chu'){b.innerHTML=`<a class="tg" style="background:#1c2a3d" href="/quan-ly">👥 Khách hàng${m.cho_duyet?` <b style="background:var(--no);border-radius:9px;padding:0 7px">${m.cho_duyet}</b>`:''}</a>`}}
 let TR=null,BUSY=false,VIEW=false;// VIEW: đăng nhập bằng mật khẩu chỉ xem
-async function jpost(u,b){const c=new AbortController(),tm=setTimeout(()=>c.abort(),u.indexOf('api/ai')>=0?240000:u.indexOf('api/q/login')>=0?70000:20000);try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});return await r.json()}finally{clearTimeout(tm)}}
+async function jpost(u,b){const c=new AbortController(),tm=setTimeout(()=>c.abort(),u.indexOf('api/ai')>=0||u.indexOf('api/auto/backtest')>=0?240000:u.indexOf('api/q/login')>=0?70000:20000);try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});return await r.json()}finally{clearTimeout(tm)}}
 async function acctTick(){try{const a=await jget('api/account');if(!a||!a.ok){TR=null;return}TR=a;Object.keys(ST).forEach(k=>{const ps=a.positions.filter(x=>x.sym==k);if(!ps.length){ST[k].pos=null;return}const lot=ps.reduce((s,x)=>s+x.lot,0);ST[k].pos={list:ps,tp:ps[0].tp,sl:ps[0].sl,t:ps[0].t,lot:+lot.toFixed(2),e:ps.reduce((s,x)=>s+x.e*x.lot,0)/lot,ms:Math.min(...ps.map(x=>x.ms)),profit:ps.reduce((s,x)=>s+x.profit,0),n:ps.length,live:true}})}catch(e){if(String(e.message)=='403'){VIEW=true;TR=null}}}
 async function histTick(){try{const r=await jget('api/history');if(!r||!r.ok)return;H.length=0;r.rows.forEach(x=>{const c=PR[x.sym]||{pip:1e-4,dg:5},e=x.e??x.x;H.push({id:x.id,sym:x.sym,t:x.t,lot:x.lot,e,x:x.x,oms:x.oms,cms:x.cms,pip:(x.t=='BUY'?x.x-e:e-x.x)/c.pip,pf:x.pf,dg:c.dg})})}catch(e){}}
 function tierWarn(lot){capSync();const cap=+$('cap').value,B=[[100,3,.01],[300,5,.01],[600,3,.02],[900,5,.02],[1000,3,.03],[1200,5,.03]];let b=null;B.forEach(x=>{if(cap>=x[0])b=x});const w=[];if(b&&lot>b[2])w.push('Lot '+lot+' vượt mức '+b[2]+' theo vốn.');if(b&&TR.positions.length>=b[1])w.push('Đã có '+TR.positions.length+'/'+b[1]+' lệnh mở.');return w.length?'\n\n⚠️ '+w.join(' '):''}

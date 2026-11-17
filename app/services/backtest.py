@@ -1,0 +1,409 @@
+"""Backtest lịch sử cho bot tự động: chạy lại ĐÚNG luật vào/thoát lệnh của bot trên nến MT5 đã qua.
+
+Chiến lược: "ha" (PinYin HA Pro + lá chắn BE/Trailing của bot) và "dca" (PinYin HA Pro DCA).
+Tín hiệu dùng chung code với bot (ha_pro.analyze, ha_pro_dca.compute). Phần quản lý lệnh là bản sao
+của ckg_auto (_step / _dca_live / _dca_bar) nhưng chạy trên lệnh giả, không đụng MT5.
+
+Giả định mô phỏng (thận trọng):
+  - Nến MT5 là giá Bid; giá Ask = Bid + spread của từng nến. BUY vào ở Ask, đóng ở Bid; SELL ngược lại.
+  - Bot vào/thoát chủ động ở giá đóng cửa của nến vừa đóng (bot chạy ngay khi có nến mới).
+  - Trong 1 nến: chạm SL được xét TRƯỚC chạm TP (nến quét cả 2 thì tính lỗ). Giá mở cửa nhảy qua SL/TP
+    thì khớp ở giá mở cửa. SL hòa vốn / trailing đặt trong nến chỉ có hiệu lực từ nến sau.
+  - Phí: commission mỗi lot (khứ hồi), tính theo khối lượng mỗi lần đóng.
+"""
+
+import math
+from datetime import datetime, timedelta, timezone
+
+from app.services.ha_pro import analyze as analyze_ha
+from app.services.ha_pro_dca import compute as dca_compute
+
+VN = timezone(timedelta(hours=7))
+TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
+EPS = 1e-9
+
+
+def _tier(eq):
+    b = None
+    for x in TIERS:
+        if eq >= x[0]:
+            b = x
+    return b
+
+
+def _in_sess(d, t_utc):
+    if not d.get("sess_on"):
+        return True
+    try:
+        a, b = d.get("sess", "").split("-")
+        f = lambda x: int(x[:2]) * 60 + int(x[2:])
+        a, b = f(a), f(b)
+    except Exception:
+        return True
+    m = ((int(t_utc) + 7 * 3600) % 86400) // 60
+    return a <= m < b if a <= b else (m >= a or m < b)
+
+
+class Sim:
+    """Sổ lệnh giả: số dư, lệnh mở, lịch sử đóng, đường vốn."""
+
+    def __init__(self, bars, spr, cap0, vpu, comm, step=0.01, vmin=0.01):
+        self.bars, self.spr, self.vpu, self.comm = bars, spr, vpu, comm
+        self.bal = cap0
+        self.step, self.vmin = step, vmin
+        self.pos, self.trades, self.eq = [], [], []
+        self.nid = 0
+
+    def open(self, d, lot, px, sl, tp, k, camp=None, tag=""):
+        self.nid += 1
+        p = {"id": self.nid, "d": d, "lot": round(lot, 2), "e": px, "sl": sl, "tp": tp, "k": k, "camp": camp,
+             "half": False, "tag": tag}
+        self.pos.append(p)
+        return p
+
+    def close(self, p, vol, px, k, why):
+        vol = round(min(vol, p["lot"]), 2)
+        pnl = p["d"] * (px - p["e"]) * vol * self.vpu - self.comm * vol
+        self.bal += pnl
+        self.trades.append({"id": p["id"], "camp": p["camp"], "side": "BUY" if p["d"] > 0 else "SELL", "lot": vol,
+                            "e": p["e"], "x": px, "k0": p["k"], "k1": k, "pnl": pnl, "why": why, "tag": p["tag"]})
+        p["lot"] = round(p["lot"] - vol, 2)
+        if p["lot"] < self.vmin - EPS:
+            self.pos.remove(p)
+
+    def exit_px(self, p, k, px_bid):
+        """Giá đóng lệnh tại giá Bid cho trước: BUY bán ở Bid, SELL mua ở Ask."""
+        return px_bid if p["d"] > 0 else px_bid + self.spr[k]
+
+    def mark(self, k):
+        c = self.bars[k][4]
+        fl = sum(p["d"] * (self.exit_px(p, k, c) - p["e"]) * p["lot"] * self.vpu for p in self.pos)
+        self.eq.append((self.bars[k][0], self.bal + fl))
+
+    def stop_hit(self, p, k, level):
+        """Giá chạm mức dừng (SL) trong nến k? Trả giá khớp hoặc None."""
+        t, o, h, l = self.bars[k][:4]
+        s = self.spr[k]
+        if p["d"] > 0:
+            return (o if o <= level else level) if l <= level else None
+        return (o + s if o + s >= level else level) if h + s >= level else None
+
+    def limit_hit(self, p, k, level):
+        """Giá chạm mức chốt lời (TP) trong nến k? Trả giá khớp hoặc None."""
+        t, o, h, l = self.bars[k][:4]
+        s = self.spr[k]
+        if p["d"] > 0:
+            return (o if o >= level else level) if h >= level else None
+        return (o + s if o + s <= level else level) if l + s <= level else None
+
+
+# ---------------- PinYin HA Pro (1 lệnh / tín hiệu + lá chắn bot) ----------------
+
+def run_ha(sim, c, lot_fixed, warm):
+    bars, n = sim.bars, len(sim.bars)
+    ents = {e["i"]: e for e in analyze_ha(bars, {"sl_buffer": c.get("ha_sl_buffer", 2.0),
+                                                 "sl_lookback": int(c.get("ha_sl_lookback", 20)),
+                                                 "candles": c.get("ha_candles", "ha")})}
+    tp_n = int(c.get("tp", 2))
+    for k in range(warm, n):
+        o, h, l = bars[k][1], bars[k][2], bars[k][3]
+        s = sim.spr[k]
+        # 1) trong nến: SL → TP → lá chắn (BE / trailing + chốt 50%)
+        for p in list(sim.pos):
+            if p["k"] >= k:
+                continue
+            x = sim.stop_hit(p, k, p["sl"]) if p["sl"] else None
+            if x is not None:
+                sim.close(p, p["lot"], x, k, "SL" if p["tag"] != "be" else "SL hòa vốn/trail")
+                continue
+            x = sim.limit_hit(p, k, p["tp"]) if p["tp"] else None
+            if x is not None:
+                sim.close(p, p["lot"], x, k, f"TP{tp_n}" if c.get("tp_mode") != "usd" else "TP $")
+                continue
+            d = p["d"]
+            best = h if d > 0 else l + s                       # giá có lợi nhất trong nến
+            gain = d * (best - p["e"])
+            if c.get("tr_on") and gain >= c.get("tr_at", 2.2):
+                if c.get("half", True) and not p["half"]:
+                    p["half"] = True
+                    hv = math.floor(p["lot"] / 2 / sim.step + EPS) * sim.step
+                    if hv >= sim.vmin - EPS and p["lot"] - hv >= sim.vmin - EPS:
+                        sim.close(p, hv, p["e"] + d * c.get("tr_at", 2.2), k, "chốt 50% (trailing)")
+                new = best - d * c.get("tr_step", 0.6)
+                if d * (new - p["sl"]) > 0:
+                    p["sl"], p["tag"] = new, "be"
+            elif c.get("be_on") and gain >= c.get("be_at", 1.5):
+                new = p["e"] + d * c.get("be_lock", 0.25)
+                if d * (new - p["sl"]) > 0:
+                    p["sl"], p["tag"] = new, "be"
+        # 2) nến k đóng: có nhãn BUY/SELL → chốt lệnh ngược chiều, vào lệnh mới
+        e = ents.get(k)
+        if e:
+            d = 1 if e["side"] == "BUY" else -1
+            cl = bars[k][4]
+            for p in [p for p in sim.pos if p["d"] != d]:
+                sim.close(p, p["lot"], sim.exit_px(p, k, cl), k, "tín hiệu ngược")
+            b = _tier(sim.bal)
+            lot, maxn = (lot_fixed, b[1] if b else 1) if lot_fixed else ((b[2], b[1]) if b else (None, 0))
+            if lot and len(sim.pos) < maxn:
+                px = cl + s if d > 0 else cl
+                sl = px - d * c.get("sl_usd", 3) if c.get("sl_mode") == "usd" else e["sl"]
+                tp = px + d * c.get("tp_usd", 5) if c.get("tp_mode") == "usd" else e["tp"][tp_n - 1]
+                if d * (px - sl) > 0 and d * (tp - px) > 0:
+                    sim.open(d, lot, px, sl, tp, k, camp=k)
+        sim.mark(k)
+
+
+# ---------------- PinYin HA Pro DCA (bản sao luật của ckg_auto._dca_*) ----------------
+
+def run_dca(sim, c, lot_fixed, warm):
+    bars, n = sim.bars, len(sim.bars)
+    d = c["dca"]
+    sig = dca_compute(bars, {"candles": d.get("candles", "std")})
+    E = {"dir": 0}
+
+    def reset():
+        E.clear()
+        E["dir"] = 0
+
+    def avg():
+        v = sum(p["lot"] for p in sim.pos)
+        return sum(p["e"] * p["lot"] for p in sim.pos) / v if v else None
+
+    def cap_legs():
+        if d["risk"] > 0:
+            return d["legs"]
+        b = _tier(sim.bal)
+        return min(d["legs"], b[1] if b else 1)
+
+    def levels(sg):
+        a = avg()
+        if a is None or E.get("sl") is None or E.get("tp1"):
+            return
+        R = E["dir"] * (a - E["sl"])
+        if R <= 0:
+            return
+        t1 = a + E["dir"] * d["tp1r"] * R
+        t2 = a + E["dir"] * d["tp2r"] * R
+        if d["cap"] and sg:
+            if E["dir"] == 1:
+                band = min(sg["up"], sg["upx"]) if sg["ready"] and sg["upx"] is not None else sg["up"]
+            else:
+                band = max(sg["lo"], sg["lox"]) if sg["ready"] and sg["lox"] is not None else sg["lo"]
+            if E["dir"] * (band - t1) > 0 and E["dir"] * (band - t2) < 0:
+                t2 = band
+        E["tp1px"], E["tp2px"] = t1, t2
+
+    def close_part(pct, px_bid, k, why):
+        want = math.floor(E["vol_tp"] * pct / 100 / sim.step + EPS) * sim.step
+        if want < sim.vmin - EPS:
+            return
+        left = round(want, 2)
+        for p in sorted(list(sim.pos), key=lambda x: x["id"]):
+            if left < sim.vmin - EPS:
+                break
+            v = min(p["lot"], left)
+            if EPS < p["lot"] - v < sim.vmin - EPS:
+                v = p["lot"]
+            v = round(math.floor(v / sim.step + EPS) * sim.step, 2)
+            if v < sim.vmin - EPS:
+                continue
+            sim.close(p, v, sim.exit_px(p, k, px_bid), k, why)
+            left = round(left - v, 2)
+
+    def close_all(k, why):
+        cl = bars[k][4]
+        for p in list(sim.pos):
+            sim.close(p, p["lot"], sim.exit_px(p, k, cl), k, why)
+
+    def open_leg(k, dr, sl, sg, first):
+        cl, s = bars[k][4], sim.spr[k]
+        px = cl + s if dr > 0 else cl
+        if dr * (px - sl) <= 0:
+            return
+        if first:
+            if d["risk"] > 0:
+                loss1 = abs(px - sl) * sim.vpu
+                lot = math.floor(sim.bal * d["risk"] / 100 / (d["legs"] * loss1) / sim.step + EPS) * sim.step
+                if lot < sim.vmin - EPS:
+                    return
+            elif lot_fixed:
+                lot = lot_fixed
+            else:
+                b = _tier(sim.bal)
+                if not b:
+                    return
+                lot = b[2]
+        else:
+            lot = E["lot"]
+        nleg = 1 if first else E["legs"] + 1
+        sim.open(dr, lot, px, sl, 0.0, k, camp=E.get("cid", k) if not first else k, tag=f"DCA{nleg}")
+        if first:
+            E.clear()
+            E.update({"dir": dr, "rev": bool(sg["rev"]), "sl": sl, "legs": 1, "lot": round(lot, 2), "last_px": sg["c"],
+                      "last_k": k, "start_k": k, "tp1": False, "tp2": False, "tp1px": None, "tp2px": None,
+                      "vol_tp": 0.0, "cid": k})
+        else:
+            E.update({"legs": nleg, "last_px": sg["c"], "last_k": k})
+        levels(sg)
+
+    tp2p = max(0, min(d["tp2p"], 100 - d["tp1p"]))
+    for k in range(warm, n):
+        h, l = bars[k][2], bars[k][3]
+        # ---- trong nến (bot: _dca_live mỗi 2 giây + SL của sàn) ----
+        if E["dir"]:
+            dr = E["dir"]
+            hit_sl = False
+            for p in list(sim.pos):
+                if p["k"] < k and p["sl"]:
+                    x = sim.stop_hit(p, k, p["sl"])
+                    if x is not None:
+                        sim.close(p, p["lot"], x, k, "SL hòa vốn" if E.get("tp1") else "SL chung")
+                        hit_sl = True
+            if not sim.pos:
+                reset()
+            elif not hit_sl:
+                old = [p for p in sim.pos if p["k"] < k]
+                if not E["tp1"] and E["tp1px"] and old:
+                    probe = {"d": dr}
+                    if sim.limit_hit(probe, k, E["tp1px"]) is not None:
+                        a0 = avg()
+                        E["tp1"], E["vol_tp"] = True, round(sum(p["lot"] for p in sim.pos), 2)
+                        close_part(d["tp1p"], E["tp1px"] if dr > 0 else E["tp1px"] - sim.spr[k], k, "TP1")
+                        if d["be"] and sim.pos:
+                            be = a0 + dr * d["be_off"]
+                            for p in sim.pos:
+                                if p["sl"] == 0 or dr * (be - p["sl"]) > 0:
+                                    p["sl"] = be
+                        if tp2p == 0:
+                            E["tp2"] = True
+                if E["dir"] and E["tp1"] and not E["tp2"] and tp2p > 0 and E["tp2px"] and sim.pos:
+                    if sim.limit_hit({"d": dr}, k, E["tp2px"]) is not None:
+                        E["tp2"] = True
+                        close_part(tp2p, E["tp2px"] if dr > 0 else E["tp2px"] - sim.spr[k], k, "TP2")
+                if not sim.pos:
+                    reset()
+        # ---- nến k đóng (bot: _dca_bar) ----
+        sg = sig[k]
+        if sg is None:
+            sim.mark(k)
+            continue
+        dr = E["dir"]
+        go = sg["go"]
+        closed = want_rev = False
+        if dr:
+            cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
+            opp = go == -dr
+            soft = d["soft"] and not E["rev"] and sg["ready"] and (cl < vw - d["soft_sig"] * sd if dr > 0 else cl > vw + d["soft_sig"] * sd)
+            tout = d["time"] > 0 and not E["tp1"] and k - E["start_k"] >= d["time"]
+            tr_on = E["tp1"] if d["trail_after"] == 1 else E["tp2"]
+            trail = d["trail"] and tr_on and (cl < sg["ema21"] if dr > 0 else cl > sg["ema21"])
+            why = "tín hiệu ngược" if opp else "SL mềm VWAP" if soft else "hết giờ" if tout else "trail EMA21" if trail else ""
+            if why:
+                close_all(k, why)
+                reset()
+                closed = not (opp and d["rev"])
+                want_rev = opp and d["rev"]
+                dr = 0
+        if go and not _in_sess(d, sg["t"]):
+            go = 0
+        if not dr and not closed and go:
+            if not ((go > 0 and d["dir"] == "sell") or (go < 0 and d["dir"] == "buy")):
+                cl, vw, sd, atr = sg["c"], sg["vwap"], sg["sd"], sg["atr"]
+                stretch_ok = sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
+                if stretch_ok:
+                    if sg["rev"]:
+                        sl = sg["ext"] - go * d["sl_buf"]
+                    else:
+                        slv = vw - go * d["sl_k"] * atr
+                        slw = (sg["swl"] - d["sl_buf"]) if go > 0 else (sg["swh"] + d["sl_buf"])
+                        sl = slv if d["sl_mode"] == "vwap" else slw if d["sl_mode"] == "swing" else (min(slv, slw) if go > 0 else max(slv, slw))
+                    open_leg(k, go, sl, sg, True)
+        elif dr and go == dr and not E["tp1"] and E["legs"] < cap_legs():
+            gap_ok = (sg["c"] <= E["last_px"] - d["gap"] * sg["atr"] if dr > 0 else sg["c"] >= E["last_px"] + d["gap"] * sg["atr"]) \
+                and k - E["last_k"] >= d["min_bars"]
+            struct_ok = (sg["c"] > E["sl"] if dr > 0 else sg["c"] < E["sl"]) and (E["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
+            if gap_ok and struct_ok:
+                open_leg(k, dr, E["sl"], sg, False)
+        if E["dir"]:
+            levels(sg)
+        sim.mark(k)
+
+
+# ---------------- Thống kê ----------------
+
+def stats(sim, cap0, by_camp):
+    tr = sim.trades
+    eq = [v for _, v in sim.eq] or [cap0]
+    peak, mdd, mddp = cap0, 0.0, 0.0
+    for v in eq:
+        peak = max(peak, v)
+        if peak - v > mdd:
+            mdd, mddp = peak - v, (peak - v) / peak * 100 if peak > 0 else 0
+    groups = {}
+    for t in tr:
+        key = t["camp"] if by_camp else t["id"]
+        g = groups.setdefault(key, {"pnl": 0.0, "k0": t["k0"], "k1": t["k1"], "side": t["side"], "legs": set(), "why": t["why"], "lot": 0.0})
+        g["pnl"] += t["pnl"]
+        g["k1"] = max(g["k1"], t["k1"])
+        g["legs"].add(t["id"])
+        g["why"] = t["why"]
+        g["lot"] += t["lot"]
+    gs = sorted(groups.values(), key=lambda g: g["k0"])
+    wins = [g["pnl"] for g in gs if g["pnl"] > 0]
+    loss = [g["pnl"] for g in gs if g["pnl"] <= 0]
+    streak = cur = 0
+    for g in gs:
+        cur = cur + 1 if g["pnl"] <= 0 else 0
+        streak = max(streak, cur)
+    month = {}
+    for g in gs:
+        m = datetime.fromtimestamp(sim.bars[g["k1"]][0], VN).strftime("%Y-%m")
+        x = month.setdefault(m, {"m": m, "n": 0, "pnl": 0.0, "w": 0})
+        x["n"] += 1
+        x["pnl"] += g["pnl"]
+        x["w"] += g["pnl"] > 0
+    why = {}
+    for t in tr:
+        w = why.setdefault(t["why"], {"why": t["why"], "n": 0, "pnl": 0.0})
+        w["n"] += 1
+        w["pnl"] += t["pnl"]
+    net = sim.bal - cap0
+    gw, gl = sum(wins), -sum(loss)
+    bars = sim.bars
+    tm = lambda k: datetime.fromtimestamp(bars[k][0], VN).strftime("%d/%m %H:%M")
+    step = max(1, len(sim.eq) // 800)
+    return {
+        "net": round(net, 2), "net_pct": round(net / cap0 * 100, 2) if cap0 else 0, "end": round(sim.bal, 2),
+        "n": len(gs), "n_orders": len({t["id"] for t in tr}), "win": len(wins), "winrate": round(len(wins) / len(gs) * 100, 1) if gs else 0,
+        "pf": round(gw / gl, 2) if gl > 0 else (None if not gw else 999), "avg_win": round(gw / len(wins), 2) if wins else 0,
+        "avg_loss": round(-gl / len(loss), 2) if loss else 0, "best": round(max(wins), 2) if wins else 0,
+        "worst": round(min(loss), 2) if loss else 0, "mdd": round(mdd, 2), "mdd_pct": round(mddp, 1), "streak": streak,
+        "open_left": len(sim.pos),
+        "months": [{**v, "pnl": round(v["pnl"], 2)} for v in sorted(month.values(), key=lambda v: v["m"])],
+        "why": sorted(({**v, "pnl": round(v["pnl"], 2)} for v in why.values()), key=lambda v: -v["n"]),
+        "list": [{"t0": tm(g["k0"]), "t1": tm(g["k1"]), "side": g["side"], "legs": len(g["legs"]), "lot": round(g["lot"], 2),
+                  "pnl": round(g["pnl"], 2), "why": g["why"]} for g in gs[-300:]][::-1],
+        "curve": [[t, round(v, 2)] for t, v in sim.eq[::step]],
+    }
+
+
+def run(bars, spr, cfg, lot, cap0, vpu, comm=0.0, warm=300, step=0.01, vmin=0.01):
+    """Chạy 1 lần backtest. bars: nến đã đóng (Bid), spr: spread (đơn vị giá) từng nến."""
+    sim = Sim(bars, spr, cap0, vpu, comm, step, vmin)
+    strat = cfg.get("strategy")
+    warm = min(warm, max(0, len(bars) - 1))
+    if strat == "dca":
+        run_dca(sim, cfg, lot, warm)
+    elif strat == "ha":
+        run_ha(sim, cfg, lot, warm)
+    else:
+        raise ValueError("Backtest hỗ trợ chiến lược PinYin HA Pro và PinYin HA Pro DCA.")
+    # lệnh còn mở cuối dữ liệu: tính theo giá đóng cửa cuối (ghi lý do "hết dữ liệu")
+    k = len(bars) - 1
+    left = len(sim.pos)
+    for p in list(sim.pos):
+        sim.close(p, p["lot"], sim.exit_px(p, k, bars[k][4]), k, "còn mở (hết dữ liệu)")
+    out = stats(sim, cap0, by_camp=strat == "dca")
+    out["open_left"] = left
+    return out
