@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.30"
+#property version   "1.40"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.3"
+#define EA_VER   "1.4"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -201,6 +201,66 @@ string DoBe(ulong tk)
    return "1|Đã dời SL hòa vốn " + IntegerToString(n) + " lệnh.";
 }
 
+// Copy lệnh bot (chế độ "tài khoản vào lệnh"): chốt 1 phần theo tỉ lệ tổng khối lượng EA, lệnh cũ trước
+string DoPart(double frac)
+{
+   if(frac <= 0 || frac > 1) return "0|Tỉ lệ chốt không hợp lệ.";
+   double st = SymbolInfoDouble(Sym, SYMBOL_VOLUME_STEP), mn = SymbolInfoDouble(Sym, SYMBOL_VOLUME_MIN);
+   if(st <= 0) st = 0.01;
+   double tot = 0; ulong tk[]; int m = 0;
+   for(int i = 0; i < PositionsTotal(); i++)
+   {
+      ulong t = PositionGetTicket(i);
+      if(!Mine(t)) continue;
+      tot += PositionGetDouble(POSITION_VOLUME); ArrayResize(tk, m + 1); tk[m++] = t;
+   }
+   if(m == 0) return "0|Không có lệnh mở.";
+   ArraySort(tk);
+   double want = MathFloor(tot * frac / st + 1e-9) * st, left = want, done = 0;
+   if(want < mn - 1e-9) return "0|Khối lượng quá nhỏ để chốt " + D(frac * 100, 0) + "%.";
+   for(int i = 0; i < m && left >= mn - 1e-9; i++)
+   {
+      if(!PositionSelectByTicket(tk[i])) continue;
+      double v = PositionGetDouble(POSITION_VOLUME), c = MathMin(v, left);
+      if(v - c > 1e-9 && v - c < mn - 1e-9) c = v;               // phần còn lại dưới lot tối thiểu: đóng hết lệnh
+      c = NormalizeDouble(MathFloor(c / st + 1e-9) * st, 2);
+      if(c < mn - 1e-9) continue;
+      bool ok = c >= v - 1e-9 ? trade.PositionClose(tk[i]) : trade.PositionClosePartial(tk[i], c);
+      if(!ok || !OkRet()) return "0|" + Rej();
+      left -= c; done += c;
+   }
+   return "1|Đã chốt " + D(done, 2) + " / " + D(tot, 2) + " lot.";
+}
+
+// Dời SL mọi lệnh EA về giá vào trung bình (+ cộng thêm off theo chiều có lợi)
+string DoBeAvg(double off)
+{
+   double v = 0, pv = 0; int dir = 0, dg = Dg(); double mind = MinDist();
+   for(int i = 0; i < PositionsTotal(); i++)
+   {
+      ulong t = PositionGetTicket(i);
+      if(!Mine(t)) continue;
+      double vol = PositionGetDouble(POSITION_VOLUME);
+      v += vol; pv += vol * PositionGetDouble(POSITION_PRICE_OPEN);
+      dir = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1;
+   }
+   if(v <= 0) return "0|Không có lệnh mở.";
+   double be = NormalizeDouble(pv / v + dir * off * Unit(), dg);
+   MqlTick t; SymbolInfoTick(Sym, t);
+   double px = dir > 0 ? t.bid : t.ask;
+   if(dir * (px - be) < mind) return "0|Giá chưa đủ xa giá trung bình để dời SL hòa vốn.";
+   int n = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong k = PositionGetTicket(i);
+      if(!Mine(k)) continue;
+      double sl = PositionGetDouble(POSITION_SL);
+      if(sl != 0 && dir * (be - sl) <= 0) continue;              // SL hiện tại đã tốt hơn
+      if(trade.PositionModify(k, be, PositionGetDouble(POSITION_TP)) && OkRet()) n++; else return "0|" + Rej();
+   }
+   return "1|Đã dời SL " + IntegerToString(n) + " lệnh về giá TB " + D(be, dg) + ".";
+}
+
 bool Done(string id) { for(int i = 0; i < doneN; i++) if(doneIds[i] == id) return true; return false; }
 void MarkDone(string id) { if(doneN < 50) doneIds[doneN++] = id; else { for(int i = 1; i < 50; i++) doneIds[i - 1] = doneIds[i]; doneIds[49] = id; } }
 
@@ -216,6 +276,8 @@ void Exec(string &f[])
    else if(c == "HALF")   r = DoHalf((ulong)StringToInteger(n > 3 ? f[3] : "0"));
    else if(c == "CANCEL") r = DoCancel((ulong)StringToInteger(n > 3 ? f[3] : "0"));
    else if(c == "BE")     r = DoBe((ulong)StringToInteger(n > 3 ? f[3] : "0"));
+   else if(c == "PART" && n > 3)  r = DoPart(StringToDouble(f[3]));
+   else if(c == "BEAVG")  r = DoBeAvg(n > 3 ? StringToDouble(f[3]) : 0);
    else r = "0|Lệnh không hỗ trợ: " + c;
    results += "R|" + id + "|" + StringSubstr(r, 0, 1) + "|" + Clean(StringSubstr(r, 2)) + "\n";   // r = "1|thông báo"
 }

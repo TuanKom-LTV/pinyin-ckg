@@ -73,9 +73,9 @@ body.v-ai #top2{display:none!important}
  body.fx #gb2>.c:nth-child(1){grid-column:1;grid-row:3}body.fx #gb2>.c:nth-child(2){grid-column:2;grid-row:3}}
 
 #qk.eaoff .qsec:not(#qea),#qk.eaoff #qacc{display:none}#qk.eaoff #qea{display:block!important}.eakey{font-family:ui-monospace,Consolas,monospace;font-size:15px;font-weight:800;color:#facc15;background:#0a101b;border:1px dashed #facc15;border-radius:8px;padding:8px 10px;word-break:break-all}
-body:not(.v-bot) #botc,body:not(.v-bot) #histc,body:not(.v-bot) #btc{display:none!important}
+body:not(.v-bot) #botc,body:not(.v-bot) #histc,body:not(.v-bot) #btc,body:not(.v-bot) #cpc{display:none!important}
 body.v-ck .w>.c,body.v-ck .w>.g,body.v-ck #gb1,body.v-ck #gb2,body.v-ck #tabs{display:none!important}
-body.v-bot .w>.c:not(#botc):not(#histc):not(#btc),body.v-bot .w>.g,body.v-bot #top2,body.v-bot #tabs{display:none!important}
+body.v-bot .w>.c:not(#botc):not(#histc):not(#btc):not(#cpc),body.v-bot .w>.g,body.v-bot #top2,body.v-bot #tabs{display:none!important}
 #botc{padding:0;border:0;background:none}#botc .ac{margin-top:0!important}
 #newsp{display:none}body.v-news #newsp{display:block}
 body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body.v-news #top2,body.v-news .w>.c.keep,body.v-news #tabs{display:none!important}
@@ -202,6 +202,10 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 </div>
 
 <div class="c" id="botc"><div id="gbot" style="display:none"></div></div>
+<div class="c" id="cpc"><div class="top"><h2 style="margin:0">📡 Tài khoản vào lệnh (copy lệnh bot qua EA)</h2><button onclick="cpAdd()">＋ Thêm tài khoản</button></div>
+<div class="mut" style="font-size:12px;margin:6px 0 10px">Bot lấy tín hiệu và vào lệnh trên MT5 của máy chủ (<b>tài khoản tín hiệu</b>, nên dùng Demo), rồi chép <b>mọi hành động</b> (mở / thêm lệnh DCA, chốt TP1-TP2, dời hòa vốn, đóng) sang các tài khoản dưới đây, ở bất kỳ sàn nào. SL đặt theo <b>khoảng cách giá</b> nên giá 2 sàn lệch nhau không sao.
+Cách gắn: <a href="/ea/download">tải EA PinYinBridge</a> → chép vào MQL5\Experts của MT5 sàn đó → Tools › Options › Expert Advisors: tick <i>Allow WebRequest</i>, thêm <code>https://pinyin.id.vn</code> → kéo EA vào chart vàng, dán <b>Mã kết nối</b> của tài khoản → bật Algo Trading. Mỗi MT5 chỉ dùng cho bot, không vào tay bằng EA đó.</div>
+<div id="cpl"></div></div>
 <div class="c" id="btc"><div class="top"><h2 style="margin:0">🧪 Backtest lịch sử</h2><span class="mut" style="font-size:12px">chạy lại đúng luật của bot trên nến MT5 đã qua · lệnh giả, không gửi lệnh</span></div>
 <div class="mut" style="font-size:12px;margin:6px 0 10px">Dùng cài đặt đang nhập ở ô <b>Bot tự động</b> phía trên (khung, lot, thông số DCA). Sửa số ở trên rồi chạy lại để so sánh, chưa cần bấm Lưu.</div>
 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
@@ -630,6 +634,26 @@ async function liveCloseOne(tk){const q=ST[cs].pos,x=q&&q.list?q.list.find(o=>o.
 
 // ===== Bot tự động XAUUSD (EMA9 × EMA21) chạy trên máy chủ =====
 let AB=null,ABUSY=false;
+
+// ===== Tài khoản vào lệnh (copy lệnh bot) =====
+let CP=null,CPB=0;
+async function cpTick(){if(VIEW||VIEWMODE!='bot'||CPB)return;CPB=1;try{const j=await jget('api/auto/copy',8000);if(j&&j.ok){CP=j;cpDraw()}}catch(e){}finally{CPB=0}}
+function cpDraw(){const L=CP.list,e=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ if(!L.length){$('cpl').innerHTML='<div class="mut">Chưa có tài khoản nào. Bấm <b>＋ Thêm tài khoản</b> để lấy Mã kết nối.</div>';return}
+ if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#cpl'))return;   // đang gõ: không vẽ lại
+ $('cpl').innerHTML='<div class="cards4">'+L.map(f=>{const a=f.acc,st=f.online?'<span class="ok">● Online</span>':a?'<span class="no">● Offline</span>':'<span class="wn">● Chưa gắn EA</span>';
+  return `<div class="ac" style="border-color:${f.on?'var(--ok)':'var(--bd)'}"><div class="hd"><input value="${e(f.name)}" style="font-weight:700;width:60%" onchange="cpSet('${f.id}',{name:this.value})"><span class="qtg ${f.on?'on':''}" onclick="cpSet('${f.id}',{on:${!f.on}})">${f.on?'ĐANG COPY':'TẮT'}</span></div>
+  <div style="font-size:12px;margin:4px 0">${st}${a?` · #${e(a.login)} · ${e(a.server)} · <b class="${a.demo?'wn':'no'}">${a.demo?'Demo':'THẬT'}</b> · vốn <b>${(+a.equity).toFixed(2)} ${e(a.currency)}</b>`:''}${f.online&&a&&!a.algo?' · <span class="no">Algo Trading TẮT</span>':''}${f.old?` · <span class="wn">EA ${e(f.ver)} cũ, cần bản ${CP.ea_latest}</span>`:''}</div>
+  ${f.online?`<div style="font-size:12px">Lệnh bot đang mở: <b>${f.npos}</b>${f.npos?` · lãi/lỗ <b class="${f.pnl>=0?'ok':'no'}">${f.pnl}</b>`:''}</div>`:''}
+  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13px">Lot <select onchange="cpSet('${f.id}',{lot_mode:this.value})" style="width:auto"><option value="same"${f.lot_mode=='same'?' selected':''}>bằng lot bot</option><option value="mult"${f.lot_mode=='mult'?' selected':''}>lot bot ×</option><option value="fixed"${f.lot_mode=='fixed'?' selected':''}>cố định</option></select>
+   ${f.lot_mode!='same'?`<input type="number" step=".01" min=".01" value="${f.lot}" style="width:70px" onchange="cpSet('${f.id}',{lot:+this.value})">`:''}</div>
+  <div style="font-size:12px;margin-top:8px">Mã kết nối: <code style="user-select:all">${e(f.key)}</code> <button class="qx" onclick="navigator.clipboard&&navigator.clipboard.writeText('${e(f.key)}')">Copy</button></div>
+  <div style="display:flex;gap:6px;margin-top:8px"><button class="qx" onclick="if(confirm('Đổi mã kết nối? EA đang gắn sẽ phải dán mã mới.'))cpPost({act:'key',id:'${f.id}'})">Đổi mã</button><button class="qx" style="border-color:var(--no);color:var(--no)" onclick="if(confirm('Xóa tài khoản ${e(f.name)}? Lệnh đang mở trên MT5 đó giữ nguyên.'))cpPost({act:'del',id:'${f.id}'})">Xóa</button></div></div>`}).join('')+'</div>'}
+async function cpPost(b){try{const r=await jpost('api/auto/copy',b);if(!r||!r.ok){alert('Lỗi: '+(r&&r.loi||'không gửi được'));return null}await cpTick();return r}catch(e){alert('Lỗi: '+e.message);return null}}
+async function cpSet(id,o){if(o.on===true){const f=CP&&CP.list.find(x=>x.id==id);if(f&&f.acc&&!f.acc.demo&&!confirm('Tài khoản '+f.name+' là tài khoản THẬT. Bật copy lệnh bot sang tài khoản này?'))return}
+ await cpPost({act:'set',id,...o})}
+async function cpAdd(){const n=prompt('Tên tài khoản (vd: Exness Cent, Exness Thật):','');if(n==null)return;const r=await cpPost({act:'add',name:n});if(r&&r.item)alert('Đã tạo. Mã kết nối: '+r.item.key+'\n\nDán mã này vào ô "Mã kết nối PinYin" của EA PinYinBridge trên MT5 sàn đó.')}
+setInterval(()=>{if(VIEWMODE=='bot')cpTick()},3000);
 
 // ===== Backtest lịch sử =====
 const BTK={dca:[['dca.legs','Số lệnh tối đa'],['dca.gap','Lệnh DCA tốt hơn (×ATR)'],['dca.min_bars','Cách tối thiểu (nến)'],['dca.sl_buf','SL cộng thêm ($)'],['dca.sl_k','k ATR của SL'],['dca.tp1r','TP1 (R)'],['dca.tp1p','% chốt TP1'],['dca.tp2r','TP2 (R)'],['dca.tp2p','% chốt TP2'],['dca.time','Hết giờ (nến)'],['dca.stretch','Giãn VWAP tối đa (σ)'],['dca.soft_sig','SL mềm (σ)'],['dca.risk','Rủi ro tổng (%)']]};

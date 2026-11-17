@@ -36,6 +36,7 @@ from app.api.ckg import server_offset
 from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION, MAX_LOT
 from app.services.mt5_service import mt5_service
 from app.services.ha_pro_dca import dca_signals
+from app.services import copytrade
 
 
 SYM = "XAUUSD"
@@ -301,6 +302,7 @@ def _set_sl(p, sl):
 
 
 def _close_all(why):
+    copytrade.copy_close(why)
     for p in _bot_positions():
         try:
             _close_pos(p, why)
@@ -317,6 +319,9 @@ def _close_part(pct, why):
         log(f"{why}: khối lượng {_dca['vol_tp']:.2f} lot quá nhỏ để chốt {pct}% (tối thiểu {vmin}), giữ nguyên lệnh.", "info")
         return
     left = round(want, 2)
+    tot = sum(p.volume for p in _bot_positions())
+    if tot > 0:
+        copytrade.copy_part(min(1.0, want / tot), why)
     for p in sorted(_bot_positions(), key=lambda x: x.ticket):
         if left < vmin - 1e-9:
             break
@@ -362,6 +367,7 @@ def _dca_live(c):
     ps = _bot_positions()
     if not ps:
         log(f"Chiến dịch {'BUY' if _dca['dir'] > 0 else 'SELL'} DCA kết thúc ({_dca['legs']} lệnh).", "info", tele=False)
+        copytrade.copy_close("chiến dịch đã kết thúc trên tài khoản tín hiệu")
         _dca_reset()
         return
     tick = mt5.symbol_info_tick(SYM)
@@ -388,6 +394,7 @@ def _dca_live(c):
                         log(f"Không dời SL hòa vốn #{p.ticket}: {e}", "err")
             _dca["sl_be"] = be
             log(f"DCA: chạm TP1 → dời SL về hòa vốn {be:.2f}", "info")
+            copytrade.copy_beavg(d["be_off"])
         if tp2p == 0:
             _dca["tp2"] = True
     if _dca["tp1"] and not _dca["tp2"] and tp2p > 0 and _dca["tp2px"] and dr * (px - _dca["tp2px"]) >= 0 and _bot_positions():
@@ -410,6 +417,7 @@ def _dca_bar(c, bars, b, fixed):
     ps = _bot_positions()
     dr = _dca["dir"]
     if dr and not ps:                                           # SL/đóng tay giữa 2 vòng
+        copytrade.copy_close("chiến dịch đã kết thúc trên tài khoản tín hiệu")
         _dca_reset()
         dr = 0
     if not dr and ps:                                           # lệnh bot cũ (chiến lược khác) còn mở
@@ -546,6 +554,7 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
     kind = ("BUY" if buy else "SELL") + (" ĐC*" if _dca["rev"] else "")
     lbl = (f"Mở chiến dịch {kind}" + (f" ({why})" if why else "")) if first else f"Thêm lệnh DCA {n}/{_dca_cap(d, b, fixed)} {kind}"
     log(f"{lbl}: {res.volume} lot @ {res.price} · SL chung {sl:.2f} · TP1 {(_dca['tp1px'] or 0):.2f} · TP2 {(_dca['tp2px'] or 0):.2f}", "open")
+    copytrade.copy_open(dr, float(res.volume), abs(float(res.price) - sl))   # SL theo khoảng cách giá
 
 
 def _step():
@@ -874,3 +883,51 @@ def auto_backtest(x: BtIn):
         return {"ok": True, "range": rng, "meta": meta, "cfg": c, "sweep": {"key": key, "rows": rows}}
     except Exception as e:
         return {"ok": False, "loi": f"Lỗi backtest: {e}"}
+
+
+# ---------- Tài khoản vào lệnh (copy qua EA PinYinBridge) ----------
+copytrade.set_logger(lambda m, k="info", tele=True: log(m, k, tele=tele))
+
+
+class CopyIn(BaseModel):
+    act: str                            # add | set | del | key
+    id: str | None = None
+    name: str | None = None
+    on: bool | None = None
+    lot_mode: str | None = None
+    lot: float | None = None
+
+
+@router.get("/auto/copy")
+def copy_list():
+    from app.api.ea import EA_LATEST
+    return {"ok": True, "list": copytrade.status(), "ea_latest": EA_LATEST}
+
+
+@router.post("/auto/copy")
+def copy_set(x: CopyIn):
+    try:
+        if x.act == "add":
+            f = copytrade.add(x.name or "")
+            log(f"Thêm tài khoản vào lệnh [{f['name']}].", "info", tele=False)
+            return {"ok": True, "item": f}
+        if not x.id:
+            return {"ok": False, "loi": "Thiếu tài khoản."}
+        if x.act == "del":
+            copytrade.update(x.id, delete=True)
+            return {"ok": True}
+        if x.act == "key":
+            return {"ok": True, "item": copytrade.update(x.id, new_key=True)}
+        if x.act == "set":
+            if x.lot_mode is not None and x.lot_mode not in copytrade.LOT_MODES:
+                return {"ok": False, "loi": "Cách tính lot không hợp lệ."}
+            if x.lot is not None and not (0.01 <= x.lot <= 100):
+                return {"ok": False, "loi": "Lot / hệ số từ 0.01 đến 100."}
+            f = copytrade.update(x.id, name=(x.name or "").strip()[:40] or None, on=x.on, lot_mode=x.lot_mode, lot=x.lot)
+            if x.on is not None:
+                log(f"{'BẬT' if x.on else 'TẮT'} copy lệnh bot sang [{f['name']}].", "info")
+            return {"ok": True, "item": f}
+        return {"ok": False, "loi": "Thao tác không hợp lệ."}
+    except ValueError as e:
+        return {"ok": False, "loi": str(e)}
+

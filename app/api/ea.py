@@ -20,7 +20,7 @@ from app.core import users
 
 router = APIRouter(tags=["PinYin · cầu nối EA khách"])
 EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.ex5"
-EA_LATEST = "1.3"          # phiên bản EA mới nhất trên máy chủ
+EA_LATEST = "1.4"          # phiên bản EA mới nhất trên máy chủ
 ONLINE_SEC = 8
 WAIT_SEC = 10
 GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
@@ -65,12 +65,17 @@ async def sync(request: Request):
     body = (await request.body()).decode("utf-8", "ignore")
     lines = [l.split("|") for l in body.splitlines() if l]
     key = next((l[1] for l in lines if l[0] == "K" and len(l) > 1), "")
-    email, u = users.by_key(key.strip())
-    if not u:
-        return PlainTextResponse("X|Mã kết nối không đúng. Lấy lại mã trên trang pinyin.id.vn.\n")
-    if users.status_of(u) != "ok" or not u.get("gd"):
-        return PlainTextResponse("X|Tài khoản PinYin hết hạn hoặc chưa được cấp quyền giao dịch. Liên hệ Telegram @TuanKom.\n")
-    uid = u["id"]
+    from app.services import copytrade
+    cf = copytrade.by_key(key)
+    if cf:                                    # tài khoản vào lệnh của chủ (copy lệnh bot): lá chắn EA tắt, bot tự quản
+        uid, u = copytrade.uid(cf), {"ea_guard": {"be_on": False, "tr_on": False, "manual": False, "auto_sltp": False}}
+    else:
+        email, u = users.by_key(key.strip())
+        if not u:
+            return PlainTextResponse("X|Mã kết nối không đúng. Lấy lại mã trên trang pinyin.id.vn.\n")
+        if users.status_of(u) != "ok" or not u.get("gd"):
+            return PlainTextResponse("X|Tài khoản PinYin hết hạn hoặc chưa được cấp quyền giao dịch. Liên hệ Telegram @TuanKom.\n")
+        uid = u["id"]
     with _lock:
         s = _s(uid)
         s["last"], pos, pend, ind = time.time(), [], [], {}
