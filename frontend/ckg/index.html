@@ -153,7 +153,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="btns" style="margin:0"><button id="aib" class="bb" style="background:var(--acc)" onclick="aiRun(false)">⚡ Phân tích ngay</button><button id="aib2" onclick="aiRun(true)" title="Bỏ qua bản lưu, gọi AI phân tích mới">🔄 Phân tích lại</button></div></div>
 <div id="aist" class="mut" style="margin:8px 0"></div><div id="aiout" class="aiout"></div>
 <p class="mut" style="font-size:12px;margin:12px 0 0">AI (Google Gemini) đọc dữ liệu MT5 đa khung M1 · M5 · M15 · H1 · H4 · D1 cùng các mốc CKG (pha tuần WPH7, chu kỳ ngày, khung giờ vào lệnh) rồi đưa kịch bản. Đây là phân tích tham khảo, không phải lời khuyên đầu tư; AI có thể sai, luôn tự kiểm tra trước khi vào lệnh.</p></div>
-<div id="top2"><div class="ws" id="ws"><div class="c" id="chartc"><div class="btns" id="cmode" style="margin:0 0 10px;align-items:center"><button data-c="pin" onclick="setCM('pin')">📊 Biểu đồ PinYin</button><button data-c="tv" onclick="setCM('tv')">📈 TradingView</button><span class="ok" style="font-size:12px;margin-left:4px">● TRỰC TIẾP</span><span id="cmnote" class="mut" style="font-size:11px"></span></div><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" id="cind" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><div class="cvw" id="cvbox"><canvas id="cv" style="touch-action:none;cursor:grab"></canvas></div><div class="cvw" id="tvbox" style="display:none"></div><div class="mut" id="chint" style="font-size:12px;margin-top:4px">Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
+<div id="top2"><div class="ws" id="ws"><div class="c" id="chartc"><div class="btns" id="cmode" style="margin:0 0 10px;align-items:center"><button data-c="pin" onclick="setCM('pin')">📊 Biểu đồ PinYin</button><button data-c="tv" onclick="setCM('tv')">📈 TradingView</button><span class="ok" style="font-size:12px;margin-left:4px">● TRỰC TIẾP</span><span id="cmnote" class="mut" style="font-size:11px"></span></div><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" id="cind" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button id="msb" onclick="msToggle()" title="Thước đo: bấm rồi kéo trên biểu đồ (hoặc giữ Shift + kéo)">📏 Đo</button><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><div class="cvw" id="cvbox"><canvas id="cv" style="touch-action:none;cursor:grab"></canvas><canvas id="cvo" style="position:absolute;left:0;top:0;pointer-events:none"></canvas></div><div class="cvw" id="tvbox" style="display:none"></div><div class="mut" id="chint" style="font-size:12px;margin-top:4px">Rê chuột: dấu cộng hiện giá · 📏 Đo (hoặc Shift + kéo): đo khoảng giá / số nến · Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
 <div class="c qk" id="qk" style="display:none"><h2 style="margin:0 0 4px"><span>🚀 BUỒNG LÁI THAO TÁC LỆNH (ĐIỀU KHIỂN MT5 TỪ XA)</span><span class="qbadge" id="qdemo">…</span></h2>
 <div class="qrow" id="qacc">…</div>
 <div class="qsec" id="qea" style="display:none"></div>
@@ -204,7 +204,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="c" id="botc"><div id="gbot" style="display:none"></div></div>
 <div class="c" id="cpc"><div class="top"><h2 style="margin:0">📡 Tài khoản vào lệnh (copy lệnh bot qua EA)</h2><button onclick="cpAdd()">＋ Thêm tài khoản</button></div>
 <div class="mut" style="font-size:12px;margin:6px 0 10px">Bot lấy tín hiệu và vào lệnh trên MT5 của máy chủ (<b>tài khoản tín hiệu</b>, nên dùng Demo), rồi chép <b>mọi hành động</b> (mở / thêm lệnh DCA, chốt TP1-TP2, dời hòa vốn, đóng) sang các tài khoản dưới đây, ở bất kỳ sàn nào. SL đặt theo <b>khoảng cách giá</b> nên giá 2 sàn lệch nhau không sao.
-Cách gắn: <a href="/ea/download">tải EA PinYinBridge</a> → chép vào MQL5\Experts của MT5 sàn đó → Tools › Options › Expert Advisors: tick <i>Allow WebRequest</i>, thêm <code>https://pinyin.id.vn</code> → kéo EA vào chart vàng, dán <b>Mã kết nối</b> của tài khoản → bật Algo Trading. Mỗi MT5 chỉ dùng cho bot, không vào tay bằng EA đó.</div>
+Cách gắn: <a href="/ea/download">tải EA PinYinBridge</a> → chép vào MQL5\Experts của MT5 sàn đó → Tools › Options › Expert Advisors: tick <i>Allow WebRequest</i>, thêm <code>https://pinyin.id.vn</code> → kéo EA vào chart vàng, dán <b>Mã kết nối</b> của tài khoản → bật Algo Trading. Mỗi MT5 chỉ dùng cho bot, không vào tay bằng EA đó. <b>EA bản 1.5</b>: phần chốt TP1 có TP đặt sẵn trên sàn, sàn chốt xong EA tự dời SL hòa vốn, mất mạng vẫn chạy.</div>
 <div id="cpl"></div></div>
 <div class="c" id="btc"><div class="top"><h2 style="margin:0">🧪 Backtest lịch sử</h2><span class="mut" style="font-size:12px">chạy lại đúng luật của bot trên nến MT5 đã qua · lệnh giả, không gửi lệnh</span></div>
 <div class="mut" style="font-size:12px;margin:6px 0 10px">Dùng cài đặt đang nhập ở ô <b>Bot tự động</b> phía trên (khung, lot, thông số DCA). Sửa số ở trên rồi chạy lại để so sánh, chưa cần bấm Lưu.</div>
@@ -423,7 +423,7 @@ function frame(lo,hi,n,absOf){const cv=$('cv'),r=devicePixelRatio||1,Wd=cv.clien
  const s=getComputedStyle(document.documentElement),g=k=>s.getPropertyValue(k),M=g('--mut'),BD=g('--bd'),R=66,Bm=36,pw=Wd-R,ph=Hd-Bm-8;if(YM){lo=YM.lo;hi=YM.hi}else{const pad=(hi-lo)*.06||P;lo-=pad;hi+=pad}FL=lo;FH=hi;FPW=pw;FPH=ph;
  const y=v=>8+ph-(v-lo)/(hi-lo)*ph,w=pw/Math.max(n,zn());x.font='11px sans-serif';x.lineWidth=1;x.setLineDash([]);
  for(let k=0;k<=6;k++){const v=lo+(hi-lo)*k/6;x.strokeStyle=BD;x.beginPath();x.moveTo(0,y(v));x.lineTo(pw,y(v));x.stroke();x.fillStyle=M;x.fillText(v.toFixed(DG),pw+5,y(v)+4)}
- const st=Math.max(1,Math.round(Math.max(n,zn())/(Wd<500?5:8)));const ab=i=>i<n?absOf(i):absOf(n-1)+(i-n+1)*(n>1?absOf(n-1)-absOf(n-2):6e4);let pd='';for(let i=0;i<Math.max(n,zn());i+=st){const cx=i*w+w/2,L=TLM(ab(i));x.strokeStyle=BD;x.beginPath();x.moveTo(cx,8);x.lineTo(cx,8+ph);x.stroke();x.fillStyle=M;x.fillText(L.t,Math.max(2,cx-14),Hd-20);if(L.d!=pd){x.fillText(L.d,Math.max(2,cx-14),Hd-6);pd=L.d}}
+ const st=Math.max(1,Math.round(Math.max(n,zn())/(Wd<500?5:8)));const ab=i=>i<n?absOf(i):absOf(n-1)+(i-n+1)*(n>1?absOf(n-1)-absOf(n-2):6e4);FAB=ab;FN=n;let pd='';for(let i=0;i<Math.max(n,zn());i+=st){const cx=i*w+w/2,L=TLM(ab(i));x.strokeStyle=BD;x.beginPath();x.moveTo(cx,8);x.lineTo(cx,8+ph);x.stroke();x.fillStyle=M;x.fillText(L.t,Math.max(2,cx-14),Hd-20);if(L.d!=pd){x.fillText(L.d,Math.max(2,cx-14),Hd-6);pd=L.d}}
  CW=w;x.save();x.beginPath();x.rect(0,8,pw,ph);x.clip();
  return{x,y,w,pw,ph,Hd,lo,hi,stk:{},M,B:g('--ok'),S:g('--no'),Y:g('--wn'),A:g('--acc'),E9:g('--e9'),E21:g('--e21'),E50:g('--e50'),E200:g('--e200'),VW:g('--vw')}}
 function tag(f,v,col){const x=f.x,yy=Math.max(8,Math.min(8+f.ph,f.y(v)));x.setLineDash([2,3]);x.strokeStyle=col;x.beginPath();x.moveTo(0,yy);x.lineTo(f.pw,yy);x.stroke();x.setLineDash([]);x.fillStyle=col;x.fillRect(f.pw,yy-9,64,18);x.fillStyle='#fff';x.font='bold 11px sans-serif';x.fillText(v.toFixed(DG),f.pw+4,yy+4);x.font='11px sans-serif'}
@@ -509,7 +509,7 @@ function heroStat(){try{const c=tfc(IX).filter(x=>x.full);if(c.length<30){return
  const tg=up||(!dn&&hA>hB)?hA:dn||lA<lB?lA:null;
  $('hstat').innerHTML=[`📊 Nhịp ${cs} ${TF}: ${nh}`,tk,`Cấu trúc: ${st}`,tg!=null?`🎯 Mục tiêu: <b>${tg.toFixed(DG)}</b>`:''].filter(Boolean).join('<span class="sep">|</span>')}catch(e){}}
 setInterval(()=>{heroBA()},1000);
-function redraw(){heroStat();if(CM=='tv'){tvSync();cmNote()}else draw(DOPEN,IX);const b=$('yab');if(b)b.classList.toggle('on',!YM)}
+function redraw(){heroStat();if(CM=='tv'){tvSync();cmNote()}else{draw(DOPEN,IX);ovDraw()}const b=$('yab');if(b)b.classList.toggle('on',!YM)}
 function cmNote(){$('cmnote').textContent='· giá nguồn '+(TVSYM[cs]||'').split(':')[0]+', có thể lệch vài pip so với MT5'}
 // PAN > 0: lùi về nến cũ; PAN < 0: chừa khoảng trống bên phải (tối đa ~70% khung) như TradingView
 function view(len){const z=zn();PAN=Math.max(-Math.floor(z*.7),Math.min(Math.round(PAN),Math.max(0,len-z)));CLEN=len;const e0=len-PAN,off=Math.max(0,e0-z),end=Math.min(e0,len);return{off,n:end-off,end}}
@@ -535,6 +535,42 @@ function draw(open,ix){IX=ix;DOPEN=open;if(CM=='tv'){tvSync();return}if(G){drawG
  drawR10(f,R,v.off);candles(f,IND.heikin?toHA(all).slice(v.off,v.end):a);drawHap(f,a);const EE={};[[9,'ema9'],[21,'ema21'],[50,'ema50'],[200,'ema200']].forEach(([n,k])=>{if(IND[k])EE[n]=ema(cl,n)});[200,50,21,9].forEach(n=>{if(EE[n])eline(f,EE[n].slice(v.off,v.end),f['E'+n])});
  if(IND.d1)hline(f,open,f.M,[5,4],'Giá mở cửa D1 '+open.toFixed(DG),true);x.restore();
  tag(f,a[a.length-1].c,f.A);axTags(f,[9,21,50,200].filter(n=>EE[n]).map(n=>[EE[n][v.end-1],f['E'+n],'EMA '+n]),a[a.length-1].c)}
+
+// ===== Dấu cộng (crosshair) + thước đo giá =====
+var FAB=null,FN=0,MSM=false,MS=null,MSD=false,XH=null;
+function msToggle(){MSM=!MSM;$('msb').classList.toggle('on',MSM);if(!MSM){MS=null}$('cv').style.cursor=MSM?'crosshair':'grab';ovDraw()}
+const pxOfY=y=>FL+(8+FPH-y)/FPH*(FH-FL),yOfPx=v=>8+FPH-(v-FL)/(FH-FL)*FPH;
+function tOfX(x){if(!FAB||!CW)return null;return FAB(Math.max(0,Math.floor(x/CW)))}
+function xOfT(t){if(!FAB||!CW)return null;const m=Math.max(FN,zn());let bi=0,bd=1e18;for(let i=0;i<m;i++){const d=Math.abs(FAB(i)-t);if(d<bd){bd=d;bi=i}}return bi*CW+CW/2}
+function fmtDur(ms){const m=Math.round(Math.abs(ms)/6e4);if(m<60)return m+' phút';const h=Math.floor(m/60);if(h<48)return h+'h'+String(m%60).padStart(2,'0');return Math.floor(h/24)+' ngày '+(h%24)+'h'}
+function ovDraw(){const c=$('cvo'),cv=$('cv');if(!c||!cv||CM=='tv')return;const r=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;
+ if(c.width!=W*r||c.height!=H*r){c.width=W*r;c.height=H*r;c.style.width=W+'px';c.style.height=H+'px'}
+ const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,W,H);if(!FPW)return;
+ const st=getComputedStyle(document.documentElement),col=k=>st.getPropertyValue(k).trim();x.font='11px sans-serif';
+ const lab=(t,cx,cy,bg,al)=>{const w=x.measureText(t).width+10;const lx=al=='r'?cx:al=='c'?cx-w/2:cx-w;x.fillStyle=bg;x.fillRect(lx,cy-9,w,18);x.fillStyle='#fff';x.fillText(t,lx+5,cy+4)};
+ // thước đo
+ if(MS){const x0=xOfT(MS.t0),x1=xOfT(MS.t1),y0=yOfPx(MS.p0),y1=yOfPx(MS.p1);if(x0!=null&&x1!=null){
+  const d=MS.p1-MS.p0,up=d>=0,cl=up?'rgba(22,163,74,':'rgba(220,38,38,';x.save();x.beginPath();x.rect(0,8,FPW,FPH);x.clip();
+  x.fillStyle=cl+'.16)';x.fillRect(Math.min(x0,x1),Math.min(y0,y1),Math.abs(x1-x0),Math.abs(y1-y0));
+  x.strokeStyle=cl+'.9)';x.setLineDash([4,3]);x.strokeRect(Math.min(x0,x1),Math.min(y0,y1),Math.abs(x1-x0),Math.abs(y1-y0));x.setLineDash([]);
+  x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();x.restore();
+  const nb=Math.round(Math.abs(x1-x0)/CW),pip=cs.startsWith('XAU')?'':(' · '+(d/P).toFixed(1)+' pip');
+  const t1=(up?'+':'')+d.toFixed(DG)+(cs.startsWith('XAU')?'$':'')+pip+' · '+(up?'+':'')+(d/MS.p0*100).toFixed(2)+'%',t2=nb+' nến · '+fmtDur(MS.t1-MS.t0);
+  x.font='bold 12px sans-serif';const w=Math.max(x.measureText(t1).width,x.measureText(t2).width)+14,bx=Math.min(Math.max(4,(x0+x1)/2-w/2),FPW-w-4),by=up?Math.max(10,Math.min(y0,y1)-42):Math.min(8+FPH-40,Math.max(y0,y1)+6);
+  x.fillStyle=up?'#16a34a':'#dc2626';x.fillRect(bx,by,w,36);x.fillStyle='#fff';x.fillText(t1,bx+7,by+15);x.font='11px sans-serif';x.fillText(t2,bx+7,by+30);
+  x.font='11px sans-serif';lab(MS.p0.toFixed(DG),FPW,y0,'#64748b','r');lab(MS.p1.toFixed(DG),FPW,y1,up?'#16a34a':'#dc2626','r')}}
+ // dấu cộng
+ if(XH&&XH.x<FPW&&XH.y>=8&&XH.y<=8+FPH){x.strokeStyle=col('--mut')||'#888';x.setLineDash([4,4]);x.beginPath();x.moveTo(0,XH.y);x.lineTo(FPW,XH.y);x.moveTo(XH.x,8);x.lineTo(XH.x,8+FPH);x.stroke();x.setLineDash([]);
+  lab(pxOfY(XH.y).toFixed(DG),FPW,XH.y,'#334155','r');const t=tOfX(XH.x);if(t!=null){const d=new Date(t+252e5),z=v=>String(v).padStart(2,'0');lab(z(d.getUTCDate())+'/'+z(d.getUTCMonth()+1)+' '+z(d.getUTCHours())+':'+z(d.getUTCMinutes()),Math.floor(XH.x/CW)*CW+CW/2,H-13,'#334155','c')}}}
+(()=>{const cv=$('cv'),pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+ cv.addEventListener('pointerdown',e=>{const p=pos(e);if(!(MSM||e.shiftKey)||p.x>FPW||p.y<8||p.y>8+FPH)return;e.stopImmediatePropagation();e.preventDefault();
+  try{cv.setPointerCapture(e.pointerId)}catch(_){}const t=tOfX(p.x),v=pxOfY(p.y);MS={p0:v,t0:t,p1:v,t1:t};MSD=true;ovDraw()},true);
+ cv.addEventListener('pointermove',e=>{const p=pos(e);XH=e.pointerType=='mouse'||MSD?p:null;if(MSD){e.stopImmediatePropagation();MS.p1=pxOfY(Math.max(8,Math.min(8+FPH,p.y)));MS.t1=tOfX(Math.max(0,Math.min(FPW-1,p.x)))}ovDraw()},true);
+ const end=e=>{if(MSD){e.stopImmediatePropagation();MSD=false;ovDraw()}};['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,end,true));
+ cv.addEventListener('pointerleave',()=>{XH=null;ovDraw()});
+ cv.addEventListener('dblclick',e=>{if(MS){MS=null;ovDraw()}},true);
+ document.addEventListener('keydown',e=>{if(e.key=='Escape'&&(MS||MSM)){MS=null;if(MSM)msToggle();else ovDraw()}})})();
+(()=>{const d0=draw;draw=function(o,i){d0(o,i);try{ovDraw()}catch(e){}}})();
 // Cử chỉ trên biểu đồ: lăn chuột = thu phóng, kéo = xem nến cũ, chụm 2 ngón = thu phóng, nhấp đúp = mặc định
 (()=>{const cv=$('cv'),PT={};let d0=0,z0=0,sx=0,sy=0,p0=0,y0=null,zone='',zx0=0;
  const pts=()=>Object.values(PT),dist=q=>Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y);
@@ -647,6 +683,8 @@ function cpDraw(){const L=CP.list,e=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':
   ${f.online?`<div style="font-size:12px">Lệnh bot đang mở: <b>${f.npos}</b>${f.npos?` · lãi/lỗ <b class="${f.pnl>=0?'ok':'no'}">${f.pnl}</b>`:''}</div>`:''}
   <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13px">Lot <select onchange="cpSet('${f.id}',{lot_mode:this.value})" style="width:auto"><option value="same"${f.lot_mode=='same'?' selected':''}>bằng lot bot</option><option value="mult"${f.lot_mode=='mult'?' selected':''}>lot bot ×</option><option value="fixed"${f.lot_mode=='fixed'?' selected':''}>cố định</option></select>
    ${f.lot_mode!='same'?`<input type="number" step=".01" min=".01" value="${f.lot}" style="width:70px" onchange="cpSet('${f.id}',{lot:+this.value})">`:''}</div>
+  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:12px" class="mut">Lệnh vào chờ tối đa <input type="number" min="5" max="600" step="5" value="${f.ttl??60}" style="width:60px" onchange="cpSet('${f.id}',{ttl:+this.value})"> giây · bỏ nếu giá chạy ngược quá <input type="number" min="0" step=".5" value="${f.slip??0}" style="width:56px" onchange="cpSet('${f.id}',{slip:+this.value})">$ <span>(0 = không xét)</span></div>
+  ${f.queue?`<div class="wn" style="font-size:12px;margin-top:4px">⏳ ${f.queue} lệnh đang chờ EA kết nối</div>`:''}
   <div style="font-size:12px;margin-top:8px">Mã kết nối: <code style="user-select:all">${e(f.key)}</code> <button class="qx" onclick="navigator.clipboard&&navigator.clipboard.writeText('${e(f.key)}')">Copy</button></div>
   <div style="display:flex;gap:6px;margin-top:8px"><button class="qx" onclick="if(confirm('Đổi mã kết nối? EA đang gắn sẽ phải dán mã mới.'))cpPost({act:'key',id:'${f.id}'})">Đổi mã</button><button class="qx" style="border-color:var(--no);color:var(--no)" onclick="if(confirm('Xóa tài khoản ${e(f.name)}? Lệnh đang mở trên MT5 đó giữ nguyên.'))cpPost({act:'del',id:'${f.id}'})">Xóa</button></div></div>`}).join('')+'</div>'}
 async function cpPost(b){try{const r=await jpost('api/auto/copy',b);if(!r||!r.ok){alert('Lỗi: '+(r&&r.loi||'không gửi được'));return null}await cpTick();return r}catch(e){alert('Lỗi: '+e.message);return null}}

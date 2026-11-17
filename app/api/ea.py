@@ -20,7 +20,7 @@ from app.core import users
 
 router = APIRouter(tags=["PinYin · cầu nối EA khách"])
 EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.ex5"
-EA_LATEST = "1.4"          # phiên bản EA mới nhất trên máy chủ
+EA_LATEST = "1.5"          # phiên bản EA mới nhất trên máy chủ
 ONLINE_SEC = 15         # EA gọi mỗi giây; mạng chập chờn vài lần vẫn tính online
 WAIT_SEC = 10
 GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
@@ -99,12 +99,16 @@ async def sync(request: Request):
                 pend.append({"ticket": int(_f(l[1])), "t": l[2], "lot": _f(l[3]), "e": _f(l[4]), "sl": _f(l[5]), "tp": _f(l[6])})
             elif t == "R" and len(l) >= 4:
                 s["res"][l[1]] = {"ok": l[2] == "1", "msg": "|".join(l[3:]), "t": time.time()}
+            elif t == "N" and len(l) > 1 and cf:                       # EA tự báo (sàn chốt TP1, dời hòa vốn)
+                copytrade.note(uid, "|".join(l[1:]))
             elif t == "R" and len(l) == 3 and l[2][:2] in ("1/", "0/"):      # EA 1.0: "R|id|1/thông báo"
                 s["res"][l[1]] = {"ok": l[2][0] == "1", "msg": l[2][2:], "t": time.time()}
         s["pos"], s["pend"], s["ind"] = pos, pend, ind
         g = {**GUARD_DEF, **(u.get("ea_guard") or {})}
         out = ["G|%d|%s|%s|%d|%s|%s|%d|%d|%d|%s|%s" % (g["be_on"], g["be_at"], g["be_lock"], g["tr_on"], g["tr_at"], g["tr_step"], g["half"],
                                                   g["manual"], g["auto_sltp"], g["sl"], g["tp"])]
+        if cf:
+            out.append(copytrade.plan_line())
         for c in s["queue"]:
             out.append("C|" + c["id"] + "|" + c["line"])
             s["sent"].add(c["id"])
@@ -138,7 +142,7 @@ def _online(s):
     return s["acc"] and time.time() - s["last"] < ONLINE_SEC
 
 
-def _send(uid, line):
+def _send(uid, line, wait=None):
     """Đưa lệnh vào hàng chờ cho EA, đợi EA báo kết quả."""
     cid = str(next(_ids))
     with _lock:
@@ -146,7 +150,7 @@ def _send(uid, line):
         if not _online(s):
             return {"ok": False, "loi": "EA trên MT5 của bạn đang offline. Mở MT5 và kiểm tra EA PinYinBridge."}
         s["queue"].append({"id": cid, "line": line})
-    end = time.time() + WAIT_SEC
+    end = time.time() + (WAIT_SEC if wait is None else max(1.0, min(WAIT_SEC, wait)))
     while time.time() < end:
         time.sleep(0.2)
         with _lock:

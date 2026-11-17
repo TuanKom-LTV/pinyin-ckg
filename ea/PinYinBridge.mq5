@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.40"
+#property version   "1.50"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.4"
+#define EA_VER   "1.5"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -30,6 +30,10 @@ double  gSl = 2.5, gTp = 5.0;
 string  results = "";          // kết quả lệnh chờ gửi lên máy chủ ở lần đồng bộ sau
 string  gStatus  = "Đang kết nối...";
 string  doneIds[50];
+// Copy lệnh bot: TP1 đặt sẵn trên sàn (lệnh tách phần "PinYin TP1"), EA tự dời hòa vốn khi sàn đã chốt TP1
+double  gTp1Dist = 0, gTp1Applied = -1, gAvg0 = 0, gBeOff = 0;
+bool    gBeOnTp1 = true, gHadTp1 = false, gTp1Done = false, gSplit = false;
+int     gNPos = -1;
 int     doneN = 0;
 
 //---------------- Tiện ích ----------------
@@ -261,6 +265,136 @@ string DoBeAvg(double off)
    return "1|Đã dời SL " + IntegerToString(n) + " lệnh về giá TB " + D(be, dg) + ".";
 }
 
+// ---- TP1 đặt sẵn trên sàn ----
+bool IsTp1(ulong t) { return PositionSelectByTicket(t) && StringFind(PositionGetString(POSITION_COMMENT), "TP1") >= 0; }
+
+bool AvgDir(double &avg, int &dir, int &n, int &n1)
+{
+   double v = 0, pv = 0; n = 0; n1 = 0; dir = 0;
+   for(int i = 0; i < PositionsTotal(); i++)
+   {
+      ulong t = PositionGetTicket(i);
+      if(!Mine(t)) continue;
+      double vol = PositionGetDouble(POSITION_VOLUME);
+      v += vol; pv += vol * PositionGetDouble(POSITION_PRICE_OPEN); n++;
+      dir = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1;
+      if(StringFind(PositionGetString(POSITION_COMMENT), "TP1") >= 0) n1++;
+   }
+   avg = v > 0 ? pv / v : 0;
+   return n > 0;
+}
+
+// TP của các lệnh "PinYin TP1" = giá vào TB của EA ± khoảng TP1 (khoảng cách lấy từ tài khoản tín hiệu)
+void SetTp1()
+{
+   double avg; int dir, n, n1;
+   if(gTp1Dist <= 0 || gTp1Done || !AvgDir(avg, dir, n, n1) || n1 == 0) return;
+   int dg = Dg(); double mind = MinDist(), pt = SymbolInfoDouble(Sym, SYMBOL_POINT);
+   double tp = NormalizeDouble(avg + dir * gTp1Dist * Unit(), dg);
+   MqlTick t; if(!SymbolInfoTick(Sym, t) || t.bid <= 0) return;
+   double px = dir > 0 ? t.bid : t.ask;
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong k = PositionGetTicket(i);
+      if(!Mine(k) || !IsTp1(k)) continue;
+      if(dir * (tp - px) < mind) { trade.PositionClose(k); continue; }       // giá đã vượt TP1: chốt luôn
+      if(MathAbs(PositionGetDouble(POSITION_TP) - tp) > pt / 2) trade.PositionModify(k, PositionGetDouble(POSITION_SL), tp);
+   }
+   gTp1Applied = gTp1Dist;
+}
+
+string BeAt(double be, int dir)
+{
+   int dg = Dg(), n = 0; double mind = MinDist(); be = NormalizeDouble(be, dg);
+   MqlTick t; SymbolInfoTick(Sym, t);
+   double px = dir > 0 ? t.bid : t.ask;
+   if(dir * (px - be) < mind) return "0|Giá chưa đủ xa giá trung bình để dời SL hòa vốn.";
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong k = PositionGetTicket(i);
+      if(!Mine(k)) continue;
+      double sl = PositionGetDouble(POSITION_SL);
+      if(sl != 0 && dir * (be - sl) <= 0) continue;
+      if(trade.PositionModify(k, be, PositionGetDouble(POSITION_TP)) && OkRet()) n++;
+   }
+   return "1|Đã dời SL " + IntegerToString(n) + " lệnh về hòa vốn " + D(be, dg) + ".";
+}
+
+// Theo dõi mỗi giây: sàn đã chốt phần TP1 → EA tự dời SL phần còn lại về giá vào TB (không cần máy chủ)
+void Tp1Watch()
+{
+   double avg; int dir, n, n1;
+   if(!AvgDir(avg, dir, n, n1)) { gHadTp1 = false; gTp1Done = false; gSplit = false; gTp1Applied = -1; gNPos = 0; return; }
+   if(n1 > 0 && !gTp1Done)
+   {
+      gHadTp1 = true; gAvg0 = avg;
+      if(n != gNPos || MathAbs(gTp1Applied - gTp1Dist) >= 0.01) SetTp1();
+   }
+   gNPos = n;
+   if(gHadTp1 && n1 == 0 && !gTp1Done)
+   {
+      gTp1Done = true;
+      string r = gBeOnTp1 ? BeAt(gAvg0 + dir * gBeOff * Unit(), dir) : "1|không dời hòa vốn (đang tắt)";
+      results += "N|Sàn đã chốt TP1 → " + Clean(StringSubstr(r, 2)) + "\n";
+   }
+}
+
+// Vào lệnh copy: tách pct% khối lượng thành lệnh "PinYin TP1" có TP đặt sẵn trên sàn
+string DoDOrd(string side, double lot, double sl, double pct)
+{
+   bool buy = side == "BUY"; double u = Unit(), mind = MinDist(); int dg = Dg();
+   double st = SymbolInfoDouble(Sym, SYMBOL_VOLUME_STEP), mn = SymbolInfoDouble(Sym, SYMBOL_VOLUME_MIN);
+   if(st <= 0) st = 0.01;
+   lot = NormLot(lot);
+   if(lot <= 0) return "0|Lot không hợp lệ với sàn.";
+   MqlTick t; if(!SymbolInfoTick(Sym, t) || t.bid <= 0) return "0|Chưa có giá (thị trường có thể đang đóng).";
+   double avg; int dir, n, n1;
+   if(!AvgDir(avg, dir, n, n1)) { gTp1Done = false; gHadTp1 = false; gSplit = false; gTp1Applied = -1; }
+   double mkt = buy ? t.ask : t.bid, s = 0;
+   if(sl > 0) { double d = MathMax(sl * u, mind); s = NormalizeDouble(buy ? mkt - d : mkt + d, dg); }
+   double la = (gTp1Dist > 0 && !gTp1Done && pct > 0) ? NormalizeDouble(MathFloor(lot * pct / 100 / st + 1e-9) * st, 2) : 0;
+   if(la >= lot - 1e-9) la = lot;
+   double lb = NormalizeDouble(lot - la, 2);
+   if(la < mn - 1e-9 || (lb > 1e-9 && lb < mn - 1e-9)) { la = 0; lb = lot; }   // không tách được: máy chủ chốt TP1 như cũ
+   double p = la > 0 ? NormalizeDouble(buy ? mkt + MathMax(gTp1Dist * u, mind) : mkt - MathMax(gTp1Dist * u, mind), dg) : 0;
+   string msg = "";
+   if(la > 0)
+   {
+      bool ok = buy ? trade.Buy(la, Sym, 0, s, p, "PinYin TP1") : trade.Sell(la, Sym, 0, s, p, "PinYin TP1");
+      if(!ok || !OkRet()) return "0|" + Rej();
+      gSplit = true;
+      msg = D(la, 2) + " lot (TP1 " + D(p, dg) + " đặt sẵn trên sàn)";
+   }
+   if(lb > 0)
+   {
+      bool ok = buy ? trade.Buy(lb, Sym, 0, s, 0, "PinYin") : trade.Sell(lb, Sym, 0, s, 0, "PinYin");
+      if(!ok || !OkRet()) return (la > 0 ? "1|Đã vào " + msg + " nhưng phần còn lại lỗi: " : "0|") + Rej();
+      msg += (msg != "" ? " + " : "") + D(lb, 2) + " lot";
+   }
+   gNPos = -1;                                        // vòng sau tính lại TP1 theo giá vào TB
+   return "1|Đã vào " + side + " " + msg + " @ " + D(trade.ResultPrice(), dg) + (s > 0 ? " · SL " + D(s, dg) : "");
+}
+
+// Máy chủ báo chốt TP1: đóng phần "PinYin TP1" (nếu sàn chưa chốt), không tách được thì chốt theo tỉ lệ
+string DoTp1Part(double frac)
+{
+   double avg; int dir, n, n1;
+   if(!AvgDir(avg, dir, n, n1)) return "0|Không có lệnh mở.";
+   if(n1 > 0)
+   {
+      int k = 0;
+      for(int i = PositionsTotal() - 1; i >= 0; i--)
+      {
+         ulong t = PositionGetTicket(i);
+         if(Mine(t) && IsTp1(t)) { if(trade.PositionClose(t) && OkRet()) k++; else return "0|" + Rej(); }
+      }
+      return "1|Đã chốt phần TP1 (" + IntegerToString(k) + " lệnh).";
+   }
+   if(gTp1Done || gHadTp1) return "1|Sàn đã chốt TP1 trước đó.";
+   gTp1Done = true;
+   return DoPart(frac);
+}
+
 bool Done(string id) { for(int i = 0; i < doneN; i++) if(doneIds[i] == id) return true; return false; }
 void MarkDone(string id) { if(doneN < 50) doneIds[doneN++] = id; else { for(int i = 1; i < 50; i++) doneIds[i - 1] = doneIds[i]; doneIds[49] = id; } }
 
@@ -278,6 +412,8 @@ void Exec(string &f[])
    else if(c == "BE")     r = DoBe((ulong)StringToInteger(n > 3 ? f[3] : "0"));
    else if(c == "PART" && n > 3)  r = DoPart(StringToDouble(f[3]));
    else if(c == "BEAVG")  r = DoBeAvg(n > 3 ? StringToDouble(f[3]) : 0);
+   else if(c == "DORD" && n >= 7) r = DoDOrd(f[3], StringToDouble(f[4]), StringToDouble(f[5]), StringToDouble(f[6]));
+   else if(c == "TP1PART" && n > 3) r = DoTp1Part(StringToDouble(f[3]));
    else r = "0|Lệnh không hỗ trợ: " + c;
    results += "R|" + id + "|" + StringSubstr(r, 0, 1) + "|" + Clean(StringSubstr(r, 2)) + "\n";   // r = "1|thông báo"
 }
@@ -422,6 +558,7 @@ void Sync()
          gTr = f[4] == "1"; gTrAt = StringToDouble(f[5]); gTrStep = StringToDouble(f[6]); gHalf = f[7] == "1";
          if(m >= 12) { gMan = f[8] == "1"; gAuto = f[9] == "1"; gSl = StringToDouble(f[10]); gTp = StringToDouble(f[11]); }
       }
+      if(f[0] == "Q" && m >= 4) { gTp1Dist = StringToDouble(f[1]); gBeOnTp1 = f[2] == "1"; gBeOff = StringToDouble(f[3]); }
       if(f[0] == "C") Exec(f);
    }
 }
@@ -445,6 +582,7 @@ void OnDeinit(const int reason) { EventKillTimer(); for(int i = 0; i < 3; i++) I
 void OnTimer()
 {
    Guard();
+   Tp1Watch();
    Sync();
    Comment("PinYin Bridge " + EA_VER + "\n" + gStatus + "\n" + TimeToString(TimeLocal(), TIME_SECONDS));
 }
