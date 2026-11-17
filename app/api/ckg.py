@@ -184,12 +184,14 @@ def ckg_symbols():
 @router.get("/ckg/api/rates")
 def ckg_rates(ccy: str = "USD"):
     """Tỷ giá thật để tính giá trị pip (cặp JPY) và quy đổi vốn tài khoản sang USD."""
+    from app.api.ckg_auto import is_cent
+    cent = is_cent(ccy)                 # tài khoản cent: tính số vốn như $ (chủ chọn)
     ccy = ccy.upper().strip()[:3]
     try:
         with mt5_service.session():
             usdjpy = _mid("USDJPY")
             to_usd = 1.0
-            if ccy != "USD":
+            if ccy != "USD" and not cent:
                 direct, inverse = _mid(ccy + "USD"), _mid("USD" + ccy)
                 to_usd = direct if direct else (1 / inverse if inverse else None)
             return {"ok": True, "usdjpy": usdjpy, "ccy": ccy, "to_usd": to_usd}

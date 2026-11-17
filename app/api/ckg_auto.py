@@ -224,8 +224,15 @@ def signal_at(rows, i, step):
 
 # ---------- Lệnh ----------
 
+def is_cent(ccy):
+    """Tài khoản cent (USC, USc, UScent, EUC...)."""
+    c = (ccy or "").strip()
+    return c.upper() in ("USC", "USCENT", "UScent".upper(), "EUC", "EURC", "GBC", "CENT") or (len(c) == 3 and c[2] == "c")
+
+
 def _to_usd(ccy):
-    if ccy == "USD":
+    if ccy == "USD" or is_cent(ccy):
+        # cent: chủ chọn tính số vốn như $ (500 USC ~ 500$ của tài khoản USD) để tra bảng vốn
         return 1.0
     for s, inv in ((ccy + "USD", False), ("USD" + ccy, True)):
         if mt5.symbol_select(s, True):
