@@ -20,7 +20,16 @@ FILE = ROOT / "data" / "copy_accounts.json"
 _lock = threading.RLock()
 _log = None                      # hàm ghi nhật ký của bot (ckg_auto.log)
 LOT_MODES = ("same", "fixed", "mult")
-PLAN = {"dist": 0.0, "be": True, "off": 0.0}     # khoảng TP1 hiện tại của chiến dịch (gửi cho EA mỗi giây)
+PLAN = {"dist": 0.0, "be": True, "off": 0.0}
+MASTER = {"login": None, "server": None}         # tài khoản tín hiệu (MT5 của máy chủ), bot cập nhật mỗi vòng
+
+
+def set_master(login, server):
+    MASTER["login"], MASTER["server"] = str(login), server
+
+
+def _same(acc):
+    return bool(acc) and MASTER["login"] is not None and str(acc.get("login")) == MASTER["login"]     # khoảng TP1 hiện tại của chiến dịch (gửi cho EA mỗi giây)
 
 
 def set_plan(dist, be=None, off=None):
@@ -177,6 +186,9 @@ def _deliver(f, c):
             _say(f"{name} EA offline quá {int(age)} giây, bỏ lệnh: {c['what']}.", "err")
             return True
         return False
+    if _same(s["acc"]):
+        _say(f"{name} là CHÍNH tài khoản tín hiệu #{s['acc']['login']} — không copy sang chính nó (sẽ gấp đôi lệnh). Gắn EA vào tài khoản khác.", "err")
+        return True
     if not s["acc"]["demo"] and not allow_real():
         _say(f"{name} là tài khoản THẬT nhưng đang chặn lệnh thật (nút 🔒 Lệnh THẬT), không {c['what']}.", "err")
         return True
@@ -223,10 +235,27 @@ def _reconcile(f, s):
         fl["seen"] = time.time()
 
 
+def _master_refresh():
+    """Đọc tài khoản tín hiệu (MT5 máy chủ) mỗi 30 giây, kể cả khi bot đang tắt."""
+    try:
+        import MetaTrader5 as mt5
+        from app.services.mt5_service import mt5_service
+        with mt5_service.session():
+            a = mt5.account_info()
+        if a:
+            set_master(a.login, a.server)
+    except Exception:
+        pass
+
+
 def _loop():
     from app.api import ea
+    last_m = 0
     while True:
         try:
+            if time.time() - last_m > 30 and load():
+                last_m = time.time()
+                _master_refresh()
             for f in load():
                 fid, u = f["id"], uid(f)
                 s = ea._st.get(u) or {}
@@ -251,7 +280,7 @@ def _loop():
                     with _lock:
                         if _q.get(fid) and _q[fid][0] is c:
                             _q[fid].pop(0)
-                if on and f.get("on"):
+                if on and f.get("on") and not _same(s.get("acc")):
                     _reconcile(f, s)
             # tài khoản đã xóa: bỏ hàng đợi
             ids = {f["id"] for f in load()}
@@ -306,5 +335,5 @@ def status():
         a = s.get("acc")
         out.append({**f, "online": bool(a) and ea._online(s), "ver": s.get("ver"), "old": ea._old(s.get("ver")) if s.get("ver") else None,
                     "acc": {k: a.get(k) for k in ("login", "server", "currency", "equity", "balance", "demo", "algo")} if a else None,
-                    "npos": len(s.get("pos") or []), "queue": len(_q.get(f["id"]) or []), "pnl": round(sum(p["profit"] for p in (s.get("pos") or [])), 2)})
+                    "same": _same(a), "npos": len(s.get("pos") or []), "queue": len(_q.get(f["id"]) or []), "pnl": round(sum(p["profit"] for p in (s.get("pos") or [])), 2)})
     return out

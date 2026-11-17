@@ -589,6 +589,8 @@ def _step():
             _state["last_bar"] = bar
         a = mt5.account_info()
         cap, b = _tier(a) if a else (None, None)
+        if a:
+            copytrade.set_master(a.login, a.server)
         _state["lot"] = b[2] if b else None
         _state["msg"] = f"Đang theo dõi {c['tf']} · nến đóng {datetime.fromtimestamp(bar, VN):%H:%M}"
         if bar <= _state["last_bar"]:

@@ -396,7 +396,8 @@ def _guard_step():
     bg = _bot_guard()
     allg = _guards()
     man = {s for s, v in allg.items() if v.get("manual")}          # mã bật lá chắn cho lệnh vào tay
-    ps = [p for p in (mt5.positions_get() or []) if p.magic in (MAGIC, BOT_MAGIC) or (p.magic == 0 and p.symbol in man)]
+    ps = [p for p in (mt5.positions_get() or [])
+          if p.magic in (MAGIC, BOT_MAGIC) or (p.magic == 0 and p.symbol in man and not (p.comment or "").startswith("PinYin AUTO"))]
     live = {p.ticket for p in ps}
     _half_done.intersection_update(live)
     _sltp_done.intersection_update(live)

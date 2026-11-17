@@ -423,6 +423,7 @@ bool Guarded(ulong t)
 {
    if(!PositionSelectByTicket(t) || PositionGetString(POSITION_SYMBOL) != Sym) return false;
    long mg = PositionGetInteger(POSITION_MAGIC);
+   if(StringFind(PositionGetString(POSITION_COMMENT), "PinYin AUTO") == 0) return false;   // lệnh bot PinYin: bot tự quản
    return mg == EA_MAGIC || (gMan && mg == 0);
 }
 
