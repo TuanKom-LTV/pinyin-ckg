@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.50"
+#property version   "1.60"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.5"
+#define EA_VER   "1.6"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -96,7 +96,15 @@ bool HiLo(int i, double &hi, double &lo)
    return true;
 }
 
-bool Mine(ulong ticket) { return PositionSelectByTicket(ticket) && PositionGetInteger(POSITION_MAGIC) == EA_MAGIC && PositionGetString(POSITION_SYMBOL) == Sym; }
+bool gScope = false;      // true: lệnh từ bot chỉ áp lên lệnh của bot (ghi chú "PinYin BOT"), không đụng lệnh vào tay qua buồng lái
+bool IsBotC() { return StringFind(PositionGetString(POSITION_COMMENT), "PinYin BOT") == 0; }
+bool Mine(ulong ticket) { return PositionSelectByTicket(ticket) && PositionGetInteger(POSITION_MAGIC) == EA_MAGIC && PositionGetString(POSITION_SYMBOL) == Sym && (!gScope || IsBotC()); }
+bool AnyBot()
+{
+   bool o = gScope; gScope = true; bool r = false;
+   for(int i = 0; i < PositionsTotal() && !r; i++) if(Mine(PositionGetTicket(i))) r = true;
+   gScope = o; return r;
+}
 
 bool OkRet() { uint r = trade.ResultRetcode(); return r == TRADE_RETCODE_DONE || r == TRADE_RETCODE_PLACED || r == TRADE_RETCODE_DONE_PARTIAL; }
 string Rej() { return "MT5 từ chối: " + IntegerToString(trade.ResultRetcode()) + " " + trade.ResultRetcodeDescription(); }
@@ -266,6 +274,7 @@ string DoBeAvg(double off)
 }
 
 // ---- TP1 đặt sẵn trên sàn ----
+void Tp1Watch0();
 bool IsTp1(ulong t) { return PositionSelectByTicket(t) && StringFind(PositionGetString(POSITION_COMMENT), "TP1") >= 0; }
 
 bool AvgDir(double &avg, int &dir, int &n, int &n1)
@@ -323,6 +332,13 @@ string BeAt(double be, int dir)
 // Theo dõi mỗi giây: sàn đã chốt phần TP1 → EA tự dời SL phần còn lại về giá vào TB (không cần máy chủ)
 void Tp1Watch()
 {
+   gScope = AnyBot();
+   Tp1Watch0();
+   gScope = false;
+}
+
+void Tp1Watch0()
+{
    double avg; int dir, n, n1;
    if(!AvgDir(avg, dir, n, n1)) { gHadTp1 = false; gTp1Done = false; gSplit = false; gTp1Applied = -1; gNPos = 0; return; }
    if(n1 > 0 && !gTp1Done)
@@ -360,14 +376,14 @@ string DoDOrd(string side, double lot, double sl, double pct)
    string msg = "";
    if(la > 0)
    {
-      bool ok = buy ? trade.Buy(la, Sym, 0, s, p, "PinYin TP1") : trade.Sell(la, Sym, 0, s, p, "PinYin TP1");
+      bool ok = buy ? trade.Buy(la, Sym, 0, s, p, gScope ? "PinYin BOT TP1" : "PinYin TP1") : trade.Sell(la, Sym, 0, s, p, gScope ? "PinYin BOT TP1" : "PinYin TP1");
       if(!ok || !OkRet()) return "0|" + Rej();
       gSplit = true;
       msg = D(la, 2) + " lot (TP1 " + D(p, dg) + " đặt sẵn trên sàn)";
    }
    if(lb > 0)
    {
-      bool ok = buy ? trade.Buy(lb, Sym, 0, s, 0, "PinYin") : trade.Sell(lb, Sym, 0, s, 0, "PinYin");
+      bool ok = buy ? trade.Buy(lb, Sym, 0, s, 0, gScope ? "PinYin BOT" : "PinYin") : trade.Sell(lb, Sym, 0, s, 0, gScope ? "PinYin BOT" : "PinYin");
       if(!ok || !OkRet()) return (la > 0 ? "1|Đã vào " + msg + " nhưng phần còn lại lỗi: " : "0|") + Rej();
       msg += (msg != "" ? " + " : "") + D(lb, 2) + " lot";
    }
@@ -402,6 +418,7 @@ void Exec(string &f[])
 {
    int n = ArraySize(f); if(n < 3) return;
    string id = f[1], c = f[2], r;
+   gScope = f[n - 1] == "B";
    if(Done(id)) return;
    MarkDone(id);
    if(!MQLInfoInteger(MQL_TRADE_ALLOWED) || !TerminalInfoInteger(TERMINAL_TRADE_ALLOWED)) r = "0|MT5 đang tắt nút Algo Trading / EA chưa được phép giao dịch.";
@@ -415,6 +432,7 @@ void Exec(string &f[])
    else if(c == "DORD" && n >= 7) r = DoDOrd(f[3], StringToDouble(f[4]), StringToDouble(f[5]), StringToDouble(f[6]));
    else if(c == "TP1PART" && n > 3) r = DoTp1Part(StringToDouble(f[3]));
    else r = "0|Lệnh không hỗ trợ: " + c;
+   gScope = false;
    results += "R|" + id + "|" + StringSubstr(r, 0, 1) + "|" + Clean(StringSubstr(r, 2)) + "\n";   // r = "1|thông báo"
 }
 
@@ -423,7 +441,7 @@ bool Guarded(ulong t)
 {
    if(!PositionSelectByTicket(t) || PositionGetString(POSITION_SYMBOL) != Sym) return false;
    long mg = PositionGetInteger(POSITION_MAGIC);
-   if(StringFind(PositionGetString(POSITION_COMMENT), "PinYin AUTO") == 0) return false;   // lệnh bot PinYin: bot tự quản
+   if(StringFind(PositionGetString(POSITION_COMMENT), "PinYin AUTO") == 0 || IsBotC()) return false;   // lệnh bot PinYin: bot tự quản
    return mg == EA_MAGIC || (gMan && mg == 0);
 }
 
@@ -513,7 +531,7 @@ string Body()
            + "|" + D(PositionGetDouble(POSITION_VOLUME), 2) + "|" + D(PositionGetDouble(POSITION_PRICE_OPEN), dg)
            + "|" + D(PositionGetDouble(POSITION_SL), dg) + "|" + D(PositionGetDouble(POSITION_TP), dg)
            + "|" + D(PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP), 2)
-           + "|" + (GlobalVariableCheck("PY_H_" + IntegerToString((long)k)) ? "1" : "0") + "\n";
+           + "|" + (GlobalVariableCheck("PY_H_" + IntegerToString((long)k)) ? "1" : "0") + "|" + (IsBotC() ? "1" : "0") + "\n";
    }
    for(int i = 0; i < OrdersTotal(); i++)
    {

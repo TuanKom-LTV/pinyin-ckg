@@ -20,7 +20,7 @@ from app.core import users
 
 router = APIRouter(tags=["PinYin · cầu nối EA khách"])
 EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.ex5"
-EA_LATEST = "1.5"          # phiên bản EA mới nhất trên máy chủ
+EA_LATEST = "1.6"          # phiên bản EA mới nhất trên máy chủ
 ONLINE_SEC = 15         # EA gọi mỗi giây; mạng chập chờn vài lần vẫn tính online
 WAIT_SEC = 10
 GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
@@ -94,12 +94,12 @@ async def sync(request: Request):
                 ind[l[1]] = {"ema9": _f(l[2]) or None, "hi10": _f(l[3]) or None, "lo10": _f(l[4]) or None}
             elif t == "P" and len(l) >= 9:
                 pos.append({"ticket": int(_f(l[1])), "t": l[2], "lot": _f(l[3]), "e": _f(l[4]), "sl": _f(l[5]),
-                            "tp": _f(l[6]), "profit": _f(l[7]), "half": l[8] == "1"})
+                            "tp": _f(l[6]), "profit": _f(l[7]), "half": l[8] == "1", "bot": len(l) > 9 and l[9] == "1"})
             elif t == "O" and len(l) >= 7:
                 pend.append({"ticket": int(_f(l[1])), "t": l[2], "lot": _f(l[3]), "e": _f(l[4]), "sl": _f(l[5]), "tp": _f(l[6])})
             elif t == "R" and len(l) >= 4:
                 s["res"][l[1]] = {"ok": l[2] == "1", "msg": "|".join(l[3:]), "t": time.time()}
-            elif t == "N" and len(l) > 1 and cf:                       # EA tự báo (sàn chốt TP1, dời hòa vốn)
+            elif t == "N" and len(l) > 1:                       # EA tự báo (sàn chốt TP1, dời hòa vốn)
                 copytrade.note(uid, "|".join(l[1:]))
             elif t == "R" and len(l) == 3 and l[2][:2] in ("1/", "0/"):      # EA 1.0: "R|id|1/thông báo"
                 s["res"][l[1]] = {"ok": l[2][0] == "1", "msg": l[2][2:], "t": time.time()}
@@ -107,8 +107,9 @@ async def sync(request: Request):
         g = {**GUARD_DEF, **(u.get("ea_guard") or {})}
         out = ["G|%d|%s|%s|%d|%s|%s|%d|%d|%d|%s|%s" % (g["be_on"], g["be_at"], g["be_lock"], g["tr_on"], g["tr_at"], g["tr_step"], g["half"],
                                                   g["manual"], g["auto_sltp"], g["sl"], g["tp"])]
-        if cf:
-            out.append(copytrade.plan_line())
+        pl = copytrade.plan_for(uid)
+        if pl:
+            out.append(pl)
         for c in s["queue"]:
             out.append("C|" + c["id"] + "|" + c["line"])
             s["sent"].add(c["id"])
@@ -276,3 +277,42 @@ def guard(x: QGuard, request: Request):
         return {"ok": False, "loi": "Mức khóa hòa vốn phải nhỏ hơn mức kích hoạt."}
     users._set(email, ea_guard=g)
     return {"ok": True, "guard": g}
+
+
+# ---------- Bot tự động của khách (chủ duyệt) ----------
+
+def _bot_me(request: Request):
+    uid = _me(request)
+    if not uid or not users.can_bot(uid):
+        return None
+    return uid
+
+
+def _bot_deny():
+    return JSONResponse({"ok": False, "loi": "Tài khoản chưa được duyệt dùng bot. Liên hệ Telegram @TuanKom."}, status_code=403)
+
+
+@router.get("/ckg/api/ea/bot")
+def cbot_status(request: Request):
+    uid = _bot_me(request)
+    if not uid:
+        return _bot_deny()
+    from app.services import cbot
+    return cbot.status(uid)
+
+
+@router.post("/ckg/api/ea/bot")
+async def cbot_set(request: Request):
+    uid = _bot_me(request)
+    if not uid:
+        return _bot_deny()
+    from app.services import cbot
+    try:
+        x = await request.json()
+    except Exception:
+        return {"ok": False, "loi": "Dữ liệu không hợp lệ."}
+    if not isinstance(x, dict):
+        return {"ok": False, "loi": "Dữ liệu không hợp lệ."}
+    import asyncio
+    return await asyncio.to_thread(cbot.set_cfg, uid, x)
+

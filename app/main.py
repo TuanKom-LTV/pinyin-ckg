@@ -52,6 +52,8 @@ def _start_bot():
     # Bot tự động vàng chạy nền; cài đặt mặc định TẮT, bật trong trang CKG (mục vàng)
     start_auto_bot()
     start_guard()   # lá chắn hòa vốn / trailing của buồng lái nhanh
+    from app.services import cbot
+    cbot.start()    # bot riêng của khách (chủ duyệt), chỉ chạy khi có khách bật bot
 
 
 @app.get("/", include_in_schema=False)

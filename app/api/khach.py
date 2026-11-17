@@ -58,7 +58,7 @@ def me(request: Request):
     if u:
         email, d = users.by_id(u)
         d = d or {}
-        out.update(user=email, ten=d.get("ten"), het_han=users.fmt_date(d.get("het_han")), gd=users.can_trade(u))
+        out.update(user=email, ten=d.get("ten"), het_han=users.fmt_date(d.get("het_han")), gd=users.can_trade(u), bot=users.can_bot(u))
     elif role == "chu":
         out["cho_duyet"] = sum(1 for x in users.load().values() if x["tt"] == "cho")
     return out
@@ -77,8 +77,11 @@ def admin_list(request: Request):
         return JSONResponse({"ok": False, "loi": "Không có quyền."}, status_code=403)
     from app.api.ea import status_of
     L = users.admin_list()
+    from app.services import cbot
     for x in L:
-        x["ea"] = status_of(x.pop("id", None)) if x.get("gd") else None
+        uid = x.pop("id", None)
+        x["ea"] = status_of(uid) if x.get("gd") else None
+        x["cbot"] = cbot.brief(uid) if uid and x.get("bot") else None
     return {"ok": True, "users": L}
 
 

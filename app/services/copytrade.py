@@ -44,11 +44,48 @@ def plan_line():
     return "Q|%.2f|%d|%.2f" % (PLAN["dist"], PLAN["be"], PLAN["off"])
 
 
+# ---- đích gửi lệnh ngoài danh sách copy: bot riêng của từng khách (app/services/cbot.py) ----
+EXTRA = {}              # id → {"id","uid","name","on","own","scope":"B","log":fn,"dir_fn":fn,"ttl"}
+PLANS = {}              # uid khách → (khoảng TP1, dời hòa vốn, cộng thêm)
+
+
+def targets():
+    return load() + list(EXTRA.values())
+
+
+def set_plan_for(u, dist, be=True, off=0.0):
+    PLANS[u] = (round(max(0.0, float(dist or 0)), 2), bool(be), float(off or 0))
+
+
+def plan_for(u):
+    """Dòng Q gửi EA mỗi lần đồng bộ: khoảng TP1 để EA đặt TP sẵn trên sàn."""
+    if u in PLANS:
+        d, be, off = PLANS[u]
+        return "Q|%.2f|%d|%.2f" % (d, be, off)
+    if u.startswith("copy:"):
+        return plan_line()
+    return None
+
+
+def enqueue(f, line, what, extra=None):
+    _enqueue(f, line, what, extra)
+
+
+def _sayf(f, msg, kind="info", tele=True):
+    if f.get("log"):
+        try:
+            f["log"](msg, kind)
+        except Exception:
+            pass
+    else:
+        _say(msg, kind, tele)
+
+
 def note(u, text):
     """Thông báo EA tự gửi lên (vd: sàn đã chốt TP1, EA dời hòa vốn)."""
-    f = next((x for x in load() if uid(x) == u), None)
+    f = next((x for x in targets() if uid(x) == u), None)
     if f:
-        _say(f"[{f['name']}] {text}", "close")
+        _sayf(f, f"[{f['name']}] {text}", "close")
 
 
 def set_logger(fn):
@@ -77,7 +114,7 @@ def save(lst):
 
 
 def uid(f):
-    return "copy:" + f["id"]
+    return f.get("uid") or "copy:" + f["id"]
 
 
 def by_key(key):
@@ -183,37 +220,43 @@ def _deliver(f, c):
     age = time.time() - c["t"]
     if not s or not s.get("acc") or not ea._online(s):
         if age > (ORDER_TTL if order else KEEP_TTL):
-            _say(f"{name} EA offline quá {int(age)} giây, bỏ lệnh: {c['what']}.", "err")
+            _sayf(f, f"{name} EA offline quá {int(age)} giây, bỏ lệnh: {c['what']}.", "err")
             return True
         return False
-    if _same(s["acc"]):
+    own = f.get("own")                                  # bot của khách: tài khoản của chính khách
+    if not own and _same(s["acc"]):
         _say(f"{name} là CHÍNH tài khoản tín hiệu #{s['acc']['login']} — không copy sang chính nó (sẽ gấp đôi lệnh). Gắn EA vào tài khoản khác.", "err")
         return True
-    if not s["acc"]["demo"] and not allow_real():
+    if not own and not s["acc"]["demo"] and not allow_real():
         _say(f"{name} là tài khoản THẬT nhưng đang chặn lệnh thật (nút 🔒 Lệnh THẬT), không {c['what']}.", "err")
         return True
     ttl = int(f.get("ttl") or ORDER_TTL)
     if order and age > ttl:
-        _say(f"{name} lệnh vào đã chờ {int(age)} giây (quá {ttl} giây), bỏ để không vào lệnh trễ.", "err")
+        _sayf(f, f"{name} lệnh vào đã chờ {int(age)} giây (quá {ttl} giây), bỏ để không vào lệnh trễ.", "err")
         return True
     line = c["line"]
     if order and float(f.get("slip") or 0) > 0 and c.get("px") and age > 2:
         now = _master_px(c["side"])
         moved = None if now is None else (now - c["px"]) * (1 if c["side"] == "BUY" else -1)
         if moved is not None and moved > float(f["slip"]):
-            _say(f"{name} giá đã chạy ngược {moved:.2f}$ (> {f['slip']}$) sau {int(age)} giây, bỏ lệnh vào.", "err")
+            _sayf(f, f"{name} giá đã chạy ngược {moved:.2f}$ (> {f['slip']}$) sau {int(age)} giây, bỏ lệnh vào.", "err")
             return True
-    if c.get("old_line") and not _ver_ok(s, (1, 5)):        # EA cũ chưa có TP1 đặt sẵn trên sàn
+    if f.get("scope") == "B":                           # lệnh bot của khách: chỉ áp lên lệnh bot (EA 1.6+)
+        if not _ver_ok(s, (1, 6)):
+            _sayf(f, f"{name} EA bản {s.get('ver') or 'cũ'} chưa hỗ trợ bot, cần EA 1.6. Bỏ lệnh: {c['what']}.", "err")
+            return True
+        line += "|B"
+    elif c.get("old_line") and not _ver_ok(s, (1, 5)):      # EA cũ chưa có TP1 đặt sẵn trên sàn
         line = c["old_line"]
     r = ea._send(u, line, wait=(ttl - age) if order else None)   # lệnh vào: EA không nhận kịp trong hạn thì hủy
     login = s["acc"]["login"]
     if r.get("ok"):
-        _say(f"{name} #{login}: {r.get('msg', 'xong')}" + (f" (trễ {int(age)} giây)" if age > 5 else ""), "open" if order else "close")
+        _sayf(f, f"{name} #{login}: {r.get('msg', 'xong')}" + (f" (trễ {int(age)} giây)" if age > 5 else ""), "open" if order else "close")
         return True
     loi = str(r.get("loi") or "")
     if "đã hủy" in loi or "offline" in loi:            # EA chưa nhận được lệnh: thử lại (lệnh vào thì theo hạn 60 giây)
         return False
-    _say(f"{name} #{login}: không {c['what']}: {loi}", "err")
+    _sayf(f, f"{name} #{login}: không {c['what']}: {loi}", "err")
     return True
 
 
@@ -221,15 +264,19 @@ def _reconcile(f, s):
     """Tài khoản tín hiệu không còn chiến dịch / khác chiều mà tài khoản vào lệnh vẫn còn lệnh EA → đóng."""
     from app.api import ckg_auto
     pos = s.get("pos") or []
+    if f.get("scope") == "B":
+        pos = [p for p in pos if p.get("bot")]           # chỉ lệnh bot, không đụng lệnh khách vào tay
     if not pos or _q.get(f["id"]):
         return
-    d = ckg_auto._dca.get("dir", 0)
+    d = f["dir_fn"]() if f.get("dir_fn") else ckg_auto._dca.get("dir", 0)
     bad = d == 0 or any((1 if p["t"] == "BUY" else -1) != d for p in pos)
     fl = _flag.setdefault(f["id"], {})
     if bad and time.time() - fl.get("rec", 0) > 30 and time.time() - fl.setdefault("seen", time.time()) > 10:
         fl["rec"] = time.time()
         why = "tài khoản tín hiệu không còn lệnh" if d == 0 else "khác chiều tài khoản tín hiệu"
-        _say(f"[{f['name']}] còn {len(pos)} lệnh nhưng {why} → tự đóng.", "err")
+        if f.get("dir_fn"):
+            why = "bot không còn chiến dịch" if d == 0 else "khác chiều chiến dịch của bot"
+        _sayf(f, f"[{f['name']}] còn {len(pos)} lệnh bot nhưng {why} → tự đóng.", "err")
         _enqueue(f, "CLOSE|0", "đóng lệnh lệch")
     if not bad:
         fl["seen"] = time.time()
@@ -256,7 +303,7 @@ def _loop():
             if time.time() - last_m > 30 and load():
                 last_m = time.time()
                 _master_refresh()
-            for f in load():
+            for f in targets():
                 fid, u = f["id"], uid(f)
                 s = ea._st.get(u) or {}
                 on = bool(s.get("acc")) and ea._online(s)
@@ -264,10 +311,10 @@ def _loop():
                 # báo mất kết nối khi đang có lệnh
                 if not on and s.get("pos") and f.get("on") and time.time() - s.get("last", 0) > OFF_WARN and not fl.get("off"):
                     fl["off"] = True
-                    _say(f"⚠️ [{f['name']}] EA MẤT KẾT NỐI khi đang có {len(s['pos'])} lệnh. Kiểm tra MT5 / mạng của máy chạy EA (SL trên MT5 vẫn chạy).", "err")
+                    _sayf(f, f"⚠️ [{f['name']}] EA MẤT KẾT NỐI khi đang có {len(s['pos'])} lệnh. Kiểm tra MT5 / mạng của máy chạy EA (SL trên MT5 vẫn chạy).", "err")
                 if on and fl.get("off"):
                     fl["off"] = False
-                    _say(f"[{f['name']}] EA đã kết nối lại.", "info")
+                    _sayf(f, f"[{f['name']}] EA đã kết nối lại.", "info")
                 # gửi hàng đợi theo thứ tự
                 while True:
                     with _lock:
@@ -280,10 +327,10 @@ def _loop():
                     with _lock:
                         if _q.get(fid) and _q[fid][0] is c:
                             _q[fid].pop(0)
-                if on and f.get("on") and not _same(s.get("acc")):
+                if on and f.get("on") and (f.get("own") or not _same(s.get("acc"))):
                     _reconcile(f, s)
             # tài khoản đã xóa: bỏ hàng đợi
-            ids = {f["id"] for f in load()}
+            ids = {f["id"] for f in targets()}
             with _lock:
                 for k in [k for k in _q if k not in ids]:
                     _q.pop(k, None)
