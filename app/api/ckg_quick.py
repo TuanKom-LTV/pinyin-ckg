@@ -386,7 +386,8 @@ BOT_MAGIC = 260117
 def _bot_guard():
     try:
         from app.api.ckg_auto import _cfg
-        return _cfg()
+        c = _cfg()
+        return {} if c.get("strategy") == "dca" else c     # DCA tự quản SL/TP theo giá trung bình, không dùng BE/trailing $
     except Exception:
         return {}
 

@@ -1,0 +1,622 @@
+//@version=6
+strategy('PinYin HA Pro - DCA Strategy', overlay = true, pyramiding = 5, initial_capital = 10000, default_qty_type = strategy.fixed, default_qty_value = 1, commission_type = strategy.commission.cash_per_contract, commission_value = 0.0, slippage = 150, process_orders_on_close = true, margin_long = 1, margin_short = 1, max_labels_count = 500, max_lines_count = 500, max_bars_back = 500)
+
+// =====================================================================
+// Tín hiệu: giống hệt indicator v5 (logic cũ + đảo chiều ĐC* mới)
+// Quản lý lệnh: chiến dịch DCA tối đa N lệnh, SL chung, chốt lãi theo giá TB
+//
+// BẢN SỬA (2026-11-17):
+//  [F1] SL mềm / lọc độ giãn / chặn TP2 chỉ dùng dải σ khi VWAP đã "sẵn sàng"
+//       (đủ minVwapBars nến từ đầu phiên) -> hết đóng lệnh oan lúc VWAP reset.
+//  [F2] Nhận biết đã chốt TP1/TP2 theo việc giá chạm mức TP đang đặt,
+//       không theo tỷ lệ khối lượng (hết lỗi làm tròn lot nhỏ).
+//       TP2% tự giới hạn để TP1% + TP2% <= 100; TP2% = 0 thì coi TP2 xong cùng TP1.
+//  [F3] Tín hiệu ngược: đảo chiều luôn trong cùng nến (nếu đủ điều kiện mở lệnh),
+//       không đủ điều kiện thì chỉ đóng như cũ.
+//  [F4] Bộ lọc chống nhiễu 10 nến tách riêng BUY/SELL (có thể tắt để giống bản cũ).
+// =====================================================================
+
+// ==========================================
+// [S] CÀI ĐẶT CHIẾN LƯỢC
+// ==========================================
+var GRP_S = '=== CHIẾN LƯỢC DCA ==='
+tradeDir = input.string('Cả hai', 'Chiều giao dịch', options = ['Cả hai', 'Chỉ BUY', 'Chỉ SELL'], group = GRP_S)
+maxLegs = input.int(3, 'Số lệnh tối đa / chiến dịch (1 = không DCA)', minval = 1, maxval = 5, group = GRP_S)
+addGapAtr = input.float(0.5, 'Lệnh DCA phải tốt hơn lệnh trước ít nhất (x ATR)', minval = 0.0, step = 0.1, group = GRP_S)
+minAddBars = input.int(5, 'Khoảng cách tối thiểu giữa 2 lệnh (nến)', minval = 1, group = GRP_S)
+atrLen = input.int(14, 'ATR Length (cho SL & DCA)', minval = 1, group = GRP_S)
+maxStretch = input.float(2.0, 'Không mở lệnh thuận xu hướng khi giá cách VWAP quá (σ)', minval = 0.5, step = 0.1, group = GRP_S)
+useSession = input.bool(false, 'Chỉ vào lệnh trong khung giờ', group = GRP_S)
+sessStr = input.session('1400-2300', '  Khung giờ (giờ VN)', group = GRP_S)
+reverseOnOpp = input.bool(true, 'Tín hiệu ngược: đảo chiều luôn trong cùng nến', group = GRP_S)
+sepFilter = input.bool(true, 'Tách bộ lọc chống nhiễu BUY / SELL (tắt = giống bản cũ)', group = GRP_S)
+
+var GRP_K = '=== KHỐI LƯỢNG & CẮT LỖ ==='
+sizeMode = input.string('Theo % rủi ro', 'Cách tính khối lượng', options = ['Theo % rủi ro', 'Khối lượng cố định'], group = GRP_K)
+riskPct = input.float(1.0, 'Rủi ro TỔNG cho cả chiến dịch (% tài khoản)', minval = 0.05, step = 0.05, group = GRP_K)
+fixedQty = input.float(1.0, 'Khối lượng cố định mỗi lệnh', minval = 0.0001, group = GRP_K)
+qtyStep = input.float(0.01, 'Bước làm tròn khối lượng', minval = 0.0001, group = GRP_K)
+slMode = input.string('Thấp hơn: VWAP-kATR hoặc swing', 'SL chung (lệnh thuận xu hướng)', options = ['Thấp hơn: VWAP-kATR hoặc swing', 'VWAP - k x ATR', 'Swing N nến'], group = GRP_K)
+slAtrK = input.float(0.5, '  k (ATR)', minval = 0.0, step = 0.1, group = GRP_K)
+swingN = input.int(20, '  Swing N nến', minval = 2, group = GRP_K)
+slBuffer = input.float(1.0, 'SL cộng thêm (đơn vị giá)', minval = 0.0, step = 0.1, group = GRP_K)
+useSoftSL = input.bool(true, 'SL mềm: đóng hết khi nến đóng cửa xuyên VWAP ± σ', group = GRP_K)
+softSig = input.float(1.0, '  σ', minval = 0.1, step = 0.1, group = GRP_K)
+
+var GRP_T = '=== CHỐT LÃI (theo giá trung bình) ==='
+tp1R = input.float(1.0, 'TP1 = giá TB + x R', minval = 0.1, step = 0.1, group = GRP_T)
+tp1Pct = input.int(50, '  % khối lượng chốt ở TP1', minval = 1, maxval = 100, group = GRP_T)
+tp2R = input.float(2.0, 'TP2 = giá TB + x R', minval = 0.2, step = 0.1, group = GRP_T)
+tp2Pct = input.int(30, '  % khối lượng chốt ở TP2 (tự giới hạn TP1% + TP2% ≤ 100)', minval = 0, maxval = 100, group = GRP_T)
+capTp2 = input.bool(true, '  TP2 không vượt dải TMA / VWAP ±σ (lấy mức gần hơn)', group = GRP_T)
+moveBE = input.bool(true, 'Sau TP1: dời SL phần còn lại về giá TB', group = GRP_T)
+beOffset = input.float(0.0, '  Cộng thêm vào hòa vốn (đơn vị giá)', minval = 0.0, step = 0.1, group = GRP_T)
+useTrail = input.bool(true, 'Phần còn lại: thoát khi đóng cửa xuyên EMA 21', group = GRP_T)
+trailAfter = input.string('TP2', '  Bắt đầu trail sau', options = ['TP1', 'TP2'], group = GRP_T)
+useTimeStop = input.bool(true, 'Dừng theo thời gian: chưa đạt TP1 sau N nến thì đóng', group = GRP_T)
+timeStopBars = input.int(60, '  N nến', minval = 1, group = GRP_T)
+
+// [F2] TP2% thực dùng: không để tổng vượt 100%
+int tp2Eff = math.max(0, math.min(tp2Pct, 100 - tp1Pct))
+
+// ==========================================
+// [0] VWAP + σ
+// ==========================================
+var GRP_VWAP = 'VWAP'
+vwapEnable = input.bool(true, 'Hiển thị VWAP', group = GRP_VWAP)
+vwapAnchor = input.string('Session', 'Anchor Period', options = ['Session', 'Week', 'Month'], group = GRP_VWAP)
+vwapSrc = input.source(hlc3, 'Source', group = GRP_VWAP)
+showVwapBands = input.bool(true, 'Hiển thị dải VWAP ±σ', group = GRP_VWAP)
+stretchMult = input.float(2.0, 'Dải VWAP ± σ x (cho ĐC*)', minval = 0.5, step = 0.1, group = GRP_VWAP)
+minVwapBars = input.int(10, 'Số nến tối thiểu từ đầu phiên để dùng dải σ', minval = 1, group = GRP_VWAP)
+
+isNewVwapPeriod = vwapAnchor == 'Session' ? timeframe.change('D') : vwapAnchor == 'Week' ? timeframe.change('W') : vwapAnchor == 'Month' ? timeframe.change('M') : false
+var float cumPV = 0.0
+var float cumPV2 = 0.0
+var float cumV = 0.0
+var int vwapBars = 0
+if isNewVwapPeriod
+    cumPV := 0.0
+    cumPV2 := 0.0
+    cumV := 0.0
+    vwapBars := 0
+cumPV := cumPV + vwapSrc * volume
+cumPV2 := cumPV2 + vwapSrc * vwapSrc * volume
+cumV := cumV + volume
+vwapBars := vwapBars + 1
+float vwapValue = cumV != 0.0 ? cumPV / cumV : na
+float vwapVar = cumV != 0.0 ? cumPV2 / cumV - vwapValue * vwapValue : na
+float vwapSD = na(vwapVar) ? na : math.sqrt(math.max(vwapVar, 0.0))
+bool vwapReady = vwapBars >= minVwapBars and not na(vwapSD) and vwapSD > 0
+float vwapUpX = vwapBars > 1 and not na(vwapSD) ? vwapValue + vwapSD * stretchMult : na
+float vwapLoX = vwapBars > 1 and not na(vwapSD) ? vwapValue - vwapSD * stretchMult : na
+
+plot(vwapEnable ? vwapValue : na, 'VWAP', color.new(#2962FF, 0), 2)
+plot(vwapEnable and showVwapBands ? vwapUpX : na, 'VWAP +σ', color.new(#2962FF, 60), 1, plot.style_linebr)
+plot(vwapEnable and showVwapBands ? vwapLoX : na, 'VWAP -σ', color.new(#2962FF, 60), 1, plot.style_linebr)
+
+// ==========================================
+// [1] TMA LOGIC
+// ==========================================
+var GRP_L = '--- LOGIC Tín Hiệu Buy/Sell ---'
+L_HalfLength = input.int(40, 'Length ', group = GRP_L)
+L_AtrPeriod = input.int(100, 'Period Logic', group = GRP_L)
+L_AtrMult = input.float(2.2, ' Mult Logic', group = GRP_L)
+
+tmaMid_Logic = ta.sma(ta.sma(close, math.floor(L_HalfLength / 2)), math.ceil(L_HalfLength / 2))
+atr_Logic = ta.atr(L_AtrPeriod)
+tmaUpper_L = tmaMid_Logic + atr_Logic * L_AtrMult
+tmaLower_L = tmaMid_Logic - atr_Logic * L_AtrMult
+plot(tmaUpper_L, 'TMA Upper', color.new(#1ba550, 60))
+plot(tmaMid_Logic, 'TMA Mid', color.new(color.gray, 50))
+plot(tmaLower_L, 'TMA Lower', color.new(#1ba550, 60))
+
+// ==========================================
+// [1B] ĐẢO CHIỀU MỚI - CÀI ĐẶT
+// ==========================================
+var GRP_RV = '--- ĐẢO CHIỀU MỚI (ĐC*) ---'
+revEnable = input.bool(true, 'Dùng tín hiệu đảo chiều mới ĐC*', group = GRP_RV)
+revScope = input.string('Chỉ ngược VWAP', 'Phạm vi', options = ['Chỉ ngược VWAP', 'Cả hai phía VWAP'], group = GRP_RV)
+showRevPts = input.bool(true, 'Đánh dấu điểm đảo chiều', group = GRP_RV)
+armSource = input.string('TMA hoặc VWAP ±σ', 'Vùng kích hoạt', options = ['TMA Logic', 'VWAP ±σ', 'TMA hoặc VWAP ±σ'], group = GRP_RV)
+armMaxBars = input.int(12, 'Số nến tối đa chờ xác nhận', minval = 1, group = GRP_RV)
+trigMode = input.string('Một trong hai', 'Nến xác nhận', options = ['Nến HA đẹp', 'Đóng cửa vượt đỉnh/đáy nến trước', 'Một trong hai'], group = GRP_RV)
+requireBackIn = input.bool(true, 'Giá phải đóng cửa quay lại trong vùng', group = GRP_RV)
+confirmLogic = input.string('HOẶC', 'Bộ lọc chất lượng', options = ['Không bắt buộc', 'HOẶC', 'VÀ'], group = GRP_RV)
+applyQualityAll = input.bool(true, '  Áp cả cho phía cùng VWAP', group = GRP_RV)
+useDiv = input.bool(true, 'Phân kỳ RSI', group = GRP_RV)
+rsiLen = input.int(14, '  RSI Length', minval = 2, group = GRP_RV)
+divL = input.int(5, '  Pivot trái', minval = 1, group = GRP_RV)
+divR = input.int(2, '  Pivot phải', minval = 1, group = GRP_RV)
+divMinGap = input.int(4, '  Khoảng cách tối thiểu', minval = 2, group = GRP_RV)
+divMaxGap = input.int(60, '  Khoảng cách tối đa', minval = 5, group = GRP_RV)
+useRej = input.bool(true, 'Nến từ chối', group = GRP_RV)
+wickRatio = input.float(1.5, '  Râu / thân', minval = 0.5, step = 0.1, group = GRP_RV)
+revCooldown = input.int(20, 'Khoảng cách tối thiểu 2 ĐC* cùng chiều (nến)', minval = 0, group = GRP_RV)
+requireReset = input.bool(true, 'ĐC* cùng chiều tiếp theo: giá phải về TMA Mid trước', group = GRP_RV)
+
+// ==========================================
+// [3] EMA 9/21
+// ==========================================
+var GRP_E = '--- EMA Pullback ---'
+showEmaCloud = input.bool(true, 'Hiển thị EMA Cloud', group = GRP_E)
+emaFastLen = input.int(9, 'EMA nhanh', minval = 1, group = GRP_E)
+emaSlowLen = input.int(21, 'EMA chậm', minval = 1, group = GRP_E)
+maxWait = input.int(30, 'Số nến tối đa chờ pullback sau tín hiệu gốc', minval = 1, group = GRP_E)
+
+ema9 = ta.ema(close, emaFastLen)
+ema21 = ta.ema(close, emaSlowLen)
+bool emaBullish = close >= ema9 and close >= ema21
+bool emaBearish = close <= ema9 and close <= ema21
+color pallette = emaBullish ? color.new(color.lime, 50) : emaBearish ? color.new(color.red, 50) : color.new(color.gray, 50)
+filla = plot(showEmaCloud ? ema9 : na, 'EMA 9', color = pallette, linewidth = 1)
+fillb = plot(showEmaCloud ? ema21 : na, 'EMA 21', color = pallette, linewidth = 1)
+fill(filla, fillb, color = pallette)
+
+float zoneLow = math.min(ema9, ema21)
+float zoneHigh = math.max(ema9, ema21)
+
+// ==========================================
+// [4] TÍN HIỆU GỐC
+// ==========================================
+haTicker = ticker.heikinashi(syminfo.tickerid)
+[haO, haH, haL, haC] = request.security(haTicker, timeframe.period, [open, high, low, close])
+isBullHA = haC > haO and haL == haO
+isBearHA = haC < haO and haH == haO
+
+isTrendBuy = close > vwapValue and close < tmaMid_Logic and isBullHA
+isTrendSell = close < vwapValue and close > tmaMid_Logic and isBearHA
+isRevBuy = (low[1] < tmaLower_L[1] or low < tmaLower_L) and isBullHA
+isRevSell = (high[1] > tmaUpper_L[1] or high > tmaUpper_L) and isBearHA
+
+int rangeLimit = 10
+
+bool aboveVwap = close > vwapValue
+bool belowVwap = close < vwapValue
+
+bool rawBuy = (isTrendBuy or isRevBuy) and aboveVwap
+bool rawSell = (isTrendSell or isRevSell) and belowVwap
+
+// Bản cũ: dùng chung 1 cặp biến cho cả BUY & SELL
+var float lastSignalPrice = 0.0
+var int lastSignalBar = 0
+// [F4] Bản sửa: tách riêng
+var float lastBuyPx = 0.0
+var int lastBuyBar = 0
+var float lastSellPx = 0.0
+var int lastSellBar = 0
+
+bool finalBuy = sepFilter ? rawBuy and (lastBuyBar == 0 or bar_index - lastBuyBar > rangeLimit or low < lastBuyPx) : rawBuy and (bar_index - lastSignalBar > rangeLimit or low < lastSignalPrice or lastSignalBar == 0)
+bool finalSell = sepFilter ? rawSell and (lastSellBar == 0 or bar_index - lastSellBar > rangeLimit or high > lastSellPx) : rawSell and (bar_index - lastSignalBar > rangeLimit or high > lastSignalPrice or lastSignalBar == 0)
+
+if finalBuy
+    lastSignalPrice := low
+    lastSignalBar := bar_index
+    lastBuyPx := low
+    lastBuyBar := bar_index
+if finalSell
+    lastSignalPrice := high
+    lastSignalBar := bar_index
+    lastSellPx := high
+    lastSellBar := bar_index
+
+// ==========================================
+// [4N] ĐẢO CHIỀU MỚI: CHẠM VÙNG -> GHI ĐÁY/ĐỈNH -> NẾN XÁC NHẬN
+// ==========================================
+rsiVal = ta.rsi(close, rsiLen)
+plD = ta.pivotlow(low, divL, divR)
+phD = ta.pivothigh(high, divL, divR)
+var float pvLow = na
+var float pvLowRsi = na
+var int pvLowBar = na
+var float pvHigh = na
+var float pvHighRsi = na
+var int pvHighBar = na
+if not na(plD)
+    pvLow := plD
+    pvLowRsi := rsiVal[divR]
+    pvLowBar := bar_index - divR
+if not na(phD)
+    pvHigh := phD
+    pvHighRsi := rsiVal[divR]
+    pvHighBar := bar_index - divR
+
+bullRej(int x) =>
+    float rng = high[x] - low[x]
+    float bd = math.abs(close[x] - open[x])
+    float lw = math.min(open[x], close[x]) - low[x]
+    rng > 0 and lw >= bd * wickRatio and lw >= rng * 0.4
+bearRej(int x) =>
+    float rng = high[x] - low[x]
+    float bd = math.abs(close[x] - open[x])
+    float uw = high[x] - math.max(open[x], close[x])
+    rng > 0 and uw >= bd * wickRatio and uw >= rng * 0.4
+bool rejB0 = bullRej(0)
+bool rejS0 = bearRej(0)
+
+qualOK(bool dv, bool rj) =>
+    bool anyOn = useDiv or useRej
+    bool res = true
+    if confirmLogic != 'Không bắt buộc' and anyOn
+        res := confirmLogic == 'HOẶC' ? (useDiv and dv) or (useRej and rj) : (not useDiv or dv) and (not useRej or rj)
+    res
+
+// ---- BUY ----
+var bool armB = false
+var float extB = na
+var int extBBar = na
+var float extBRsi = na
+var float refBLow = na
+var float refBRsi = na
+var int refBBar = na
+var bool rejFlagB = false
+var bool strFlagB = false
+
+bool touchTmaB = low < tmaLower_L
+bool touchVwB = vwapReady and low < vwapLoX
+bool touchB = revEnable and (armSource == 'TMA Logic' ? touchTmaB : armSource == 'VWAP ±σ' ? touchVwB : touchTmaB or touchVwB)
+
+if armB and bar_index - extBBar > armMaxBars
+    armB := false
+if (touchB and not armB) or (armB and low < extB)
+    if not armB
+        refBLow := pvLow
+        refBRsi := pvLowRsi
+        refBBar := pvLowBar
+        strFlagB := false
+    else if bar_index - extBBar >= divMinGap
+        refBLow := extB
+        refBRsi := extBRsi
+        refBBar := extBBar
+    armB := true
+    extB := low
+    extBBar := bar_index
+    extBRsi := rsiVal
+    rejFlagB := false
+if armB
+    if rejB0 and low <= extB + atr_Logic * 0.3
+        rejFlagB := true
+    if vwapReady and low <= vwapLoX
+        strFlagB := true
+int gapDB = na(refBBar) or na(extBBar) ? 0 : extBBar - refBBar
+bool divB = armB and not na(refBLow) and gapDB >= divMinGap and gapDB <= divMaxGap and extB < refBLow and extBRsi > refBRsi
+
+// ---- SELL ----
+var bool armS = false
+var float extS = na
+var int extSBar = na
+var float extSRsi = na
+var float refSHigh = na
+var float refSRsi = na
+var int refSBar = na
+var bool rejFlagS = false
+var bool strFlagS = false
+
+bool touchTmaS = high > tmaUpper_L
+bool touchVwS = vwapReady and high > vwapUpX
+bool touchS = revEnable and (armSource == 'TMA Logic' ? touchTmaS : armSource == 'VWAP ±σ' ? touchVwS : touchTmaS or touchVwS)
+
+if armS and bar_index - extSBar > armMaxBars
+    armS := false
+if (touchS and not armS) or (armS and high > extS)
+    if not armS
+        refSHigh := pvHigh
+        refSRsi := pvHighRsi
+        refSBar := pvHighBar
+        strFlagS := false
+    else if bar_index - extSBar >= divMinGap
+        refSHigh := extS
+        refSRsi := extSRsi
+        refSBar := extSBar
+    armS := true
+    extS := high
+    extSBar := bar_index
+    extSRsi := rsiVal
+    rejFlagS := false
+if armS
+    if rejS0 and high >= extS - atr_Logic * 0.3
+        rejFlagS := true
+    if vwapReady and high >= vwapUpX
+        strFlagS := true
+int gapDS = na(refSBar) or na(extSBar) ? 0 : extSBar - refSBar
+bool divS = armS and not na(refSHigh) and gapDS >= divMinGap and gapDS <= divMaxGap and extS > refSHigh and extSRsi < refSRsi
+
+// ---- Nến xác nhận ----
+float bandB = armSource == 'TMA Logic' ? tmaLower_L : armSource == 'VWAP ±σ' ? vwapLoX : math.min(tmaLower_L, nz(vwapLoX, tmaLower_L))
+float bandS = armSource == 'TMA Logic' ? tmaUpper_L : armSource == 'VWAP ±σ' ? vwapUpX : math.max(tmaUpper_L, nz(vwapUpX, tmaUpper_L))
+bool backInB = not requireBackIn or (not na(bandB) and close > bandB)
+bool backInS = not requireBackIn or (not na(bandS) and close < bandS)
+bool brkB = close > high[1] and close > open
+bool brkS = close < low[1] and close < open
+bool trigCB = trigMode == 'Nến HA đẹp' ? isBullHA : trigMode == 'Đóng cửa vượt đỉnh/đáy nến trước' ? brkB : isBullHA or brkB
+bool trigCS = trigMode == 'Nến HA đẹp' ? isBearHA : trigMode == 'Đóng cửa vượt đỉnh/đáy nến trước' ? brkS : isBearHA or brkS
+bool qB = qualOK(divB, rejFlagB)
+bool qS = qualOK(divS, rejFlagS)
+bool bothSides = revScope == 'Cả hai phía VWAP'
+
+bool revTrigBuy = armB and backInB and trigCB and (belowVwap ? strFlagB and qB : bothSides and (applyQualityAll ? qB : true))
+bool revTrigSell = armS and backInS and trigCS and (aboveVwap ? strFlagS and qS : bothSides and (applyQualityAll ? qS : true))
+if revTrigBuy and revTrigSell
+    revTrigSell := false
+
+// ---- Chống nhiễu ĐC* ----
+var int lastRevBuyBar = na
+var int lastRevSellBar = na
+var bool buyResetOK = true
+var bool sellResetOK = true
+if close > tmaMid_Logic
+    buyResetOK := true
+if close < tmaMid_Logic
+    sellResetOK := true
+bool buyAllowed = (na(lastRevBuyBar) or bar_index - lastRevBuyBar > revCooldown) and (not requireReset or buyResetOK)
+bool sellAllowed = (na(lastRevSellBar) or bar_index - lastRevSellBar > revCooldown) and (not requireReset or sellResetOK)
+if revTrigBuy and not buyAllowed
+    revTrigBuy := false
+    armB := false
+if revTrigSell and not sellAllowed
+    revTrigSell := false
+    armS := false
+if revTrigBuy
+    lastRevBuyBar := bar_index
+    buyResetOK := false
+    if showRevPts
+        label.new(extBBar, extB, 'ĐC*', xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_up, color = color.yellow, textcolor = color.black, size = size.tiny)
+    armB := false
+if revTrigSell
+    lastRevSellBar := bar_index
+    sellResetOK := false
+    if showRevPts
+        label.new(extSBar, extS, 'ĐC*', xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_down, color = color.yellow, textcolor = color.black, size = size.tiny)
+    armS := false
+
+// ==========================================
+// [5] MÁY TRẠNG THÁI - LOGIC CŨ, GIỮ NGUYÊN
+// ==========================================
+var int sellStage = 0
+var int sellSetupBar = 0
+var int buyStage = 0
+var int buySetupBar = 0
+bool entrySell = false
+bool entryBuy = false
+
+if finalSell
+    sellStage := 1
+    sellSetupBar := bar_index
+else if sellStage > 0
+    if bar_index - sellSetupBar > maxWait or close > vwapValue or finalBuy
+        sellStage := 0
+    else if sellStage == 1
+        if close < zoneLow
+            sellStage := 2
+    else if sellStage == 2
+        if close > zoneHigh
+            sellStage := 0
+        else if high >= zoneLow and close < zoneHigh and close < open
+            entrySell := true
+            sellStage := 0
+
+if finalBuy
+    buyStage := 1
+    buySetupBar := bar_index
+else if buyStage > 0
+    if bar_index - buySetupBar > maxWait or close < vwapValue or finalSell
+        buyStage := 0
+    else if buyStage == 1
+        if close > zoneHigh
+            buyStage := 2
+    else if buyStage == 2
+        if close < zoneLow
+            buyStage := 0
+        else if low <= zoneHigh and close > zoneLow and close > open
+            entryBuy := true
+            buyStage := 0
+
+// Gộp tín hiệu (logic cũ được ưu tiên)
+bool goBuy = entryBuy or revTrigBuy
+bool goSell = entrySell or revTrigSell
+if goBuy and goSell
+    if entryBuy
+        goSell := false
+    else if entrySell
+        goBuy := false
+    else
+        goSell := false
+bool sigIsRev = goBuy ? revTrigBuy and not entryBuy : goSell ? revTrigSell and not entrySell : false
+
+plotshape(goBuy and not sigIsRev, 'Tín hiệu BUY', shape.triangleup, location.belowbar, color.green, size = size.tiny)
+plotshape(goSell and not sigIsRev, 'Tín hiệu SELL', shape.triangledown, location.abovebar, color.red, size = size.tiny)
+plotshape(goBuy and sigIsRev, 'Tín hiệu BUY ĐC*', shape.triangleup, location.belowbar, color.yellow, size = size.tiny)
+plotshape(goSell and sigIsRev, 'Tín hiệu SELL ĐC*', shape.triangledown, location.abovebar, color.yellow, size = size.tiny)
+
+// ==========================================
+// [C] QUẢN LÝ CHIẾN DỊCH DCA
+// ==========================================
+atrS = ta.atr(atrLen)
+float swingLow = ta.lowest(low, swingN)
+float swingHigh = ta.highest(high, swingN)
+bool inSession = not useSession or not na(time(timeframe.period, sessStr, 'Asia/Ho_Chi_Minh'))
+
+var int campDir = 0
+var bool campIsRev = false
+var float campSL = na
+var int legs = 0
+var float lastLegPx = na
+var int lastLegBar = na
+var int campStartBar = na
+var float legQty = na
+var float campQty = 0.0
+var float campCost = 0.0
+var bool tp1Done = false
+var bool tp2Done = false
+var float tp1Px = na
+var float tp2Px = na
+float stopPxPlot = na
+
+calcQty(float dist) =>
+    float q = 0.0
+    if sizeMode == 'Khối lượng cố định'
+        q := fixedQty
+    else if dist > 0
+        float riskAmt = strategy.equity * riskPct / 100.0
+        q := riskAmt / (maxLegs * dist * syminfo.pointvalue)
+        q := math.floor(q / qtyStep) * qtyStep
+    q
+
+float posAbs = math.abs(strategy.position_size)
+bool closedNow = false
+bool wantRev = false
+bool opened = false
+
+// 1. [F2] Phát hiện đã chốt TP1 / TP2: giá chạm mức TP đang đặt (tp1Px/tp2Px của nến trước,
+//    chính là mức của lệnh limit đang chờ). Không phụ thuộc làm tròn khối lượng.
+if campDir != 0 and posAbs > 0
+    if not tp1Done and not na(tp1Px) and (campDir == 1 ? high >= tp1Px : low <= tp1Px)
+        tp1Done := true
+    if tp1Done and not tp2Done
+        if tp2Eff == 0 or (not na(tp2Px) and (campDir == 1 ? high >= tp2Px : low <= tp2Px))
+            tp2Done := true
+
+// 2. Thoát chủ động (đóng cửa nến)
+if campDir != 0 and posAbs > 0
+    bool opp = campDir == 1 ? goSell : goBuy
+    // [F1] SL mềm chỉ dùng khi dải σ đã đủ tin cậy (tránh VWAP vừa reset đầu phiên)
+    bool softHit = useSoftSL and not campIsRev and vwapReady and (campDir == 1 ? close < vwapValue - softSig * vwapSD : close > vwapValue + softSig * vwapSD)
+    bool timeOut = useTimeStop and not tp1Done and bar_index - campStartBar >= timeStopBars
+    bool trailOn = trailAfter == 'TP1' ? tp1Done : tp2Done
+    bool trailHit = useTrail and trailOn and (campDir == 1 ? close < ema21 : close > ema21)
+    string why = opp ? 'Tín hiệu ngược' : softHit ? 'SL mềm VWAP' : timeOut ? 'Hết giờ' : trailHit ? 'Trail EMA21' : ''
+    if opp and reverseOnOpp
+        // [F3] Chưa đóng vội: thử mở chiến dịch ngược ở bước 4 (strategy.entry tự đảo vị thế)
+        wantRev := true
+    else if why != ''
+        strategy.close_all(comment = why)
+        closedNow := true
+
+// 3. Reset khi chiến dịch kết thúc
+if (campDir != 0 and posAbs == 0) or closedNow or wantRev
+    campDir := 0
+    campIsRev := false
+    legs := 0
+    campQty := 0.0
+    campCost := 0.0
+    tp1Done := false
+    tp2Done := false
+    campSL := na
+    tp1Px := na
+    tp2Px := na
+
+bool longOK = tradeDir != 'Chỉ SELL'
+bool shortOK = tradeDir != 'Chỉ BUY'
+
+// 4. Mở chiến dịch / thêm lệnh DCA
+if campDir == 0 and not closedNow and (posAbs == 0 or wantRev) and inSession
+    if goBuy and longOK
+        // [F1] Lọc độ giãn chỉ áp dụng khi σ đã sẵn sàng
+        bool stretchOK = sigIsRev or not vwapReady or close <= vwapValue + maxStretch * vwapSD
+        float slV = vwapValue - slAtrK * atrS
+        float slSw = swingLow - slBuffer
+        float sl = sigIsRev ? extB - slBuffer : slMode == 'VWAP - k x ATR' ? slV : slMode == 'Swing N nến' ? slSw : math.min(slV, slSw)
+        if stretchOK and not na(sl) and close - sl > 0
+            float q = calcQty(close - sl)
+            if q > 0
+                strategy.entry('L1', strategy.long, qty = q, comment = (wantRev ? 'Đảo → ' : '') + (sigIsRev ? 'BUY ĐC*' : 'BUY'))
+                opened := true
+                campDir := 1
+                campIsRev := sigIsRev
+                campSL := sl
+                legs := 1
+                legQty := q
+                campQty := q
+                campCost := close * q
+                lastLegPx := close
+                lastLegBar := bar_index
+                campStartBar := bar_index
+    else if goSell and shortOK
+        bool stretchOK = sigIsRev or not vwapReady or close >= vwapValue - maxStretch * vwapSD
+        float slV = vwapValue + slAtrK * atrS
+        float slSw = swingHigh + slBuffer
+        float sl = sigIsRev ? extS + slBuffer : slMode == 'VWAP - k x ATR' ? slV : slMode == 'Swing N nến' ? slSw : math.max(slV, slSw)
+        if stretchOK and not na(sl) and sl - close > 0
+            float q = calcQty(sl - close)
+            if q > 0
+                strategy.entry('S1', strategy.short, qty = q, comment = (wantRev ? 'Đảo → ' : '') + (sigIsRev ? 'SELL ĐC*' : 'SELL'))
+                opened := true
+                campDir := -1
+                campIsRev := sigIsRev
+                campSL := sl
+                legs := 1
+                legQty := q
+                campQty := q
+                campCost := close * q
+                lastLegPx := close
+                lastLegBar := bar_index
+                campStartBar := bar_index
+else if campDir == 1 and goBuy and legs < maxLegs and not tp1Done and not closedNow and inSession
+    bool gapOK = close <= lastLegPx - addGapAtr * atrS and bar_index - lastLegBar >= minAddBars
+    bool structOK = close > campSL and (campIsRev or close > vwapValue)
+    if gapOK and structOK
+        legs := legs + 1
+        strategy.entry('L' + str.tostring(legs), strategy.long, qty = legQty, comment = 'DCA ' + str.tostring(legs))
+        campQty := campQty + legQty
+        campCost := campCost + close * legQty
+        lastLegPx := close
+        lastLegBar := bar_index
+else if campDir == -1 and goSell and legs < maxLegs and not tp1Done and not closedNow and inSession
+    bool gapOK = close >= lastLegPx + addGapAtr * atrS and bar_index - lastLegBar >= minAddBars
+    bool structOK = close < campSL and (campIsRev or close < vwapValue)
+    if gapOK and structOK
+        legs := legs + 1
+        strategy.entry('S' + str.tostring(legs), strategy.short, qty = legQty, comment = 'DCA ' + str.tostring(legs))
+        campQty := campQty + legQty
+        campCost := campCost + close * legQty
+        lastLegPx := close
+        lastLegBar := bar_index
+
+// [F3] Có tín hiệu ngược nhưng không mở được chiến dịch mới (ngoài giờ, sai chiều cho phép,
+//      lọc độ giãn, khối lượng = 0...) -> đóng hết như bản cũ
+if wantRev and not opened
+    strategy.close_all(comment = 'Tín hiệu ngược')
+    closedNow := true
+
+// 5. Đặt / cập nhật lệnh thoát theo GIÁ TRUNG BÌNH
+if campDir != 0 and campQty > 0
+    float avg = campCost / campQty
+    float R = campDir * (avg - campSL)
+    if not tp1Done
+        tp1Px := avg + campDir * tp1R * R
+        tp2Px := avg + campDir * tp2R * R
+        if capTp2
+            // [F1] Chỉ dùng dải VWAP ±σ khi σ đã sẵn sàng, không thì chỉ dùng dải TMA
+            float bandT = campDir == 1 ? (vwapReady ? math.min(tmaUpper_L, nz(vwapUpX, tmaUpper_L)) : tmaUpper_L) : (vwapReady ? math.max(tmaLower_L, nz(vwapLoX, tmaLower_L)) : tmaLower_L)
+            if campDir * (bandT - tp1Px) > 0 and campDir * (bandT - tp2Px) < 0
+                tp2Px := bandT
+    float stopPx = tp1Done and moveBE ? avg + campDir * beOffset : campSL
+    stopPxPlot := stopPx
+    string pre = campDir == 1 ? 'L' : 'S'
+    for i = 1 to legs
+        string eid = pre + str.tostring(i)
+        if not tp1Done
+            strategy.exit('TP1-' + eid, eid, qty_percent = tp1Pct, limit = tp1Px, stop = stopPx, comment_profit = 'TP1', comment_loss = 'SL')
+        if not tp2Done and tp2Eff > 0
+            strategy.exit('TP2-' + eid, eid, qty_percent = tp2Eff, limit = tp2Px, stop = stopPx, comment_profit = 'TP2', comment_loss = tp1Done ? 'BE' : 'SL')
+        strategy.exit('REST-' + eid, eid, stop = stopPx, comment_loss = tp1Done ? 'BE' : 'SL')
+
+// Vẽ mức của chiến dịch đang chạy
+plot(campDir != 0 and campQty > 0 ? campCost / campQty : na, 'Giá TB', color.white, 1, plot.style_linebr)
+plot(stopPxPlot, 'SL chung', color.red, 2, plot.style_linebr)
+plot(campDir != 0 and not tp1Done ? tp1Px : na, 'TP1', color.aqua, 1, plot.style_linebr)
+plot(campDir != 0 and not tp2Done and tp2Eff > 0 ? tp2Px : na, 'TP2', color.teal, 1, plot.style_linebr)
+
+// Bảng trạng thái
+var table st = table.new(position.top_right, 2, 5, bgcolor = color.new(color.black, 30))
+if barstate.islast
+    table.cell(st, 0, 0, 'Chiến dịch', text_color = color.white, text_size = size.small)
+    table.cell(st, 1, 0, campDir == 1 ? 'BUY' + (campIsRev ? ' ĐC*' : '') : campDir == -1 ? 'SELL' + (campIsRev ? ' ĐC*' : '') : 'Không', text_color = campDir == 1 ? color.lime : campDir == -1 ? color.red : color.gray, text_size = size.small)
+    table.cell(st, 0, 1, 'Số lệnh', text_color = color.white, text_size = size.small)
+    table.cell(st, 1, 1, str.tostring(legs) + ' / ' + str.tostring(maxLegs), text_color = color.white, text_size = size.small)
+    table.cell(st, 0, 2, 'Giá TB', text_color = color.white, text_size = size.small)
+    table.cell(st, 1, 2, campQty > 0 ? str.tostring(campCost / campQty, format.mintick) : '-', text_color = color.white, text_size = size.small)
+    table.cell(st, 0, 3, 'SL', text_color = color.white, text_size = size.small)
+    table.cell(st, 1, 3, na(stopPxPlot) ? '-' : str.tostring(stopPxPlot, format.mintick), text_color = color.red, text_size = size.small)
+    table.cell(st, 0, 4, 'TP1 / TP2', text_color = color.white, text_size = size.small)
+    table.cell(st, 1, 4, campDir != 0 ? (tp1Done ? 'đã chốt' : str.tostring(tp1Px, format.mintick)) + ' / ' + (tp2Eff == 0 ? '-' : tp2Done ? 'đã chốt' : str.tostring(tp2Px, format.mintick)) : '-', text_color = color.aqua, text_size = size.small)
