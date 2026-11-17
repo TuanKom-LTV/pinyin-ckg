@@ -202,7 +202,7 @@ def ckg_rates(ccy: str = "USD"):
 @router.get("/ckg/api/hapro")
 def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
     """Nhãn BUY/SELL của chiến lược PinYin HA Pro trên 1500 nến đã đóng gần nhất (để vẽ lên biểu đồ)."""
-    from app.services.ha_pro import analyze
+    from app.services.ha_pro_dca import v5_entries
     sym, tf = sym.upper().strip(), tf.upper().strip()
     if sym not in CKG_SYMBOLS or tf not in CHART_TF:
         return {"ok": False, "loi": "Mã hoặc khung chưa hỗ trợ."}
@@ -216,9 +216,10 @@ def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
             return {"ok": True, "sig": []}
         bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                  float(x["tick_volume"]), int(x["time"]) // 86400) for x in r]
-        sig = analyze(bars, {"candles": "std" if candles == "std" else "ha"})
+        sig = v5_entries(bars, "std" if candles == "std" else "ha")
         return {"ok": True, "sym": sym, "tf": tf, "candles": candles,
-                "sig": [{"t": s["t"], "side": s["side"], "kind": s["kind"], "e": round(s["e"], 5), "sl": round(s["sl"], 5),
+                "sig": [{"t": s["t"], "side": s["side"], "kind": s["kind"], "rev": s["rev"], "ctr": s["ctr"], "names": s["names"],
+                         "e": round(s["e"], 5), "sl": round(s["sl"], 5),
                          "tp": [round(float(x), 5) for x in s["tp"]]} for s in sig]}
     except Exception as e:
         return {"ok": False, "loi": str(e)}
@@ -228,7 +229,7 @@ def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
 def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
     """Nhãn tín hiệu của chiến lược PinYin HA Pro DCA (bot) theo CÀI ĐẶT DCA ĐANG LƯU của bot, để vẽ lên biểu đồ.
     SL = SL chung bot sẽ đặt nếu mở chiến dịch ở nhãn đó; TP1/TP2 tính theo giá vào 1 lệnh (bot thật tính theo giá TB)."""
-    from app.services.ha_pro_dca import compute
+    from app.services.ha_pro_dca import dca_signals
     from app.api.ckg_auto import _cfg
     sym, tf = sym.upper().strip(), tf.upper().strip()
     if sym != "XAUUSD" or tf not in CHART_TF:
@@ -245,7 +246,7 @@ def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
         bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                  float(x["tick_volume"]), int(x["time"]) // 86400) for x in r]
         out = []
-        for b, s in zip(bars, compute(bars, {"candles": d.get("candles", "std")})):
+        for b, s in zip(bars, dca_signals(bars, d)):
             if not s or not s["go"]:
                 continue
             go = s["go"]
@@ -260,7 +261,7 @@ def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
             e = b[4]
             R = go * (e - sl)
             tp = [e + go * d["tp1r"] * R, e + go * d["tp2r"] * R] if R > 0 else [e, e]
-            out.append({"t": s["t"], "side": "BUY" if go > 0 else "SELL", "rev": bool(s["rev"]), "e": round(e, 2),
+            out.append({"t": s["t"], "side": "BUY" if go > 0 else "SELL", "rev": bool(s["rev"]), "ctr": bool(s.get("ctr")), "e": round(e, 2),
                         "sl": round(sl, 2), "tp": [round(v, 2) for v in tp], "rr": [d["tp1r"], d["tp2r"]]})
         return {"ok": True, "sym": sym, "tf": tf, "candles": d.get("candles", "std"), "sig": out}
     except Exception as e:

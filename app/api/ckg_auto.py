@@ -35,15 +35,14 @@ from pydantic import BaseModel
 from app.api.ckg import server_offset
 from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION, MAX_LOT
 from app.services.mt5_service import mt5_service
-from app.services.ha_pro import analyze as analyze_ha
-from app.services.ha_pro_dca import compute as dca_compute
+from app.services.ha_pro_dca import dca_signals, v5_entries
 
 
 SYM = "XAUUSD"
 MAGIC = 260117
 COMMENT = "PinYin AUTO"
 TFS = {"M1": (mt5.TIMEFRAME_M1, 60), "M5": (mt5.TIMEFRAME_M5, 300), "M15": (mt5.TIMEFRAME_M15, 900)}
-STRATS = {"ema": "EMA9 × EMA21", "ha": "PinYin HA Pro", "dca": "PinYin HA Pro DCA"}
+STRATS = {"ema": "EMA9 × EMA21", "ha": "PinYin HA Pro v5", "dca": "PinYin HA Pro DCA"}
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
 VN = timezone(timedelta(hours=7))
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -62,18 +61,19 @@ DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1,
            "lot": None,   # lot cố định; None = theo bảng vốn
            "strategy": "ema", "ha_sl_buffer": 2.0, "ha_sl_lookback": 20,   # chiến lược tín hiệu
            "ha_candles": "ha",   # HA Pro tính trên nến Heikin Ashi (như TradingView) hoặc nến Nhật
+           "ha_be_tp1": True,    # v5: giá chạm TP1 thì dời SL về giá vào (như chỉ báo)
            "dca": {}}            # cài đặt chiến lược DCA (gộp với DCA_DEF)
 # Cài đặt DCA mặc định = input mặc định của Pine Script. Khóa: (min, max, kiểu) để kiểm tra khi lưu.
 DCA_DEF = {"legs": 3, "gap": 0.5, "min_bars": 5, "risk": 0.0, "dir": "both", "stretch": 2.0,
            "sl_mode": "min", "sl_k": 0.5, "sl_buf": 1.0, "soft": True, "soft_sig": 1.0,
            "tp1r": 1.0, "tp1p": 50, "tp2r": 2.0, "tp2p": 30, "cap": True, "be": True, "be_off": 0.0,
-           "trail": True, "trail_after": 2, "time": 60, "rev": True, "candles": "std",
+           "trail": True, "trail_after": 2, "time": 60, "rev": True, "candles": "std", "sig": "v5",
            "sess_on": False, "sess": "1400-2300"}   # chỉ MỞ/THÊM lệnh trong khung giờ VN (như useSession của Pine)
 DCA_NUM = {"legs": (1, 5, int), "gap": (0, 10, float), "min_bars": (1, 200, int), "risk": (0, 10, float),
            "stretch": (0.5, 10, float), "sl_k": (0, 10, float), "sl_buf": (0, 100, float), "soft_sig": (0.1, 5, float),
            "tp1r": (0.1, 10, float), "tp1p": (1, 100, int), "tp2r": (0.2, 20, float), "tp2p": (0, 100, int),
            "be_off": (0, 100, float), "trail_after": (1, 2, int), "time": (0, 2000, int)}
-DCA_ENUM = {"dir": ("both", "buy", "sell"), "sl_mode": ("min", "vwap", "swing"), "candles": ("ha", "std")}
+DCA_ENUM = {"dir": ("both", "buy", "sell"), "sl_mode": ("min", "vwap", "swing"), "candles": ("ha", "std"), "sig": ("v5", "dca")}
 DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on")
 
 
@@ -298,7 +298,36 @@ def _open(sg, lot, tp_n, c=None):
         "sl": round(sl, info.digits), "tp": round(tp, info.digits),
     })
     _state["known"][res.order] = sg["side"]
-    log(f"Vào {sg['side']} {res.volume} lot @ {res.price} · SL {sl:.2f} · TP{tp_n} {tp:.2f}", "open")
+    if c.get("strategy") == "ha" and c.get("ha_be_tp1", True) and tp_n > 1 and c.get("tp_mode") != "usd":
+        _state.setdefault("be1", {})[res.order] = (float(sg["tp"][0]), float(res.price), 1 if buy else -1)
+    log(f"Vào {sg['side']}{(' ' + sg['kind']) if sg.get('kind') else ''} {res.volume} lot @ {res.price} · SL {sl:.2f} · TP{tp_n} {tp:.2f}", "open")
+
+
+def _be_tp1():
+    """v5: giá chạm TP1 → dời SL lệnh bot về giá vào (mỗi vòng 2 giây)."""
+    be = _state.get("be1")
+    if not be:
+        return
+    ps = {p.ticket: p for p in _bot_positions()}
+    for tk in list(be):
+        p = ps.get(tk)
+        if not p:
+            be.pop(tk, None)
+            continue
+        tp1, e, d = be[tk]
+        tick = mt5.symbol_info_tick(SYM)
+        if not tick or tick.bid <= 0:
+            return
+        px = tick.bid if d > 0 else tick.ask
+        if d * (px - tp1) >= 0:
+            be.pop(tk, None)
+            info = mt5.symbol_info(SYM)
+            if (p.sl == 0 or d * (e - p.sl) > info.point / 2) and d * (px - e) >= (info.trade_stops_level + 1) * info.point:
+                try:
+                    _set_sl(p, e)
+                    log(f"#{tk} chạm TP1 {tp1:.2f} → dời SL về giá vào {e:.2f}", "info")
+                except Exception as ex:
+                    log(f"#{tk} không dời được SL hòa vốn: {ex}", "err")
 
 
 def _check_closed(off):
@@ -453,7 +482,7 @@ def _dca_live(c):
 def _dca_bar(c, bars, b, fixed):
     """Chạy khi có nến mới đóng: thoát chủ động, mở chiến dịch / thêm lệnh DCA, cập nhật TP."""
     d = c["dca"]
-    sigs = dca_compute(bars, {"candles": d["candles"]})
+    sigs = dca_signals(bars, d)
     sg = sigs[-1] if sigs else None
     if not sg:
         _state["msg"] += " · DCA: chưa đủ nến"
@@ -614,6 +643,8 @@ def _step():
         dca = c.get("strategy") == "dca"
         if dca:
             _dca_live(c)                         # chốt TP1/TP2 theo giá thực, mỗi 2 giây
+        if ha:
+            _be_tp1()
         r = mt5.copy_rates_from_pos(SYM, tf_code, 0, 1500 if (ha or dca) else 600)
         if r is None or len(r) < 30:
             _state["msg"] = "Chưa đủ nến"
@@ -638,8 +669,7 @@ def _step():
         if ha:
             bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                      float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]   # chỉ nến đã đóng
-            ent = analyze_ha(bars, {"sl_buffer": c.get("ha_sl_buffer", 2.0), "sl_lookback": int(c.get("ha_sl_lookback", 20)),
-                                    "candles": c.get("ha_candles", "ha")})
+            ent = v5_entries(bars, c.get("ha_candles", "ha"), c.get("ha_sl_buffer", 2.0), int(c.get("ha_sl_lookback", 20)))
             last = ent[-1] if ent else None
             sg = None
             if last and last["i"] == len(bars) - 1:            # nến vừa đóng có nhãn BUY/SELL

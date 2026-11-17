@@ -15,8 +15,7 @@ Giả định mô phỏng (thận trọng):
 import math
 from datetime import datetime, timedelta, timezone
 
-from app.services.ha_pro import analyze as analyze_ha
-from app.services.ha_pro_dca import compute as dca_compute
+from app.services.ha_pro_dca import dca_signals, v5_entries
 
 VN = timezone(timedelta(hours=7))
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
@@ -101,10 +100,9 @@ class Sim:
 
 def run_ha(sim, c, lot_fixed, warm):
     bars, n = sim.bars, len(sim.bars)
-    ents = {e["i"]: e for e in analyze_ha(bars, {"sl_buffer": c.get("ha_sl_buffer", 2.0),
-                                                 "sl_lookback": int(c.get("ha_sl_lookback", 20)),
-                                                 "candles": c.get("ha_candles", "ha")})}
     tp_n = int(c.get("tp", 2))
+    ents = {e["i"]: e for e in v5_entries(bars, c.get("ha_candles", "ha"), c.get("ha_sl_buffer", 2.0), int(c.get("ha_sl_lookback", 20)))}
+    be1 = c.get("ha_be_tp1", True) and tp_n > 1 and c.get("tp_mode") != "usd"
     for k in range(warm, n):
         o, h, l = bars[k][1], bars[k][2], bars[k][3]
         s = sim.spr[k]
@@ -123,6 +121,10 @@ def run_ha(sim, c, lot_fixed, warm):
             d = p["d"]
             best = h if d > 0 else l + s                       # giá có lợi nhất trong nến
             gain = d * (best - p["e"])
+            if p.get("tp1") is not None and d * (best - p["tp1"]) >= 0:   # v5: chạm TP1 → SL về giá vào
+                p["tp1"] = None
+                if d * (p["e"] - p["sl"]) > 0:
+                    p["sl"], p["tag"] = p["e"], "be"
             if c.get("tr_on") and gain >= c.get("tr_at", 2.2):
                 if c.get("half", True) and not p["half"]:
                     p["half"] = True
@@ -150,7 +152,8 @@ def run_ha(sim, c, lot_fixed, warm):
                 sl = px - d * c.get("sl_usd", 3) if c.get("sl_mode") == "usd" else e["sl"]
                 tp = px + d * c.get("tp_usd", 5) if c.get("tp_mode") == "usd" else e["tp"][tp_n - 1]
                 if d * (px - sl) > 0 and d * (tp - px) > 0:
-                    sim.open(d, lot, px, sl, tp, k, camp=k)
+                    q = sim.open(d, lot, px, sl, tp, k, camp=k)
+                    q["tp1"] = e["tp"][0] if be1 else None
         sim.mark(k)
 
 
@@ -159,7 +162,7 @@ def run_ha(sim, c, lot_fixed, warm):
 def run_dca(sim, c, lot_fixed, warm):
     bars, n = sim.bars, len(sim.bars)
     d = c["dca"]
-    sig = dca_compute(bars, {"candles": d.get("candles", "std")})
+    sig = dca_signals(bars, d)
     E = {"dir": 0}
 
     def reset():

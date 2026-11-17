@@ -27,7 +27,45 @@ DEFAULT = {
     "div_min": 4, "div_max": 60, "use_rej": True, "wick": 1.5, "rev_cool": 20, "rev_reset": True,
     # DCA (dùng ở bot)
     "atr_s": 14, "swing_n": 20,
+    # Chỉ báo "PinYin HA Pro v5" (TradingView): chống nhiễu ĐC* theo lệnh ảo của chỉ báo + Entry/SL/TP1-4
+    "block": "none",          # "none" | "be" (chặn khi lệnh chưa về hòa vốn) | "close" (chặn đến khi đóng lệnh)
+    "reset_level": "mid",     # mức trung bình để reset ĐC* cùng chiều: "mid" | "vwap" | "ema21"
+    "trade": False,           # tính Entry/SL/TP1-4 như chỉ báo v5 (kèm theo dõi lệnh ảo)
+    "sl_buffer": 2.0, "sl_lookback": 20, "rev_sl": "wick", "rev_tp": "mean", "be_tp1": True,
 }
+
+# Bộ thông số mặc định của chỉ báo "PinYin HA Pro v5" (TradingView)
+V5 = {"sep_filter": False, "block": "be", "reset_level": "mid", "trade": True, "rev_cool": 20}
+
+
+def _targets(entry, r, d, mean, mid, vw, band):
+    """buildTargets của v5: TP theo R (1..4), lệnh ĐC mới thì chen thêm TMA Mid / VWAP / Dải đối diện."""
+    ds = [r * m for m in range(1, (6 if mean else 4) + 1)]
+    ns = [""] * len(ds)
+    if mean:
+        for x, nm in ((mid, "TMA Mid"), (vw, "VWAP"), (band, "Dải đối diện")):
+            if x is not None and d * (x - entry) > 0:
+                ds.append(d * (x - entry))
+                ns.append(nm)
+    out_d, out_n = [], []
+    gap = r * 0.5 if mean else 0.0
+    for k in sorted(range(len(ds)), key=lambda j: ds[j]):
+        dk, nk = ds[k], ns[k]
+        if dk < gap:
+            continue
+        if out_d and dk - out_d[-1] < r * 0.25:
+            if nk and not out_n[-1]:
+                out_d[-1], out_n[-1] = dk, nk
+        elif len(out_d) < 4:
+            out_d.append(dk)
+            out_n.append(nk)
+    tps, names = [], []
+    for n in range(4):
+        dn = out_d[n] if n < len(out_d) else r * (n + 1)
+        nm = out_n[n] if n < len(out_n) else ""
+        tps.append(entry + d * dn)
+        names.append(f"TP{n + 1}{(' ' + nm) if nm else ''} (1:{dn / r:.1f})".replace(".0)", ")"))
+    return tps, names
 
 
 def _rsi(c, n):
@@ -141,6 +179,10 @@ def compute(bars, p=None):
     armS, extS, extSBar, extSRsi, refSHigh, refSRsi, refSBar, rejS, strS = False, None, None, None, None, None, None, False, False
     lastRB = lastRS = None
     bResOK = sResOK = True
+    # lệnh ảo của chỉ báo v5 (dùng cho chặn ĐC* và vẽ Entry/SL/TP)
+    t_open, t_be, t_dir, t_e, t_sl, t_reach, t_tp = False, False, 0, None, None, 0, None
+    track = p["trade"] or p["block"] != "none"
+    lbk = p["sl_lookback"]
 
     def rej(i, bull):
         rng = h[i] - l[i]
@@ -254,12 +296,14 @@ def compute(bars, p=None):
         revTS = armS and backS and trS and ((strS and qS) if above else (both and (qS if p["qual_all"] else True)))
         if revTB and revTS:
             revTS = False
-        if c[i] > mid[i]:
+        rlv = vw if p["reset_level"] == "vwap" else e21[i] if p["reset_level"] == "ema21" else mid[i]
+        if c[i] > rlv:
             bResOK = True
-        if c[i] < mid[i]:
+        if c[i] < rlv:
             sResOK = True
-        bAll = (lastRB is None or i - lastRB > p["rev_cool"]) and (not p["rev_reset"] or bResOK)
-        sAll = (lastRS is None or i - lastRS > p["rev_cool"]) and (not p["rev_reset"] or sResOK)
+        blk = (t_open and not t_be) if p["block"] == "be" else t_open if p["block"] == "close" else False
+        bAll = not blk and (lastRB is None or i - lastRB > p["rev_cool"]) and (not p["rev_reset"] or bResOK)
+        sAll = not blk and (lastRS is None or i - lastRS > p["rev_cool"]) and (not p["rev_reset"] or sResOK)
         if revTB and not bAll:
             revTB, armB = False, False
         if revTS and not sAll:
@@ -309,9 +353,63 @@ def compute(bars, p=None):
             else:
                 goS = False
         isRev = (revTB and not eB) if goB else (revTS and not eS) if goS else False
+        trade = None
+        if track:
+            if goB or goS:
+                t_dir = 1 if goB else -1
+                t_e = c[i]
+                wl = slice(max(0, i - lbk + 1), i + 1)
+                hhN, llN = max(h[wl]), min(l[wl])
+                wick = isRev and p["rev_sl"] == "wick"
+                sl = (extSv + p["sl_buffer"] if wick else hhN + p["sl_buffer"]) if goS else (extBv - p["sl_buffer"] if wick else llN - p["sl_buffer"])
+                if t_dir == 1 and (sl is None or sl >= t_e):
+                    sl = llN - p["sl_buffer"]
+                if t_dir == -1 and (sl is None or sl <= t_e):
+                    sl = hhN + p["sl_buffer"]
+                t_sl = sl
+                r = max(abs(t_sl - t_e), 0.01)
+                tps, names = _targets(t_e, r, t_dir, isRev and p["rev_tp"] == "mean", mid[i], vw, up[i] if t_dir == 1 else lo[i])
+                t_tp, t_reach, t_be, t_open = tps, 0, False, True
+                trade = {"e": t_e, "sl": t_sl, "tp": tps, "names": names}
+            elif t_open:
+                if (h[i] >= t_sl) if t_dir == -1 else (l[i] <= t_sl):
+                    t_open = False
+                elif t_reach < 4:
+                    reached = t_reach
+                    for nn in range(t_reach + 1, 5):
+                        lv = t_tp[nn - 1]
+                        if (l[i] <= lv) if t_dir == -1 else (h[i] >= lv):
+                            reached = nn
+                    if reached > t_reach:
+                        t_reach = reached
+                        if t_reach == 4:
+                            t_open = False
+                        elif p["be_tp1"] and not t_be:
+                            t_sl, t_be = t_e, True
         w = slice(max(0, i - sw + 1), i + 1)
-        out[i] = {"t": bars[i][0], "c": c[i], "go": 1 if goB else -1 if goS else 0, "rev": isRev,
+        out[i] = {"ctr": bool(isRev and ((goB and below) or (goS and above))), "trade": trade,"t": bars[i][0], "c": c[i], "go": 1 if goB else -1 if goS else 0, "rev": isRev,
                   "ext": (extBv if goB else extSv) if isRev else None,
                   "vwap": vw, "sd": sdi, "ready": ready, "up": up[i], "lo": lo[i], "upx": upx, "lox": lox,
                   "ema21": e21[i], "atr": atrS[i], "swl": min(l[w]), "swh": max(h[w])}
     return out
+
+
+def v5_entries(bars, candles="std", sl_buffer=2.0, sl_lookback=20):
+    """Nhãn vào lệnh của chỉ báo "PinYin HA Pro v5" (BUY / SELL / BUY ĐC / BUY ĐC*) kèm Entry, SL, TP1-4 như trên TradingView.
+    Trả [{"i", "t", "side", "rev", "ctr", "kind", "e", "sl", "tp":[4], "names":[4]}]."""
+    out = []
+    sigs = compute(bars, {**V5, "candles": candles, "sl_buffer": sl_buffer, "sl_lookback": sl_lookback})
+    for i, s in enumerate(sigs):
+        if not s or not s["go"] or not s.get("trade"):
+            continue
+        tr = s["trade"]
+        kind = ("ĐẢO CHIỀU MỚI (ngược VWAP)" if s["ctr"] else "ĐẢO CHIỀU MỚI") if s["rev"] else ""
+        out.append({"i": i, "t": s["t"], "side": "BUY" if s["go"] > 0 else "SELL", "rev": s["rev"], "ctr": s["ctr"],
+                    "kind": kind, "e": tr["e"], "sl": tr["sl"], "tp": tr["tp"], "names": tr["names"]})
+    return out
+
+
+def dca_signals(bars, d):
+    """Tín hiệu cho chiến lược DCA: d["sig"] = "v5" (đúng nhãn chỉ báo v5 trên TradingView) hoặc "dca" (bản Pine chiến lược DCA)."""
+    extra = V5 if d.get("sig", "v5") == "v5" else {}
+    return compute(bars, {**extra, "candles": d.get("candles", "std")})
