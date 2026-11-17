@@ -1,6 +1,6 @@
 """Backtest lịch sử cho bot tự động: chạy lại ĐÚNG luật vào/thoát lệnh của bot trên nến MT5 đã qua.
 
-Chiến lược: "ha" (PinYin HA Pro + lá chắn BE/Trailing của bot) và "dca" (PinYin HA Pro DCA).
+Chiến lược: PinYin HA Pro DCA (chiến lược duy nhất của bot).
 Tín hiệu dùng chung code với bot (ha_pro.analyze, ha_pro_dca.compute). Phần quản lý lệnh là bản sao
 của ckg_auto (_step / _dca_live / _dca_bar) nhưng chạy trên lệnh giả, không đụng MT5.
 
@@ -15,7 +15,7 @@ Giả định mô phỏng (thận trọng):
 import math
 from datetime import datetime, timedelta, timezone
 
-from app.services.ha_pro_dca import dca_signals, v5_entries
+from app.services.ha_pro_dca import dca_signals
 
 VN = timezone(timedelta(hours=7))
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
@@ -94,67 +94,6 @@ class Sim:
         if p["d"] > 0:
             return (o if o >= level else level) if h >= level else None
         return (o + s if o + s <= level else level) if l + s <= level else None
-
-
-# ---------------- PinYin HA Pro (1 lệnh / tín hiệu + lá chắn bot) ----------------
-
-def run_ha(sim, c, lot_fixed, warm):
-    bars, n = sim.bars, len(sim.bars)
-    tp_n = int(c.get("tp", 2))
-    ents = {e["i"]: e for e in v5_entries(bars, c.get("ha_candles", "ha"), c.get("ha_sl_buffer", 2.0), int(c.get("ha_sl_lookback", 20)))}
-    be1 = c.get("ha_be_tp1", True) and tp_n > 1 and c.get("tp_mode") != "usd"
-    for k in range(warm, n):
-        o, h, l = bars[k][1], bars[k][2], bars[k][3]
-        s = sim.spr[k]
-        # 1) trong nến: SL → TP → lá chắn (BE / trailing + chốt 50%)
-        for p in list(sim.pos):
-            if p["k"] >= k:
-                continue
-            x = sim.stop_hit(p, k, p["sl"]) if p["sl"] else None
-            if x is not None:
-                sim.close(p, p["lot"], x, k, "SL" if p["tag"] != "be" else "SL hòa vốn/trail")
-                continue
-            x = sim.limit_hit(p, k, p["tp"]) if p["tp"] else None
-            if x is not None:
-                sim.close(p, p["lot"], x, k, f"TP{tp_n}" if c.get("tp_mode") != "usd" else "TP $")
-                continue
-            d = p["d"]
-            best = h if d > 0 else l + s                       # giá có lợi nhất trong nến
-            gain = d * (best - p["e"])
-            if p.get("tp1") is not None and d * (best - p["tp1"]) >= 0:   # v5: chạm TP1 → SL về giá vào
-                p["tp1"] = None
-                if d * (p["e"] - p["sl"]) > 0:
-                    p["sl"], p["tag"] = p["e"], "be"
-            if c.get("tr_on") and gain >= c.get("tr_at", 2.2):
-                if c.get("half", True) and not p["half"]:
-                    p["half"] = True
-                    hv = math.floor(p["lot"] / 2 / sim.step + EPS) * sim.step
-                    if hv >= sim.vmin - EPS and p["lot"] - hv >= sim.vmin - EPS:
-                        sim.close(p, hv, p["e"] + d * c.get("tr_at", 2.2), k, "chốt 50% (trailing)")
-                new = best - d * c.get("tr_step", 0.6)
-                if d * (new - p["sl"]) > 0:
-                    p["sl"], p["tag"] = new, "be"
-            elif c.get("be_on") and gain >= c.get("be_at", 1.5):
-                new = p["e"] + d * c.get("be_lock", 0.25)
-                if d * (new - p["sl"]) > 0:
-                    p["sl"], p["tag"] = new, "be"
-        # 2) nến k đóng: có nhãn BUY/SELL → chốt lệnh ngược chiều, vào lệnh mới
-        e = ents.get(k)
-        if e:
-            d = 1 if e["side"] == "BUY" else -1
-            cl = bars[k][4]
-            for p in [p for p in sim.pos if p["d"] != d]:
-                sim.close(p, p["lot"], sim.exit_px(p, k, cl), k, "tín hiệu ngược")
-            b = _tier(sim.bal)
-            lot, maxn = (lot_fixed, b[1] if b else 1) if lot_fixed else ((b[2], b[1]) if b else (None, 0))
-            if lot and len(sim.pos) < maxn:
-                px = cl + s if d > 0 else cl
-                sl = px - d * c.get("sl_usd", 3) if c.get("sl_mode") == "usd" else e["sl"]
-                tp = px + d * c.get("tp_usd", 5) if c.get("tp_mode") == "usd" else e["tp"][tp_n - 1]
-                if d * (px - sl) > 0 and d * (tp - px) > 0:
-                    q = sim.open(d, lot, px, sl, tp, k, camp=k)
-                    q["tp1"] = e["tp"][0] if be1 else None
-        sim.mark(k)
 
 
 # ---------------- PinYin HA Pro DCA (bản sao luật của ckg_auto._dca_*) ----------------
@@ -394,19 +333,13 @@ def stats(sim, cap0, by_camp):
 def run(bars, spr, cfg, lot, cap0, vpu, comm=0.0, warm=300, step=0.01, vmin=0.01):
     """Chạy 1 lần backtest. bars: nến đã đóng (Bid), spr: spread (đơn vị giá) từng nến."""
     sim = Sim(bars, spr, cap0, vpu, comm, step, vmin)
-    strat = cfg.get("strategy")
     warm = min(warm, max(0, len(bars) - 1))
-    if strat == "dca":
-        run_dca(sim, cfg, lot, warm)
-    elif strat == "ha":
-        run_ha(sim, cfg, lot, warm)
-    else:
-        raise ValueError("Backtest hỗ trợ chiến lược PinYin HA Pro và PinYin HA Pro DCA.")
+    run_dca(sim, cfg, lot, warm)
     # lệnh còn mở cuối dữ liệu: tính theo giá đóng cửa cuối (ghi lý do "hết dữ liệu")
     k = len(bars) - 1
     left = len(sim.pos)
     for p in list(sim.pos):
         sim.close(p, p["lot"], sim.exit_px(p, k, bars[k][4]), k, "còn mở (hết dữ liệu)")
-    out = stats(sim, cap0, by_camp=strat == "dca")
+    out = stats(sim, cap0, by_camp=True)
     out["open_left"] = left
     return out

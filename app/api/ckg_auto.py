@@ -35,14 +35,14 @@ from pydantic import BaseModel
 from app.api.ckg import server_offset
 from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION, MAX_LOT
 from app.services.mt5_service import mt5_service
-from app.services.ha_pro_dca import dca_signals, v5_entries
+from app.services.ha_pro_dca import dca_signals
 
 
 SYM = "XAUUSD"
 MAGIC = 260117
 COMMENT = "PinYin AUTO"
 TFS = {"M1": (mt5.TIMEFRAME_M1, 60), "M5": (mt5.TIMEFRAME_M5, 300), "M15": (mt5.TIMEFRAME_M15, 900)}
-STRATS = {"ema": "EMA9 × EMA21", "ha": "PinYin HA Pro v5", "dca": "PinYin HA Pro DCA"}
+STRATS = {"dca": "PinYin HA Pro DCA"}   # bot chỉ còn 1 chiến lược
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
 VN = timezone(timedelta(hours=7))
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -59,7 +59,7 @@ DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1,
            "sl_mode": "4n", "sl_usd": 3.0, "tp_mode": "step", "tp_usd": 5.0,
            "be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
            "lot": None,   # lot cố định; None = theo bảng vốn
-           "strategy": "ema", "ha_sl_buffer": 2.0, "ha_sl_lookback": 20,   # chiến lược tín hiệu
+           "strategy": "dca", "ha_sl_buffer": 2.0, "ha_sl_lookback": 20,   # chiến lược tín hiệu
            "ha_candles": "ha",   # HA Pro tính trên nến Heikin Ashi (như TradingView) hoặc nến Nhật
            "ha_be_tp1": True,    # v5: giá chạm TP1 thì dời SL về giá vào (như chỉ báo)
            "dca": {}}            # cài đặt chiến lược DCA (gộp với DCA_DEF)
@@ -110,6 +110,7 @@ def _cfg():
     except Exception:
         c = dict(DEFAULT)
     c["dca"] = {**DCA_DEF, **(c.get("dca") or {})}
+    c["strategy"] = "dca"                       # các chiến lược cũ (EMA9×EMA21, HA Pro) đã bỏ
     return c
 
 
@@ -193,35 +194,6 @@ def _set_env(name, value):
 
 # ---------- Tín hiệu (giống hàm gsig trên trang) ----------
 
-def _ema(a, n):
-    k = 2 / (n + 1)
-    e = a[0]
-    out = []
-    for x in a:
-        e = x * k + e * (1 - k)
-        out.append(e)
-    return out
-
-
-def signal_at(rows, i, step):
-    """rows: [(t,o,h,l,c), ...]. Trả tín hiệu ở nến i (nến đã đóng) hoặc None."""
-    if i < 15:
-        return None
-    cl = [r[4] for r in rows]
-    E, E2 = _ema(cl, 9), _ema(cl, 21)
-    t = 0
-    if E[i - 1] <= E2[i - 1] and E[i] > E2[i]:
-        t = 1
-    if E[i - 1] >= E2[i - 1] and E[i] < E2[i]:
-        t = -1
-    if not t:
-        return None
-    w = rows[i - 3:i + 1]
-    sl = min(r[3] for r in w) if t > 0 else max(r[2] for r in w)
-    return {"t": t, "side": "BUY" if t > 0 else "SELL", "e": cl[i], "sl": sl,
-            "tp": [cl[i] + t * step * n for n in (1, 2, 3)], "bar": int(rows[i][0])}
-
-
 # ---------- Lệnh ----------
 
 def is_cent(ccy):
@@ -274,60 +246,6 @@ def _close_pos(p, why, vol=None):
     _state["known"].pop(p.ticket, None)
     log(f"Đóng #{p.ticket} {'BUY' if buy else 'SELL'} {p.volume} lot @ {res.price} ({why}), lãi/lỗ {p.profit + p.swap:.2f}", "close")
     return res
-
-
-def _open(sg, lot, tp_n, c=None):
-    info = mt5.symbol_info(SYM)
-    lot = _norm_lot(info, lot)
-    tick = mt5.symbol_info_tick(SYM)
-    if not tick or tick.bid <= 0:
-        raise RuntimeError("Chưa có giá XAUUSD (thị trường có thể đang đóng).")
-    buy = sg["t"] > 0
-    price = tick.ask if buy else tick.bid
-    min_dist = (info.trade_stops_level + 1) * info.point
-    c = c or DEFAULT
-    sl = price - sg["t"] * c["sl_usd"] if c.get("sl_mode") == "usd" else sg["sl"]
-    tp = price + sg["t"] * c["tp_usd"] if c.get("tp_mode") == "usd" else sg["tp"][tp_n - 1]
-    # Giá đã chạy qua SL/TP trong lúc chờ thì bỏ tín hiệu (không vào lệnh sai)
-    if (buy and (price - sl < min_dist or tp - price < min_dist)) or (not buy and (sl - price < min_dist or price - tp < min_dist)):
-        raise RuntimeError(f"Giá hiện {price} đã quá gần/vượt SL {sl:.2f} hoặc TP {tp:.2f}, bỏ tín hiệu.")
-    res = _send({
-        "action": mt5.TRADE_ACTION_DEAL, "symbol": SYM, "volume": lot,
-        "type": mt5.ORDER_TYPE_BUY if buy else mt5.ORDER_TYPE_SELL, "price": price, "deviation": DEVIATION,
-        "magic": MAGIC, "comment": COMMENT, "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
-        "sl": round(sl, info.digits), "tp": round(tp, info.digits),
-    })
-    _state["known"][res.order] = sg["side"]
-    if c.get("strategy") == "ha" and c.get("ha_be_tp1", True) and tp_n > 1 and c.get("tp_mode") != "usd":
-        _state.setdefault("be1", {})[res.order] = (float(sg["tp"][0]), float(res.price), 1 if buy else -1)
-    log(f"Vào {sg['side']}{(' ' + sg['kind']) if sg.get('kind') else ''} {res.volume} lot @ {res.price} · SL {sl:.2f} · TP{tp_n} {tp:.2f}", "open")
-
-
-def _be_tp1():
-    """v5: giá chạm TP1 → dời SL lệnh bot về giá vào (mỗi vòng 2 giây)."""
-    be = _state.get("be1")
-    if not be:
-        return
-    ps = {p.ticket: p for p in _bot_positions()}
-    for tk in list(be):
-        p = ps.get(tk)
-        if not p:
-            be.pop(tk, None)
-            continue
-        tp1, e, d = be[tk]
-        tick = mt5.symbol_info_tick(SYM)
-        if not tick or tick.bid <= 0:
-            return
-        px = tick.bid if d > 0 else tick.ask
-        if d * (px - tp1) >= 0:
-            be.pop(tk, None)
-            info = mt5.symbol_info(SYM)
-            if (p.sl == 0 or d * (e - p.sl) > info.point / 2) and d * (px - e) >= (info.trade_stops_level + 1) * info.point:
-                try:
-                    _set_sl(p, e)
-                    log(f"#{tk} chạm TP1 {tp1:.2f} → dời SL về giá vào {e:.2f}", "info")
-                except Exception as ex:
-                    log(f"#{tk} không dời được SL hòa vốn: {ex}", "err")
 
 
 def _check_closed(off):
@@ -639,19 +557,12 @@ def _step():
         if not mt5.symbol_select(SYM, True):
             _state["msg"] = "Broker không có XAUUSD"
             return
-        ha = c.get("strategy") == "ha"
-        dca = c.get("strategy") == "dca"
-        if dca:
-            _dca_live(c)                         # chốt TP1/TP2 theo giá thực, mỗi 2 giây
-        if ha:
-            _be_tp1()
-        r = mt5.copy_rates_from_pos(SYM, tf_code, 0, 1500 if (ha or dca) else 600)
+        _dca_live(c)                             # chốt TP1/TP2 theo giá thực, mỗi 2 giây
+        r = mt5.copy_rates_from_pos(SYM, tf_code, 0, 1500)
         if r is None or len(r) < 30:
             _state["msg"] = "Chưa đủ nến"
             return
-        rows = [(int(x["time"]) - off, x["open"], x["high"], x["low"], x["close"]) for x in r]
-        i = len(rows) - 2                       # nến vừa đóng (nến cuối đang chạy)
-        bar = rows[i][0]
+        bar = int(r[-2]["time"]) - off            # nến vừa đóng (nến cuối đang chạy)
         if not _state["last_bar"]:              # vừa bật: không vào theo tín hiệu cũ
             _state["last_bar"] = bar
         a = mt5.account_info()
@@ -661,48 +572,9 @@ def _step():
         if bar <= _state["last_bar"]:
             return
         _state["last_bar"] = bar
-        if dca:
-            bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
-                     float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]
-            _dca_bar(c, bars, b, c.get("lot"))
-            return
-        if ha:
-            bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
-                     float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]   # chỉ nến đã đóng
-            ent = v5_entries(bars, c.get("ha_candles", "ha"), c.get("ha_sl_buffer", 2.0), int(c.get("ha_sl_lookback", 20)))
-            last = ent[-1] if ent else None
-            sg = None
-            if last and last["i"] == len(bars) - 1:            # nến vừa đóng có nhãn BUY/SELL
-                t = 1 if last["side"] == "BUY" else -1
-                sg = {"t": t, "side": last["side"], "e": last["e"], "sl": last["sl"], "tp": [float(x) for x in last["tp"]],
-                      "bar": int(bar), "kind": last["kind"]}
-        else:
-            sg = signal_at(rows, i, float(c["step"]))
-        if not sg:
-            return
-        _state["sig"] = {**sg, "at": _now_vn()}
-        log(f"Tín hiệu {STRATS.get(c.get('strategy'), '')} {sg['side']}{(' ' + sg['kind']) if sg.get('kind') else ''} {c['tf']} @ {sg['e']:.2f} (SL {sg['sl']:.2f})", "info", tele=False)
-        a, block = _account_guard()
-        if block:
-            log(f"Không vào lệnh: {block}", "err")
-            return
-        fixed = c.get("lot")
-        if not b and not fixed:
-            log(f"Không vào lệnh: vốn {cap or 0:.0f}$ dưới mức 100$ của bảng vốn.", "err")
-            return
-        lot, maxn = (fixed, b[1] if b else 1) if fixed else (b[2], b[1])
-        try:
-            mine = _bot_positions()
-            for p in mine:                       # tín hiệu ngược chiều: chốt lệnh cũ
-                if (p.type == mt5.POSITION_TYPE_BUY) != (sg["t"] > 0):
-                    _close_pos(p, "tín hiệu ngược chiều")
-            mine = _bot_positions()
-            if len(mine) >= maxn:
-                log(f"Không vào thêm: bot đã có {len(mine)}/{maxn} lệnh theo bảng vốn.", "err")
-                return
-            _open(sg, lot, int(c["tp"]), c)
-        except Exception as e:                   # lỗi theo từng tín hiệu: luôn báo
-            log(f"Bỏ tín hiệu {sg['side']}: {e}", "err")
+        bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
+                 float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]
+        _dca_bar(c, bars, b, c.get("lot"))
 
 
 def _loop():
@@ -923,8 +795,7 @@ class BtIn(BaseModel):
 
 
 BT_PER_DAY = {"M1": 1440, "M5": 288, "M15": 96}
-BT_SWEEP = {"tp", "ha_sl_buffer", "ha_sl_lookback", "be_at", "be_lock", "tr_at", "tr_step",
-            *("dca." + k for k in DCA_NUM)}
+BT_SWEEP = {"dca." + k for k in DCA_NUM}
 
 
 @router.post("/auto/backtest")
@@ -935,8 +806,7 @@ def auto_backtest(x: BtIn):
     dca_over = over.pop("dca", None) or {}
     c.update({k: v for k, v in over.items() if k in DEFAULT and k not in ("on", "dca")})
     c["dca"] = {**c["dca"], **{k: v for k, v in dca_over.items() if k in DCA_DEF}}
-    if c.get("strategy") not in ("ha", "dca"):
-        return {"ok": False, "loi": "Backtest hỗ trợ PinYin HA Pro và PinYin HA Pro DCA."}
+    c["strategy"] = "dca"
     if c["tf"] not in TFS:
         return {"ok": False, "loi": "Khung chỉ M1, M5 hoặc M15."}
     if not (1 <= x.days <= 730):
@@ -999,8 +869,6 @@ def auto_backtest(x: BtIn):
             if key.startswith("dca."):
                 k2 = key[4:]
                 cc["dca"][k2] = DCA_NUM[k2][2](v)
-            else:
-                cc[key] = int(v) if key in ("tp", "ha_sl_lookback") else v
             s = bt_run(bars, spr, cc, **common)
             rows.append({"v": v, **{k: s[k] for k in ("net", "net_pct", "n", "winrate", "pf", "mdd", "mdd_pct", "streak", "avg_win", "avg_loss")}})
         return {"ok": True, "range": rng, "meta": meta, "cfg": c, "sweep": {"key": key, "rows": rows}}
