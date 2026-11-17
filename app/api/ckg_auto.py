@@ -601,6 +601,14 @@ def _step():
         _dca_bar(c, bars, b, c.get("lot"))
 
 
+def _hb(name):
+    try:
+        from app.services.health import beat
+        beat(name)
+    except Exception:
+        pass
+
+
 def _loop():
     _load_log()
     err_at = 0
@@ -621,6 +629,7 @@ def _loop():
             if time.time() - err_at > 600:      # báo lỗi tối đa 10 phút/lần
                 err_at = time.time()
                 log(f"Lỗi: {e}", "err")
+        _hb('bot')
         time.sleep(LOOP_SEC)
 
 

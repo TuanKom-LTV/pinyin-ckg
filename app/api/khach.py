@@ -127,3 +127,21 @@ def admin_act(x: ActIn, request: Request):
         return {"ok": False, "loi": "Số ngày không hợp lệ."}
     ok, msg = users.admin_act(x.user, x.act, x.days)
     return {"ok": ok, "msg": msg} if ok else {"ok": False, "loi": msg}
+
+
+@router.get("/quan-ly/api/tai")
+def admin_load(request: Request):
+    if not _owner(request):
+        return JSONResponse({"ok": False, "loi": "Không có quyền."}, status_code=403)
+    from app.services import health
+    return health.owner()
+
+
+@router.post("/quan-ly/api/backup")
+def admin_backup(request: Request):
+    if not _owner(request):
+        return JSONResponse({"ok": False, "loi": "Không có quyền."}, status_code=403)
+    from app.services import health
+    ok, msg = health.backup_now()
+    return {"ok": ok, "msg": msg} if ok else {"ok": False, "loi": msg}
+

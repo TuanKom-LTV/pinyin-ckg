@@ -171,6 +171,39 @@ OFF_WARN = 20           # EA mất kết nối quá 20 giây khi đang có lện
 _q = {}                 # id tài khoản → hàng đợi [{"line", "what", "t"}]
 _flag = {}              # id → trạng thái báo offline / đối chiếu
 _worker = None
+_senders = {}           # id → luồng gửi lệnh riêng của tài khoản đó (các tài khoản gửi SONG SONG)
+
+
+def _sender(fid):
+    """Gửi lần lượt hàng đợi của 1 tài khoản (giữ đúng thứ tự lệnh), không chờ tài khoản khác."""
+    try:
+        while True:
+            f = next((x for x in targets() if x["id"] == fid), None)
+            with _lock:
+                q = _q.get(fid) or []
+                c = q[0] if q else None
+            if not f or not c:
+                return
+            if _deliver(f, c):
+                with _lock:
+                    if _q.get(fid) and _q[fid][0] is c:
+                        _q[fid].pop(0)
+            else:
+                time.sleep(1)                       # EA chưa sẵn sàng: thử lại sau
+    except Exception as e:
+        _say(f"Lỗi gửi lệnh copy: {e}", "err", tele=False)
+    finally:
+        with _lock:
+            _senders.pop(fid, None)
+
+
+def _kick(fid):
+    with _lock:
+        if _senders.get(fid) or not _q.get(fid):
+            return
+        t = threading.Thread(target=_sender, args=(fid,), daemon=True, name="pinyin-send-" + fid)
+        _senders[fid] = t
+    t.start()
 
 
 def _enqueue(f, line, what, extra=None):
@@ -180,6 +213,7 @@ def _enqueue(f, line, what, extra=None):
             return
         q.append({"line": line, "what": what, "t": time.time(), **(extra or {})})
     _start()
+    _kick(f["id"])
 
 
 def _each(make_line, what, extra=None):
@@ -315,18 +349,7 @@ def _loop():
                 if on and fl.get("off"):
                     fl["off"] = False
                     _sayf(f, f"[{f['name']}] EA đã kết nối lại.", "info")
-                # gửi hàng đợi theo thứ tự
-                while True:
-                    with _lock:
-                        q = _q.get(fid) or []
-                        c = q[0] if q else None
-                    if not c:
-                        break
-                    if not _deliver(f, c):
-                        break
-                    with _lock:
-                        if _q.get(fid) and _q[fid][0] is c:
-                            _q[fid].pop(0)
+                _kick(fid)                                  # hàng đợi còn lệnh mà chưa có luồng gửi: chạy lại
                 if on and f.get("on") and (f.get("own") or not _same(s.get("acc"))):
                     _reconcile(f, s)
             # tài khoản đã xóa: bỏ hàng đợi
@@ -336,6 +359,8 @@ def _loop():
                     _q.pop(k, None)
         except Exception as e:
             _say(f"Lỗi copy lệnh: {e}", "err", tele=False)
+        from app.services.health import beat
+        beat("copy")
         time.sleep(1)
 
 

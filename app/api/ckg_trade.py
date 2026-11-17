@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from app.api.ckg import CKG_SYMBOLS, server_offset, week_start_utc
 from app.services.mt5_service import mt5_service
+from app.services.apicache import ttl
 
 
 MAGIC = 260115
@@ -179,6 +180,7 @@ def _err(msg):
 # ---------- Đường dẫn ----------
 
 @router.get("/account")
+@ttl(1)
 def account():
     try:
         with mt5_service.session():
@@ -274,6 +276,7 @@ def reverse(r: ReverseIn):
 
 
 @router.get("/history")
+@ttl(3)
 def history():
     """Các lệnh PinYin đã đóng trong tuần (giống tab History của MT5)."""
     try:

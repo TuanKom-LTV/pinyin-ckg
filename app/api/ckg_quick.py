@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from app.api.ckg import CKG_SYMBOLS, server_offset
 from app.api.ckg_trade import MAGIC, COMMENT, DEVIATION, _account_guard, _filling, _norm_lot, _send, _sym, allow_real
 from app.services.mt5_service import mt5_service
+from app.services.apicache import ttl
 
 
 router = APIRouter(prefix="/ckg/api/q", tags=["PinYin CKG · buồng lái nhanh"])
@@ -90,6 +91,7 @@ def _notify(msg):
 # ---------- Giá + mức tham chiếu (trang hỏi mỗi giây) ----------
 
 @router.get("/tick")
+@ttl(0.5)
 def tick(sym: str = "XAUUSD", tf: str = "M1"):
     try:
         with mt5_service.session():
@@ -109,6 +111,7 @@ def tick(sym: str = "XAUUSD", tf: str = "M1"):
 
 
 @router.get("/book")
+@ttl(1)
 def book(sym: str = "XAUUSD"):
     """Lệnh đang mở + lệnh chờ của buồng lái trên mã này."""
     try:
@@ -452,6 +455,11 @@ def _loop():
             if time.time() - err_at > 600:
                 err_at = time.time()
                 _notify(f"Lỗi lá chắn: {e}")
+        try:
+            from app.services.health import beat
+            beat("guard")
+        except Exception:
+            pass
         time.sleep(2)
 
 

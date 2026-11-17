@@ -54,6 +54,9 @@ def _start_bot():
     start_guard()   # lá chắn hòa vốn / trailing của buồng lái nhanh
     from app.services import cbot
     cbot.start()    # bot riêng của khách (chủ duyệt), chỉ chạy khi có khách bật bot
+    from app.services import health, copytrade
+    health.start()  # theo dõi MT5 / vòng bot (báo Telegram) + tự sao lưu data/ mỗi ngày
+    copytrade._start()
 
 
 @app.get("/", include_in_schema=False)
@@ -82,3 +85,13 @@ def health():
         "ten": "PinYin AI Trading Platform",
         "phien_ban": "1.0.0"
     }
+
+
+@app.get("/health", include_in_schema=False)
+def health_check():
+    """Cho UptimeRobot: 200 khi máy chủ + MT5 bình thường, 503 khi MT5 mất kết nối sàn."""
+    from fastapi.responses import JSONResponse
+    from app.services import health
+    ok, data = health.public()
+    return JSONResponse(data, status_code=200 if ok else 503, headers={"Cache-Control": "no-store"})
+

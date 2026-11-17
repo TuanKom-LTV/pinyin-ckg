@@ -29,7 +29,7 @@ COOKIE = "pinyin_auth"
 SESSION_DAYS = 30
 MAX_FAILS = 5
 LOCK_SECONDS = 15 * 60
-PUBLIC_PATHS = {"/login", "/logout", "/dang-ky", "/xac-minh", "/gui-lai-xac-minh", "/ea/sync", "/static/images/favicon.svg"}
+PUBLIC_PATHS = {"/login", "/logout", "/dang-ky", "/xac-minh", "/gui-lai-xac-minh", "/ea/sync", "/static/images/favicon.svg", "/health"}
 
 _fails: dict[str, list[float]] = {}
 

@@ -16,6 +16,7 @@ import MetaTrader5 as mt5
 from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse, RedirectResponse
 
+from app.services.apicache import ttl
 from app.services.mt5_service import mt5_service
 
 
@@ -145,6 +146,7 @@ def ckg_page():
 
 
 @router.get("/ckg/api/status")
+@ttl(2)
 def ckg_status():
     try:
         with mt5_service.session():
@@ -170,6 +172,7 @@ def _mid(sym):
 
 
 @router.get("/ckg/api/symbols")
+@ttl(30)
 def ckg_symbols():
     """Bảng dịch tên cặp tiền: tên chuẩn PinYin → tên thật trên sàn đang đăng nhập."""
     from app.services.symbols import mapping
@@ -182,6 +185,7 @@ def ckg_symbols():
 
 
 @router.get("/ckg/api/rates")
+@ttl(20)
 def ckg_rates(ccy: str = "USD"):
     """Tỷ giá thật để tính giá trị pip (cặp JPY) và quy đổi vốn tài khoản sang USD."""
     from app.api.ckg_auto import is_cent
@@ -200,6 +204,7 @@ def ckg_rates(ccy: str = "USD"):
 
 
 @router.get("/ckg/api/hapro")
+@ttl(10)
 def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
     """Nhãn BUY/SELL của chiến lược PinYin HA Pro trên 1500 nến đã đóng gần nhất (để vẽ lên biểu đồ)."""
     from app.services.ha_pro_dca import v5_entries
@@ -226,6 +231,7 @@ def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
 
 
 @router.get("/ckg/api/dcasig")
+@ttl(10)
 def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
     """Nhãn tín hiệu của chiến lược PinYin HA Pro DCA (bot) theo CÀI ĐẶT DCA ĐANG LƯU của bot, để vẽ lên biểu đồ.
     SL = SL chung bot sẽ đặt nếu mở chiến dịch ở nhãn đó; TP1/TP2 tính theo giá vào 1 lệnh (bot thật tính theo giá TB)."""
@@ -269,6 +275,7 @@ def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
 
 
 @router.get("/ckg/api/chart")
+@ttl(1)
 def ckg_chart(sym: str = "GBPUSD", tf: str = "M5", since: int = Query(default=0, ge=0)):
     """Nến biểu đồ: [[giây UTC, o, h, l, c], ...]. since > 0: chỉ trả nến từ mốc đó (cập nhật nhanh)."""
     sym, tf = sym.upper().strip(), tf.upper().strip()
@@ -293,6 +300,7 @@ def ckg_chart(sym: str = "GBPUSD", tf: str = "M5", since: int = Query(default=0,
 
 
 @router.get("/ckg/api/data")
+@ttl(1)
 def ckg_data(sym: str = "GBPUSD", since: int = Query(default=0, ge=0)):
     sym = sym.upper().strip()
     if sym not in CKG_SYMBOLS:

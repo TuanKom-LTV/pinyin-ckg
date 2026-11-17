@@ -426,6 +426,8 @@ def _loop():
         except Exception as e:
             for u in list(_C):
                 _C[u]["msg"] = f"Lỗi: {e}"
+        from app.services.health import beat
+        beat("cbot")
         time.sleep(2)
 
 

@@ -413,14 +413,26 @@ function mailForm(h){return `<div id="mk" style="display:${h?'none':'flex'};gap:
 async function mailSave(){const key=$('mkey').value.trim(),to=$('mto').value.trim();if(!key||!to){alert('Nhập khóa API và email nhận thư thử.');return}
  $('msg').textContent='Đang gửi thư thử...';const j=await (await fetch('/quan-ly/api/mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,to})})).json();
  $('msg').innerHTML=j.ok?'<span class="ok">✅ Đã gửi thư thử tới '+to+' và bật xác nhận email.</span>':'<span class="no">⚠️ '+String(j.loi).replace(/</g,'&lt;')+'</span>';mailLoad()}
-load();mailLoad();setInterval(load,20000);
+async function tai(){let j;try{j=await (await fetch('/quan-ly/api/tai',{cache:'no-store'})).json()}catch(e){return}if(!j||!j.ok)return;
+ const e=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),L=j.loops||{},lp=(k,n)=>L[k]==null?'':`${n} <b class="${L[k]>30?'no':L[k]>8?'wn':'ok'}">${L[k]<10?'●':L[k]+'s'}</b>`;
+ const up=s=>s<3600?Math.floor(s/60)+' phút':s<86400?Math.floor(s/3600)+' giờ':Math.floor(s/86400)+' ngày';
+ const q=(j.targets||[]).filter(t=>t.on||t.queue).map(t=>`${e(t.name)} <span class="m">(${t.kind})</span> ${t.online?'🟢':'⚪'}${t.queue?` <b class="wn">⏳${t.queue} lệnh chờ ${t.oldest}s</b>`:''}`).join(' · ')||'<span class="m">không có</span>';
+ const b=j.backup||{};
+ $('loadbox').innerHTML=`<b>🖥 Tình trạng máy chủ</b> · chạy ${up(j.uptime_s)} · MT5 ${j.mt5.ok?'<b class="ok">kết nối sàn</b>'+(j.mt5.ping_ms?' ('+j.mt5.ping_ms+' ms)':''):'<b class="no">MẤT KẾT NỐI '+up(j.mt5.since_s)+'</b> '+e(j.mt5.err)}
+ · vòng chạy: ${[lp('bot','bot'),lp('cbot','bot khách'),lp('copy','copy'),lp('guard','lá chắn')].filter(Boolean).join(' · ')}
+ · EA online <b>${j.ea_online}</b>/${j.ea_total} · đệm API ${j.cache.rate}%<br>Tài khoản nhận lệnh: ${q}
+ <br>💾 Sao lưu: ${b.last?'lần cuối <b>'+e(b.last)+'</b> ('+e(b.file)+', '+b.size_kb+' KB)':'<b class="wn">chưa có</b>'} → ${(b.dirs||[]).map(e).join(' · ')}${b.err?' <b class="no">'+e(b.err)+'</b>':''}
+ <button onclick="bk()" style="margin-left:6px;padding:4px 10px;font-size:12px">Sao lưu ngay</button> · UptimeRobot: <code>https://pinyin.id.vn/health</code>`}
+async function bk(){const r=await (await fetch('/quan-ly/api/backup',{method:'POST'})).json();alert(r.ok?r.msg:'Lỗi: '+(r.loi||''));tai()}
+load();mailLoad();tai();setInterval(load,20000);setInterval(tai,5000);
 """
 
 
 def admin_page(logo):
     body = f"""<div class="box"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
 <h1>{logo}<span>Quản lý khách hàng</span></h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="copyLink()">📋 Chép link đăng ký</button><a class="btn" style="background:#1c2a3d" href="/ckg/">← Về trang phân tích</a></div></div>
-<div id="mailbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px"></div><p id="sum" style="margin-top:6px"></p><div id="msg" style="min-height:22px;font-size:14px"></div>
+<div id="mailbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px"></div>
+<div id="loadbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px">Đang tải tình trạng máy chủ…</div><p id="sum" style="margin-top:6px"></p><div id="msg" style="min-height:22px;font-size:14px"></div>
 <div style="overflow-x:auto"><table><thead><tr><th>Khách</th><th>Liên hệ</th><th>Trạng thái</th><th>Hạn dùng</th><th>Hoạt động</th><th>Giao dịch EA</th><th></th></tr></thead><tbody id="tb"><tr><td>Đang tải…</td></tr></tbody></table></div>
 <p style="margin-top:14px">Khách đăng ký tại <b>https://pinyin.id.vn/dang-ky</b> → chờ duyệt ở đây (Telegram báo khi có người đăng ký). Khách chỉ có quyền XEM: không vào lệnh, không thấy tài khoản MT5, không thấy bot.</p></div>
 <style>table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{text-align:left;padding:9px 8px;border-top:1px solid var(--bd);vertical-align:middle}}th{{color:var(--h2);font-size:12px;text-transform:uppercase;letter-spacing:.04em}}
