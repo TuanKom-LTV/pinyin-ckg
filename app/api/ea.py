@@ -21,7 +21,7 @@ from app.core import users
 router = APIRouter(tags=["PinYin · cầu nối EA khách"])
 EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.ex5"
 EA_LATEST = "1.4"          # phiên bản EA mới nhất trên máy chủ
-ONLINE_SEC = 8
+ONLINE_SEC = 15         # EA gọi mỗi giây; mạng chập chờn vài lần vẫn tính online
 WAIT_SEC = 10
 GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
              "manual": False, "auto_sltp": True, "sl": 2.5, "tp": 5.0}

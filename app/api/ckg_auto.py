@@ -553,7 +553,7 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
     _dca_save()
     kind = ("BUY" if buy else "SELL") + (" ĐC*" if _dca["rev"] else "")
     lbl = (f"Mở chiến dịch {kind}" + (f" ({why})" if why else "")) if first else f"Thêm lệnh DCA {n}/{_dca_cap(d, b, fixed)} {kind}"
-    log(f"{lbl}: {res.volume} lot @ {res.price} · SL chung {sl:.2f} · TP1 {(_dca['tp1px'] or 0):.2f} · TP2 {(_dca['tp2px'] or 0):.2f}", "open")
+    log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · SL chung {sl:.2f} · TP1 {(_dca['tp1px'] or 0):.2f} · TP2 {(_dca['tp2px'] or 0):.2f}", "open")
     copytrade.copy_open(dr, float(res.volume), abs(float(res.price) - sl))   # SL theo khoảng cách giá
 
 
@@ -887,6 +887,7 @@ def auto_backtest(x: BtIn):
 
 # ---------- Tài khoản vào lệnh (copy qua EA PinYinBridge) ----------
 copytrade.set_logger(lambda m, k="info", tele=True: log(m, k, tele=tele))
+copytrade._start()               # hàng đợi + tự đối chiếu tài khoản vào lệnh
 
 
 class CopyIn(BaseModel):

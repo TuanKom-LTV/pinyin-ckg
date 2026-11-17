@@ -12,6 +12,7 @@ Danh sách lưu ở data/copy_accounts.json (riêng máy chủ, không lên GitH
 import json
 import secrets
 import threading
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -98,24 +99,21 @@ def _lot(f, master_lot):
     return max(0.01, round(v, 2))
 
 
-def _run(f, line, what):
-    """Gửi 1 lệnh tới EA của tài khoản f, chờ kết quả (luồng riêng, không chặn bot)."""
-    from app.api import ea
-    from app.api.ckg_trade import allow_real
-    u = uid(f)
-    s = ea._st.get(u)
-    name = f"[{f['name']}]"
-    if not s or not s.get("acc") or not ea._online(s):
-        _say(f"{name} EA offline, không {what}.", "err")
-        return
-    if not s["acc"]["demo"] and not allow_real():
-        _say(f"{name} là tài khoản THẬT nhưng đang chặn lệnh thật (nút 🔒 Lệnh THẬT), không {what}.", "err")
-        return
-    r = ea._send(u, line)
-    if r.get("ok"):
-        _say(f"{name} #{s['acc']['login']}: {r.get('msg', 'xong')}", "open" if line.startswith("ORDER") else "close")
-    else:
-        _say(f"{name} #{s['acc']['login']}: không {what}: {r.get('loi')}", "err")
+ORDER_TTL = 60          # lệnh VÀO chờ EA tối đa 60 giây, quá thì bỏ (không vào lệnh trễ)
+KEEP_TTL = 6 * 3600     # lệnh ĐÓNG / chốt / dời SL: giữ tới khi EA online lại (tối đa 6 giờ)
+OFF_WARN = 20           # EA mất kết nối quá 20 giây khi đang có lệnh → báo Telegram
+_q = {}                 # id tài khoản → hàng đợi [{"line", "what", "t"}]
+_flag = {}              # id → trạng thái báo offline / đối chiếu
+_worker = None
+
+
+def _enqueue(f, line, what):
+    with _lock:
+        q = _q.setdefault(f["id"], [])
+        if line == "CLOSE|0" and any(c["line"] == "CLOSE|0" for c in q):
+            return
+        q.append({"line": line, "what": what, "t": time.time()})
+    _start()
 
 
 def _each(make_line, what):
@@ -124,7 +122,104 @@ def _each(make_line, what):
             continue
         line = make_line(f)
         if line:
-            threading.Thread(target=_run, args=(f, line, what), daemon=True, name="pinyin-copy").start()
+            _enqueue(f, line, what)
+
+
+def _deliver(f, c):
+    """Gửi 1 lệnh trong hàng đợi. Trả True nếu xong (bỏ khỏi hàng đợi), False nếu cần thử lại sau."""
+    from app.api import ea
+    from app.api.ckg_trade import allow_real
+    u, name = uid(f), f"[{f['name']}]"
+    s = ea._st.get(u)
+    order = c["line"].startswith("ORDER")
+    age = time.time() - c["t"]
+    if not s or not s.get("acc") or not ea._online(s):
+        if age > (ORDER_TTL if order else KEEP_TTL):
+            _say(f"{name} EA offline quá {int(age)} giây, bỏ lệnh: {c['what']}.", "err")
+            return True
+        return False
+    if not s["acc"]["demo"] and not allow_real():
+        _say(f"{name} là tài khoản THẬT nhưng đang chặn lệnh thật (nút 🔒 Lệnh THẬT), không {c['what']}.", "err")
+        return True
+    if order and age > ORDER_TTL:
+        _say(f"{name} lệnh vào đã chờ {int(age)} giây (EA chậm), bỏ để không vào lệnh trễ.", "err")
+        return True
+    r = ea._send(u, c["line"])
+    login = s["acc"]["login"]
+    if r.get("ok"):
+        _say(f"{name} #{login}: {r.get('msg', 'xong')}" + (f" (trễ {int(age)} giây)" if age > 5 else ""), "open" if order else "close")
+        return True
+    loi = str(r.get("loi") or "")
+    if "đã hủy" in loi or "offline" in loi:            # EA chưa nhận được lệnh: thử lại (lệnh vào thì theo hạn 60 giây)
+        return False
+    _say(f"{name} #{login}: không {c['what']}: {loi}", "err")
+    return True
+
+
+def _reconcile(f, s):
+    """Tài khoản tín hiệu không còn chiến dịch / khác chiều mà tài khoản vào lệnh vẫn còn lệnh EA → đóng."""
+    from app.api import ckg_auto
+    pos = s.get("pos") or []
+    if not pos or _q.get(f["id"]):
+        return
+    d = ckg_auto._dca.get("dir", 0)
+    bad = d == 0 or any((1 if p["t"] == "BUY" else -1) != d for p in pos)
+    fl = _flag.setdefault(f["id"], {})
+    if bad and time.time() - fl.get("rec", 0) > 30 and time.time() - fl.setdefault("seen", time.time()) > 10:
+        fl["rec"] = time.time()
+        why = "tài khoản tín hiệu không còn lệnh" if d == 0 else "khác chiều tài khoản tín hiệu"
+        _say(f"[{f['name']}] còn {len(pos)} lệnh nhưng {why} → tự đóng.", "err")
+        _enqueue(f, "CLOSE|0", "đóng lệnh lệch")
+    if not bad:
+        fl["seen"] = time.time()
+
+
+def _loop():
+    from app.api import ea
+    while True:
+        try:
+            for f in load():
+                fid, u = f["id"], uid(f)
+                s = ea._st.get(u) or {}
+                on = bool(s.get("acc")) and ea._online(s)
+                fl = _flag.setdefault(fid, {})
+                # báo mất kết nối khi đang có lệnh
+                if not on and s.get("pos") and f.get("on") and time.time() - s.get("last", 0) > OFF_WARN and not fl.get("off"):
+                    fl["off"] = True
+                    _say(f"⚠️ [{f['name']}] EA MẤT KẾT NỐI khi đang có {len(s['pos'])} lệnh. Kiểm tra MT5 / mạng của máy chạy EA (SL trên MT5 vẫn chạy).", "err")
+                if on and fl.get("off"):
+                    fl["off"] = False
+                    _say(f"[{f['name']}] EA đã kết nối lại.", "info")
+                # gửi hàng đợi theo thứ tự
+                while True:
+                    with _lock:
+                        q = _q.get(fid) or []
+                        c = q[0] if q else None
+                    if not c:
+                        break
+                    if not _deliver(f, c):
+                        break
+                    with _lock:
+                        if _q.get(fid) and _q[fid][0] is c:
+                            _q[fid].pop(0)
+                if on and f.get("on"):
+                    _reconcile(f, s)
+            # tài khoản đã xóa: bỏ hàng đợi
+            ids = {f["id"] for f in load()}
+            with _lock:
+                for k in [k for k in _q if k not in ids]:
+                    _q.pop(k, None)
+        except Exception as e:
+            _say(f"Lỗi copy lệnh: {e}", "err", tele=False)
+        time.sleep(1)
+
+
+def _start():
+    global _worker
+    with _lock:
+        if _worker is None:
+            _worker = threading.Thread(target=_loop, daemon=True, name="pinyin-copy")
+            _worker.start()
 
 
 def copy_open(direction, master_lot, sl_dist):
@@ -155,5 +250,5 @@ def status():
         a = s.get("acc")
         out.append({**f, "online": bool(a) and ea._online(s), "ver": s.get("ver"), "old": ea._old(s.get("ver")) if s.get("ver") else None,
                     "acc": {k: a.get(k) for k in ("login", "server", "currency", "equity", "balance", "demo", "algo")} if a else None,
-                    "npos": len(s.get("pos") or []), "pnl": round(sum(p["profit"] for p in (s.get("pos") or [])), 2)})
+                    "npos": len(s.get("pos") or []), "queue": len(_q.get(f["id"]) or []), "pnl": round(sum(p["profit"] for p in (s.get("pos") or [])), 2)})
     return out
