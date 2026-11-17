@@ -197,6 +197,31 @@ def ckg_rates(ccy: str = "USD"):
         return {"ok": False, "loi": str(e)}
 
 
+@router.get("/ckg/api/hapro")
+def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
+    """Nhãn BUY/SELL của chiến lược PinYin HA Pro trên 1500 nến đã đóng gần nhất (để vẽ lên biểu đồ)."""
+    from app.services.ha_pro import analyze
+    sym, tf = sym.upper().strip(), tf.upper().strip()
+    if sym not in CKG_SYMBOLS or tf not in CHART_TF:
+        return {"ok": False, "loi": "Mã hoặc khung chưa hỗ trợ."}
+    try:
+        with mt5_service.session():
+            if not mt5.symbol_select(sym, True):
+                return {"ok": False, "loi": f"Broker không có mã {sym}."}
+            off, _ = server_offset()
+            r = mt5.copy_rates_from_pos(sym, CHART_TF[tf][0], 1, 1500)
+        if r is None or len(r) < 200:
+            return {"ok": True, "sig": []}
+        bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
+                 float(x["tick_volume"]), int(x["time"]) // 86400) for x in r]
+        sig = analyze(bars, {"candles": "std" if candles == "std" else "ha"})
+        return {"ok": True, "sym": sym, "tf": tf, "candles": candles,
+                "sig": [{"t": s["t"], "side": s["side"], "kind": s["kind"], "e": round(s["e"], 5), "sl": round(s["sl"], 5),
+                         "tp": [round(float(x), 5) for x in s["tp"]]} for s in sig]}
+    except Exception as e:
+        return {"ok": False, "loi": str(e)}
+
+
 @router.get("/ckg/api/chart")
 def ckg_chart(sym: str = "GBPUSD", tf: str = "M5", since: int = Query(default=0, ge=0)):
     """Nến biểu đồ: [[giây UTC, o, h, l, c], ...]. since > 0: chỉ trả nến từ mốc đó (cập nhật nhanh)."""

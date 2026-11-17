@@ -11,7 +11,19 @@ Tính lần lượt từng nến giống TradingView (biến var giữ giá tr�
 import math
 
 DEFAULT = {"len": 40, "atr_len": 100, "atr_mult": 2.2, "ema_fast": 9, "ema_slow": 21, "max_wait": 30,
-           "range_limit": 10, "sl_buffer": 2.0, "sl_lookback": 20}
+           "range_limit": 10, "sl_buffer": 2.0, "sl_lookback": 20,
+           "candles": "ha"}     # "ha": chạy trên biểu đồ nến Heikin Ashi (như TradingView của chủ), "std": nến Nhật
+
+
+def to_ha(bars):
+    """Nến thường → nến Heikin Ashi (giữ thời gian, khối lượng, ngày)."""
+    out, po, pc = [], None, None
+    for b in bars:
+        hc = (b[1] + b[2] + b[3] + b[4]) / 4
+        ho = (b[1] + b[4]) / 2 if po is None else (po + pc) / 2
+        out.append((b[0], ho, max(b[2], ho, hc), min(b[3], ho, hc), hc) + tuple(b[5:]))
+        po, pc = ho, hc
+    return out
 
 
 def _sma(a, n):
@@ -56,6 +68,10 @@ def _atr(h, l, c, n):
 def analyze(bars, p=None):
     """Trả danh sách lệnh vào: [{"i", "t", "side", "kind", "e", "sl", "tp":[tp1..tp4]}] (theo thứ tự nến)."""
     p = {**DEFAULT, **(p or {})}
+    on_ha = p["candles"] == "ha"
+    if on_ha:
+        # Trên biểu đồ Heikin Ashi, TradingView dùng giá HA cho mọi phép tính (close, high, low, open, hlc3...)
+        bars = to_ha(bars)
     n = len(bars)
     if n < p["atr_len"] + p["len"] + 5:
         return []
@@ -87,6 +103,9 @@ def analyze(bars, p=None):
     # Heikin Ashi
     hao, hac = [0.0] * n, [0.0] * n
     for i in range(n):
+        if on_ha:              # ticker.heikinashi trên biểu đồ HA = chính nến của biểu đồ
+            hao[i], hac[i] = o[i], c[i]
+            continue
         hac[i] = (o[i] + h[i] + l[i] + c[i]) / 4
         hao[i] = (o[i] + c[i]) / 2 if i == 0 else (hao[i - 1] + hac[i - 1]) / 2
     eps = 1e-9 * max(1.0, abs(c[-1]))

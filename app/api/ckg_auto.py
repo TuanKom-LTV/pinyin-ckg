@@ -53,7 +53,8 @@ DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1,
            "sl_mode": "4n", "sl_usd": 3.0, "tp_mode": "step", "tp_usd": 5.0,
            "be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
            "lot": None,   # lot cố định; None = theo bảng vốn
-           "strategy": "ema", "ha_sl_buffer": 2.0, "ha_sl_lookback": 20}   # chiến lược tín hiệu
+           "strategy": "ema", "ha_sl_buffer": 2.0, "ha_sl_lookback": 20,   # chiến lược tín hiệu
+           "ha_candles": "ha"}   # HA Pro tính trên nến Heikin Ashi (như TradingView) hoặc nến Nhật
 _lock = threading.RLock()
 _log = deque(maxlen=60)
 _state = {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}
@@ -287,7 +288,8 @@ def _step():
         if ha:
             bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                      float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]   # chỉ nến đã đóng
-            ent = analyze_ha(bars, {"sl_buffer": c.get("ha_sl_buffer", 2.0), "sl_lookback": int(c.get("ha_sl_lookback", 20))})
+            ent = analyze_ha(bars, {"sl_buffer": c.get("ha_sl_buffer", 2.0), "sl_lookback": int(c.get("ha_sl_lookback", 20)),
+                                    "candles": c.get("ha_candles", "ha")})
             last = ent[-1] if ent else None
             sg = None
             if last and last["i"] == len(bars) - 1:            # nến vừa đóng có nhãn BUY/SELL
@@ -385,6 +387,7 @@ class AutoIn(BaseModel):
     strategy: str | None = None
     ha_sl_buffer: float | None = None
     ha_sl_lookback: int | None = None
+    ha_candles: str | None = None
 
 
 class TgIn(BaseModel):
@@ -450,6 +453,10 @@ def auto_set(x: AutoIn):
         if x.strategy not in STRATS:
             return {"ok": False, "loi": "Chiến lược không hợp lệ."}
         c["strategy"] = x.strategy
+    if x.ha_candles is not None:
+        if x.ha_candles not in ("ha", "std"):
+            return {"ok": False, "loi": "Loại nến không hợp lệ."}
+        c["ha_candles"] = x.ha_candles
     if x.ha_sl_buffer is not None:
         if not (0 <= x.ha_sl_buffer <= 100):
             return {"ok": False, "loi": "SL cộng thêm từ 0 đến 100."}
