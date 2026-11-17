@@ -12,7 +12,7 @@ import MetaTrader5 as mt5
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.api.ckg_trade import ALLOW_REAL, MAX_LOT, DEVIATION, _account_guard, _filling, _norm_lot, _send
+from app.api.ckg_trade import allow_real, MAX_LOT, DEVIATION, _account_guard, _filling, _norm_lot, _send
 from app.services.mt5_service import mt5_service
 
 
@@ -94,7 +94,7 @@ def account():
             } for p in _my_positions()]
             return _ok(
                 demo=a.trade_mode == mt5.ACCOUNT_TRADE_MODE_DEMO,
-                cho_phep_tien_that=ALLOW_REAL,
+                cho_phep_tien_that=allow_real(),
                 lot_toi_da=MAX_LOT,
                 may_chu=a.server,
                 tien_te=a.currency,

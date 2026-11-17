@@ -19,7 +19,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.api.ckg import CKG_SYMBOLS, server_offset
-from app.api.ckg_trade import MAGIC, COMMENT, DEVIATION, _account_guard, _filling, _norm_lot, _send, _sym
+from app.api.ckg_trade import MAGIC, COMMENT, DEVIATION, _account_guard, _filling, _norm_lot, _send, _sym, allow_real
 from app.services.mt5_service import mt5_service
 
 
@@ -103,7 +103,7 @@ def tick(sym: str = "XAUUSD", tf: str = "M1"):
                        stops=(info.trade_stops_level + 1) * info.point, vmin=info.volume_min, vstep=info.volume_step,
                        ema9=e9, hi10=hi, lo10=lo, tf=tf, guard=_guard(sym),
                        acc={"login": a.login, "server": a.server, "currency": a.currency, "equity": a.equity,
-                            "demo": a.trade_mode == mt5.ACCOUNT_TRADE_MODE_DEMO} if a else None)
+                            "demo": a.trade_mode == mt5.ACCOUNT_TRADE_MODE_DEMO, "real_ok": allow_real()} if a else None)
     except Exception as e:
         return _err(str(e))
 
@@ -480,6 +480,26 @@ def _remember(a):
                    "demo": a.trade_mode == mt5.ACCOUNT_TRADE_MODE_DEMO, "t": int(time.time())})
     ACC_FILE.parent.mkdir(parents=True, exist_ok=True)
     ACC_FILE.write_text(json.dumps(lst[:10], ensure_ascii=False), encoding="utf-8")   # KHÔNG lưu mật khẩu
+
+
+class RealIn(BaseModel):
+    on: bool
+    pw: str = ""
+
+
+@router.post("/real")
+def q_real(x: RealIn):
+    """Bật/tắt cho phép vào lệnh trên tài khoản THẬT. Bật cần nhập lại mật khẩu chủ."""
+    import hmac
+    import os
+    from app.api.ckg_auto import _set_env
+    if x.on:
+        pw = os.getenv("PINYIN_PASSWORD", "")
+        if not pw or not hmac.compare_digest(x.pw.encode(), pw.encode()):
+            return _err("Sai mật khẩu chủ.")
+    _set_env("PINYIN_ALLOW_REAL", "1" if x.on else "0")
+    _notify("🔓 ĐÃ CHO PHÉP vào lệnh tài khoản THẬT." if x.on else "🔒 Đã CHẶN vào lệnh tài khoản THẬT (chỉ Demo).")
+    return _ok(on=allow_real())
 
 
 @router.get("/accounts")

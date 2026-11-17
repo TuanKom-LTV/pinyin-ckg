@@ -22,7 +22,12 @@ from app.services.mt5_service import mt5_service
 MAGIC = 260115
 COMMENT = "PinYin CKG"
 DEVIATION = 20
-ALLOW_REAL = os.getenv("PINYIN_ALLOW_REAL") == "1"
+ALLOW_REAL = os.getenv("PINYIN_ALLOW_REAL") == "1"   # giá trị lúc khởi động; dùng allow_real() để đọc giá trị hiện tại
+
+
+def allow_real():
+    """Cho phép vào lệnh trên tài khoản THẬT (chủ bật/tắt trên buồng lái, lưu PINYIN_ALLOW_REAL trong .env)."""
+    return os.getenv("PINYIN_ALLOW_REAL") == "1"
 MAX_LOT = float(os.getenv("PINYIN_MAX_LOT", "1.0"))
 
 router = APIRouter(prefix="/ckg/api", tags=["PinYin CKG Lab · giao dịch"])
@@ -55,8 +60,8 @@ def _account_guard():
     t = mt5.terminal_info()
     if a is None:
         return None, "Không đọc được tài khoản MT5."
-    if a.trade_mode != mt5.ACCOUNT_TRADE_MODE_DEMO and not ALLOW_REAL:
-        return a, "Tài khoản MT5 là tài khoản THẬT. Máy chủ đang chặn lệnh (đặt PINYIN_ALLOW_REAL=1 để cho phép)."
+    if a.trade_mode != mt5.ACCOUNT_TRADE_MODE_DEMO and not allow_real():
+        return a, "Tài khoản MT5 là tài khoản THẬT và đang bị chặn vào lệnh. Bấm nút 🔒 Lệnh THẬT: TẮT trên buồng lái để bật."
     if not a.trade_allowed or not a.trade_expert:
         return a, "Tài khoản không cho phép giao dịch tự động."
     if not t or not t.trade_allowed:
