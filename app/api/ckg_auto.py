@@ -259,7 +259,16 @@ def _check_closed(off):
         pnl = sum(d.profit + d.swap + d.commission for d in deals)
         why = {mt5.DEAL_REASON_SL: "chạm SL", mt5.DEAL_REASON_TP: "chạm TP"}.get(out[-1].reason, "đóng") if out else "đóng"
         px = out[-1].price if out else "?"
-        log(f"#{tk} {side} {why} @ {px}, lãi/lỗ {pnl:.2f}", "close")
+        # sàn thường ghi mức kích hoạt vào ghi chú, vd "[sl 3893.05]" → biết SL đã bị dời hay do giá giật
+        note = (out[-1].comment or "").strip() if out else ""
+        sl_now = None
+        try:
+            od = [o for o in (mt5.history_orders_get(position=tk) or []) if o.ticket == out[-1].order] if out else []
+            sl_now = od[0].price_open if od and out[-1].reason in (mt5.DEAL_REASON_SL, mt5.DEAL_REASON_TP) else None
+        except Exception:
+            pass
+        extra = (f" · mức kích hoạt {sl_now}" if sl_now else "") + (f" · sàn ghi: {note}" if note else "")
+        log(f"#{tk} {side} {why} @ {px}, lãi/lỗ {pnl:.2f}{extra}", "close")
 
 
 # ---------- Chiến lược DCA: trạng thái chiến dịch ----------
