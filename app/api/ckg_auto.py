@@ -30,12 +30,14 @@ from pydantic import BaseModel
 from app.api.ckg import server_offset
 from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION, MAX_LOT
 from app.services.mt5_service import mt5_service
+from app.services.ha_pro import analyze as analyze_ha
 
 
 SYM = "XAUUSD"
 MAGIC = 260117
 COMMENT = "PinYin AUTO"
-TFS = {"M1": (mt5.TIMEFRAME_M1, 60), "M5": (mt5.TIMEFRAME_M5, 300)}
+TFS = {"M1": (mt5.TIMEFRAME_M1, 60), "M5": (mt5.TIMEFRAME_M5, 300), "M15": (mt5.TIMEFRAME_M15, 900)}
+STRATS = {"ema": "EMA9 × EMA21", "ha": "PinYin HA Pro"}
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
 VN = timezone(timedelta(hours=7))
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -50,7 +52,8 @@ DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1,
            # lá chắn cho bot: SL/TP theo tín hiệu hoặc cố định $, hòa vốn tự động, trailing + chốt 50%
            "sl_mode": "4n", "sl_usd": 3.0, "tp_mode": "step", "tp_usd": 5.0,
            "be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
-           "lot": None}   # lot cố định; None = theo bảng vốn
+           "lot": None,   # lot cố định; None = theo bảng vốn
+           "strategy": "ema", "ha_sl_buffer": 2.0, "ha_sl_lookback": 20}   # chiến lược tín hiệu
 _lock = threading.RLock()
 _log = deque(maxlen=60)
 _state = {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}
@@ -264,7 +267,8 @@ def _step():
         if not mt5.symbol_select(SYM, True):
             _state["msg"] = "Broker không có XAUUSD"
             return
-        r = mt5.copy_rates_from_pos(SYM, tf_code, 0, 600)
+        ha = c.get("strategy") == "ha"
+        r = mt5.copy_rates_from_pos(SYM, tf_code, 0, 1500 if ha else 600)
         if r is None or len(r) < 30:
             _state["msg"] = "Chưa đủ nến"
             return
@@ -280,11 +284,22 @@ def _step():
         if bar <= _state["last_bar"]:
             return
         _state["last_bar"] = bar
-        sg = signal_at(rows, i, float(c["step"]))
+        if ha:
+            bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
+                     float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]   # chỉ nến đã đóng
+            ent = analyze_ha(bars, {"sl_buffer": c.get("ha_sl_buffer", 2.0), "sl_lookback": int(c.get("ha_sl_lookback", 20))})
+            last = ent[-1] if ent else None
+            sg = None
+            if last and last["i"] == len(bars) - 1:            # nến vừa đóng có nhãn BUY/SELL
+                t = 1 if last["side"] == "BUY" else -1
+                sg = {"t": t, "side": last["side"], "e": last["e"], "sl": last["sl"], "tp": [float(x) for x in last["tp"]],
+                      "bar": int(bar), "kind": last["kind"]}
+        else:
+            sg = signal_at(rows, i, float(c["step"]))
         if not sg:
             return
         _state["sig"] = {**sg, "at": _now_vn()}
-        log(f"Tín hiệu {sg['side']} {c['tf']} @ {sg['e']:.2f} (SL {sg['sl']:.2f})", "info", tele=False)
+        log(f"Tín hiệu {STRATS.get(c.get('strategy'), '')} {sg['side']}{(' ' + sg['kind']) if sg.get('kind') else ''} {c['tf']} @ {sg['e']:.2f} (SL {sg['sl']:.2f})", "info", tele=False)
         a, block = _account_guard()
         if block:
             log(f"Không vào lệnh: {block}", "err")
@@ -367,6 +382,9 @@ class AutoIn(BaseModel):
     half: bool | None = None
     lot: float | None = None
     lot_auto: bool | None = None
+    strategy: str | None = None
+    ha_sl_buffer: float | None = None
+    ha_sl_lookback: int | None = None
 
 
 class TgIn(BaseModel):
@@ -398,15 +416,15 @@ def auto_set(x: AutoIn):
     was = c["on"]
     if x.tf is not None:
         if x.tf not in TFS:
-            return {"ok": False, "loi": "Khung chỉ M1 hoặc M5."}
+            return {"ok": False, "loi": "Khung chỉ M1, M5 hoặc M15."}
         c["tf"] = x.tf
     if x.step is not None:
         if not (0.2 <= x.step <= 100):
             return {"ok": False, "loi": "Bước TP từ 0.2 đến 100 $."}
         c["step"] = round(x.step, 2)
     if x.tp is not None:
-        if x.tp not in (1, 2, 3):
-            return {"ok": False, "loi": "TP chỉ 1, 2 hoặc 3."}
+        if x.tp not in (1, 2, 3, 4):
+            return {"ok": False, "loi": "TP chỉ 1 đến 4."}
         c["tp"] = x.tp
     if x.sl_mode is not None:
         if x.sl_mode not in ("4n", "usd"):
@@ -428,6 +446,20 @@ def auto_set(x: AutoIn):
             c[k] = v
     if c["be_lock"] >= c["be_at"]:
         return {"ok": False, "loi": "Mức khóa hòa vốn phải nhỏ hơn mức kích hoạt."}
+    if x.strategy is not None:
+        if x.strategy not in STRATS:
+            return {"ok": False, "loi": "Chiến lược không hợp lệ."}
+        c["strategy"] = x.strategy
+    if x.ha_sl_buffer is not None:
+        if not (0 <= x.ha_sl_buffer <= 100):
+            return {"ok": False, "loi": "SL cộng thêm từ 0 đến 100."}
+        c["ha_sl_buffer"] = round(x.ha_sl_buffer, 2)
+    if x.ha_sl_lookback is not None:
+        if not (2 <= x.ha_sl_lookback <= 200):
+            return {"ok": False, "loi": "Số nến SL từ 2 đến 200."}
+        c["ha_sl_lookback"] = x.ha_sl_lookback
+    if c.get("strategy") != "ha" and c.get("tp") == 4:
+        c["tp"] = 3
     if x.lot_auto:
         c["lot"] = None
     elif x.lot is not None:
