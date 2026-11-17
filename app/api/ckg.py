@@ -224,6 +224,49 @@ def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
         return {"ok": False, "loi": str(e)}
 
 
+@router.get("/ckg/api/dcasig")
+def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
+    """Nhãn tín hiệu của chiến lược PinYin HA Pro DCA (bot) theo CÀI ĐẶT DCA ĐANG LƯU của bot, để vẽ lên biểu đồ.
+    SL = SL chung bot sẽ đặt nếu mở chiến dịch ở nhãn đó; TP1/TP2 tính theo giá vào 1 lệnh (bot thật tính theo giá TB)."""
+    from app.services.ha_pro_dca import compute
+    from app.api.ckg_auto import _cfg
+    sym, tf = sym.upper().strip(), tf.upper().strip()
+    if sym != "XAUUSD" or tf not in CHART_TF:
+        return {"ok": True, "sig": []}
+    d = _cfg()["dca"]
+    try:
+        with mt5_service.session():
+            if not mt5.symbol_select(sym, True):
+                return {"ok": False, "loi": f"Broker không có mã {sym}."}
+            off, _ = server_offset()
+            r = mt5.copy_rates_from_pos(sym, CHART_TF[tf][0], 1, 1500)
+        if r is None or len(r) < 200:
+            return {"ok": True, "sig": []}
+        bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
+                 float(x["tick_volume"]), int(x["time"]) // 86400) for x in r]
+        out = []
+        for b, s in zip(bars, compute(bars, {"candles": d.get("candles", "std")})):
+            if not s or not s["go"]:
+                continue
+            go = s["go"]
+            if (go > 0 and d["dir"] == "sell") or (go < 0 and d["dir"] == "buy"):
+                continue
+            if s["rev"]:
+                sl = s["ext"] - go * d["sl_buf"]
+            else:
+                slv = s["vwap"] - go * d["sl_k"] * s["atr"]
+                slw = (s["swl"] - d["sl_buf"]) if go > 0 else (s["swh"] + d["sl_buf"])
+                sl = slv if d["sl_mode"] == "vwap" else slw if d["sl_mode"] == "swing" else (min(slv, slw) if go > 0 else max(slv, slw))
+            e = b[4]
+            R = go * (e - sl)
+            tp = [e + go * d["tp1r"] * R, e + go * d["tp2r"] * R] if R > 0 else [e, e]
+            out.append({"t": s["t"], "side": "BUY" if go > 0 else "SELL", "rev": bool(s["rev"]), "e": round(e, 2),
+                        "sl": round(sl, 2), "tp": [round(v, 2) for v in tp], "rr": [d["tp1r"], d["tp2r"]]})
+        return {"ok": True, "sym": sym, "tf": tf, "candles": d.get("candles", "std"), "sig": out}
+    except Exception as e:
+        return {"ok": False, "loi": str(e)}
+
+
 @router.get("/ckg/api/chart")
 def ckg_chart(sym: str = "GBPUSD", tf: str = "M5", since: int = Query(default=0, ge=0)):
     """Nến biểu đồ: [[giây UTC, o, h, l, c], ...]. since > 0: chỉ trả nến từ mốc đó (cập nhật nhanh)."""

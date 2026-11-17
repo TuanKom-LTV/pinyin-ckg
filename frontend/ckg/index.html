@@ -432,28 +432,36 @@ function axTags(f,L,last){const x=f.x,cl=v=>Math.max(17,Math.min(f.ph-1,f.y(v)))
   x.fillStyle=lum>150?'#111':'#fff';x.fillText(nm,f.pw-tw-6,y0+4);x.fillText(v.toFixed(DG),f.pw+4,y0+4)});x.font='11px sans-serif'}
 
 // ===== Nến Heikin Ashi + tín hiệu PinYin HA Pro trên biểu đồ =====
-const HAP={};let HAPB=0;const HK=()=>cs+'|'+TF+'|'+(IND.heikin?'ha':'std');
+const HAP={},HAPB={};let BOTTF=null,BOTTFAT=0;const HK=m=>m+'|'+cs+'|'+TF+(m=='hapro'?'|'+(IND.heikin?'ha':'std'):'');
 function toHA(a){let po=null,pc=null;return a.map(x=>{const c=(x.o+x.h+x.l+x.c)/4,o=po==null?(x.o+x.c)/2:(po+pc)/2;po=o;pc=c;return{...x,o,c,h:Math.max(x.h,o,c),l:Math.min(x.l,o,c)}})}
-async function hapFetch(){if(!LV||!IND.hapro||HAPB)return;const k=HK(),c=HAP[k];if(c&&Date.now()-c.at<15000)return;HAPB=1;
- try{const j=await jget('api/hapro?sym='+cs+'&tf='+TF+'&candles='+(IND.heikin?'ha':'std'),20000);if(j&&j.ok){HAP[k]={at:Date.now(),sig:j.sig,cd:j.candles};redraw()}}catch(e){}finally{HAPB=0}}
-function drawHap(f,a,tsOf){if(!IND.hapro)return;const c=HAP[HK()];if(!c||!c.sig.length){hapFetch();return}if(Date.now()-c.at>15000)hapFetch();
+// m = 'hapro' (chiến lược HA Pro gốc) | 'dcasig' (tín hiệu bot DCA, theo cài đặt DCA đang lưu của bot)
+async function hapFetch(m){if(!LV||!IND[m]||HAPB[m])return;if(m=='dcasig'&&cs!='XAUUSD')return;const k=HK(m),c=HAP[k];if(c&&Date.now()-c.at<15000)return;HAPB[m]=1;
+ if(m=='dcasig'&&!VIEW&&Date.now()-BOTTFAT>60000){BOTTFAT=Date.now();jget('api/auto',8000).then(j=>{if(j&&j.ok&&j.cfg)BOTTF=j.cfg.tf}).catch(()=>{})}
+ const u=m=='dcasig'?'api/dcasig?sym='+cs+'&tf='+TF:'api/hapro?sym='+cs+'&tf='+TF+'&candles='+(IND.heikin?'ha':'std');
+ try{const j=await jget(u,20000);if(j&&j.ok){HAP[k]={at:Date.now(),sig:j.sig,info:j.info||''};redraw()}}catch(e){}finally{HAPB[m]=0}}
+function drawHap(f,a){['hapro','dcasig'].forEach(m=>drawHap1(f,a,m))}
+function drawHap1(f,a,m){if(!IND[m]||(m=='dcasig'&&cs!='XAUUSD'))return;const c=HAP[HK(m)];if(!c||!c.sig.length){hapFetch(m);return}if(Date.now()-c.at>15000)hapFetch(m);
+ const dca=m=='dcasig',both=IND.hapro&&IND.dcasig&&cs=='XAUUSD';
  const x=f.x,idx={};a.forEach((q,i)=>{if(q.ts!=null)idx[Math.round(q.ts/1000)]=i});
- c.sig.forEach(s=>{const i=idx[s.t];if(i==null)return;const q=a[i],cx=i*f.w+f.w/2,b=s.side=='BUY';
-  x.font='bold 11px sans-serif';const tw=x.measureText(s.side).width+10,yy=b?f.y(q.l)+8:f.y(q.h)-24;
-  x.fillStyle=b?'#16a34a':'#dc2626';x.fillRect(cx-tw/2,yy,tw,16);x.fillStyle='#fff';x.fillText(s.side,cx-tw/2+5,yy+12)});
+ c.sig.forEach(s=>{const i=idx[s.t];if(i==null)return;const q=a[i],cx=i*f.w+f.w/2,b=s.side=='BUY',txt=s.side+(dca&&s.rev?' ĐC*':'');
+  x.font='bold 11px sans-serif';const tw=x.measureText(txt).width+10,sh=dca&&both?18:0,yy=b?f.y(q.l)+8+sh:f.y(q.h)-24-sh;
+  x.fillStyle=b?'#16a34a':'#dc2626';x.fillRect(cx-tw/2,yy,tw,16);if(dca){x.strokeStyle='#facc15';x.lineWidth=1.5;x.strokeRect(cx-tw/2,yy,tw,16);x.lineWidth=1}x.fillStyle='#fff';x.fillText(txt,cx-tw/2+5,yy+12)});
+ const btf=AB&&AB.cfg?AB.cfg.tf:BOTTF;if(dca&&btf&&btf!=TF){x.font='bold 12px sans-serif';const w='⚠ Bot đang chạy khung '+btf+', biểu đồ đang ở '+TF+': nhãn DCA ở đây là của khung '+TF+'.',tw=x.measureText(w).width+12;x.fillStyle='rgba(250,204,21,.92)';x.fillRect(6,6,tw,20);x.fillStyle='#111';x.fillText(w,12,21)}
+ if(both&&!dca)return;                                     // bật cả 2: chỉ vẽ mức giá của lệnh DCA gần nhất cho đỡ rối
  const L=c.sig[c.sig.length-1],i0=idx[L.t];if(i0==null)return;const x0=i0*f.w,x1=Math.min(f.pw,x0+f.w*40);
  const ln=(v,col,txt,dash)=>{const y=f.y(v);x.strokeStyle=col;x.setLineDash(dash||[]);x.beginPath();x.moveTo(x0,y);x.lineTo(x1,y);x.stroke();x.setLineDash([]);x.font='11px sans-serif';
   const tw=x.measureText(txt).width+8;x.fillStyle=col;x.globalAlpha=.85;x.fillRect(x1-tw,y-14,tw,13);x.globalAlpha=1;x.fillStyle='#fff';x.fillText(txt,x1-tw+4,y-4)};
+ const tl=L.tp[L.tp.length-1];
  x.fillStyle='rgba(220,38,38,.12)';x.fillRect(x0,Math.min(f.y(L.e),f.y(L.sl)),x1-x0,Math.abs(f.y(L.e)-f.y(L.sl)));
- x.fillStyle='rgba(22,163,74,.10)';x.fillRect(x0,Math.min(f.y(L.e),f.y(L.tp[3])),x1-x0,Math.abs(f.y(L.e)-f.y(L.tp[3])));
- ln(L.e,'#64748b','ENTRY '+L.e.toFixed(DG));ln(L.sl,'#dc2626','SL '+L.sl.toFixed(DG));L.tp.forEach((v,k)=>ln(v,'#0e9fb4','TP'+(k+1)+' (1:'+(k+1)+') '+v.toFixed(DG),[5,3]))}
-setInterval(()=>{if(IND.hapro&&VIEWMODE!='ai'&&VIEWMODE!='news')hapFetch()},15000);
+ x.fillStyle='rgba(22,163,74,.10)';x.fillRect(x0,Math.min(f.y(L.e),f.y(tl)),x1-x0,Math.abs(f.y(L.e)-f.y(tl)));
+ ln(L.e,'#64748b',(dca?'DCA ':'')+'ENTRY '+L.e.toFixed(DG));ln(L.sl,'#dc2626',(dca?'SL chung ':'SL ')+L.sl.toFixed(DG));L.tp.forEach((v,k)=>ln(v,'#0e9fb4','TP'+(k+1)+' (1:'+(L.rr?L.rr[k]:k+1)+') '+v.toFixed(DG),[5,3]))}
+setInterval(()=>{if(VIEWMODE!='ai'&&VIEWMODE!='news'){if(IND.hapro)hapFetch('hapro');if(IND.dcasig)hapFetch('dcasig')}},15000);
 function candles(f,a){const x=f.x,y=f.y,w=f.w;a.forEach((c,i)=>{const cx=i*w+w/2;x.strokeStyle=x.fillStyle=c.c>=c.o?f.B:f.S;x.beginPath();x.moveTo(cx,y(c.h));x.lineTo(cx,y(c.l));x.stroke();x.fillRect(cx-w*.32,Math.min(y(c.o),y(c.c)),w*.64,Math.max(1,Math.abs(y(c.o)-y(c.c))))})}
 // ===== Thu phóng / kéo xem + bật tắt chỉ báo =====
 let ZN=null,PAN=0,DOPEN=0,CW=10,CLEN=0,YM=null,FL=0,FH=1,FPW=1,FPH=1;// YM: thang giá thủ công {lo,hi}, null = tự động
-const IND={ema9:1,ema21:1,ema50:1,ema200:1,vwap:1,fvg:1,sig:1,sltp:1,d1:1,r10:1,heikin:1,hapro:1};try{Object.assign(IND,JSON.parse(localStorage.getItem('ckg-ind')||'{}'))}catch(e){}
-const IND_L={heikin:['Nến Heikin Ashi','--wn'],hapro:['Tín hiệu HA Pro','--h2'],ema9:['EMA 9','--e9'],ema21:['EMA 21','--e21'],ema50:['EMA 50','--e50'],ema200:['EMA 200','--e200'],vwap:['VWAP','--vw'],fvg:['FVG',''],sig:['Tín hiệu ▲▼',''],sltp:['SL / TP',''],d1:['Giá mở D1','--mut'],r10:['Cao/Thấp 10 nến','--no']};
-function indBar(){const ks=G?['heikin','hapro','ema9','ema21','ema50','ema200','vwap','fvg','sig','sltp','r10']:['heikin','hapro','ema9','ema21','ema50','ema200','d1','r10'];$('ind').innerHTML=ks.map(k=>`<button class="chip ${IND[k]?'on':''}" onclick="togInd('${k}')" title="Bật/tắt ${IND_L[k][0]}">${IND_L[k][1]?`<i style="background:var(${IND_L[k][1]})"></i>`:''}${IND_L[k][0]}</button>`).join('')}
+const IND={ema9:1,ema21:1,ema50:1,ema200:1,vwap:1,fvg:1,sig:1,sltp:1,d1:1,r10:1,heikin:1,hapro:1,dcasig:1};try{Object.assign(IND,JSON.parse(localStorage.getItem('ckg-ind')||'{}'))}catch(e){}
+const IND_L={heikin:['Nến Heikin Ashi','--wn'],hapro:['Tín hiệu HA Pro','--h2'],dcasig:['Tín hiệu DCA (bot)','--wn'],ema9:['EMA 9','--e9'],ema21:['EMA 21','--e21'],ema50:['EMA 50','--e50'],ema200:['EMA 200','--e200'],vwap:['VWAP','--vw'],fvg:['FVG',''],sig:['Tín hiệu ▲▼',''],sltp:['SL / TP',''],d1:['Giá mở D1','--mut'],r10:['Cao/Thấp 10 nến','--no']};
+function indBar(){const ks=G?['heikin','hapro','dcasig','ema9','ema21','ema50','ema200','vwap','fvg','sig','sltp','r10']:['heikin','hapro','dcasig','ema9','ema21','ema50','ema200','d1','r10'];$('ind').innerHTML=ks.map(k=>`<button class="chip ${IND[k]?'on':''}" onclick="togInd('${k}')" title="Bật/tắt ${IND_L[k][0]}">${IND_L[k][1]?`<i style="background:var(${IND_L[k][1]})"></i>`:''}${IND_L[k][0]}</button>`).join('')}
 function togInd(k){IND[k]=IND[k]?0:1;try{localStorage.setItem('ckg-ind',JSON.stringify(IND))}catch(e){}indBar();redraw()}
 const zn=()=>ZN||SLN();
 function zoom(f){ZN=Math.round(Math.max(15,Math.min(400,zn()*f)));redraw()}
