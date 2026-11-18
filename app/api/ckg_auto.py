@@ -73,17 +73,16 @@ DCA_DEF = {"legs": 3, "gap": 0.5, "min_bars": 5, "risk": 0.0, "dir": "both", "st
            "tp1r": 1.0, "tp1p": 50, "tp2r": 2.0, "tp2p": 30, "cap": True, "be": True, "be_off": 0.0,
            "trail": True, "trail_after": 2, "time": 60, "rev": True, "candles": "std", "sig": "v5",
            "sess_on": False, "sess": "1400-2300",   # chỉ MỞ/THÊM lệnh trong khung giờ VN (như useSession của Pine)
-           "sl_lock": True,
            "gap_usd": 0.0,       # lệnh DCA thêm khi giá tốt hơn ≥ ... $ (0 = dùng gap × ATR)
            "lot_mult": 1.0,      # lot lệnh DCA thứ n = lot đầu × lot_mult^(n-1) (1 = bằng lệnh đầu)
-           "sl_follow": True}    # thêm lệnh DCA: SL chung tính lại theo lệnh mới, mọi lệnh trước dời SL theo      # True: SL bị sửa từ bên ngoài thì bot trả lại; False: nhận SL sửa tay làm SL chung
+           "sl_follow": True}    # thêm lệnh DCA: SL chung tính lại theo lệnh mới, mọi lệnh trước dời SL theo
 DCA_NUM = {"legs": (1, 5, int), "gap": (0, 10, float), "min_bars": (1, 200, int), "risk": (0, 10, float),
            "stretch": (0.5, 10, float), "sl_k": (0, 10, float), "sl_buf": (0, 100, float), "soft_sig": (0.1, 5, float),
            "tp1r": (0.1, 10, float), "tp1p": (1, 100, int), "tp2r": (0.2, 20, float), "tp2p": (0, 100, int),
            "be_off": (0, 100, float), "trail_after": (1, 2, int), "time": (0, 2000, int),
            "gap_usd": (0, 100, float), "lot_mult": (1, 5, float)}
 DCA_ENUM = {"dir": ("both", "buy", "sell"), "sl_mode": ("min", "vwap", "swing"), "candles": ("ha", "std"), "sig": ("v5", "dca")}
-DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_lock", "sl_follow")
+DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_follow")
 
 
 def _sess_ok(s):
@@ -423,10 +422,9 @@ _sl_seen = {}
 
 
 def _sl_watch(ps, dr, px, d=None):
-    """SL lệnh bot chỉ do bot đặt (SL chung lúc vào, hoặc hòa vốn sau TP1). Thấy SL khác → có EA / người / phần mềm
-    khác trên MT5 tín hiệu đang sửa lệnh bot.
-    Khóa SL BẬT: báo Telegram và trả SL về đúng mức của bot. TẮT: nhận mức mới làm SL chung (dời các lệnh còn lại theo),
-    TP1/TP2 giữ nguyên (SL sửa tay lưu riêng ở sl_man, không đổi R)."""
+    """Bot chỉ tự dời SL khi: vào lệnh, thêm lệnh DCA (SL chung theo lệnh mới), chạm TP1 (hòa vốn).
+    SL sửa tay trên MT5 → bot KHÔNG trả lại: nhận mức mới làm SL chung (dời các lệnh còn lại theo),
+    TP1/TP2 giữ nguyên (SL sửa tay lưu riêng ở sl_man, không đổi R). Gỡ SL bằng tay → bot để nguyên, chỉ ghi nhật ký."""
     want = C().dca.get("sl_man") or (C().dca["sl_be"] if C().dca["tp1"] and C().dca["sl_be"] else C().dca["sl"])
     if not want:
         return
@@ -441,7 +439,7 @@ def _sl_watch(ps, dr, px, d=None):
         if _sl_seen.get(p.ticket) == key:                      # đã báo / đã thử trả lại mức này
             continue
         _sl_seen[p.ticket] = key
-        if d is not None and not d.get("sl_lock", True) and p.sl:
+        if p.sl:
             new = round(p.sl, info.digits)
             C().dca["sl_man"] = new
             _dca_save()
@@ -458,17 +456,7 @@ def _sl_watch(ps, dr, px, d=None):
                 + (f", dời thêm {moved} lệnh cùng chiến dịch" if moved else "") + " (TP1/TP2 giữ nguyên).", "info")
             _sig(f"✋ Dời SL về {new:.{info.digits}f}")
             continue
-        ok_room = dr * (px - want) >= mind
-        msg = (f"⚠️ SL lệnh bot #{p.ticket} bị sửa từ BÊN NGOÀI: {want:.{info.digits}f} → {p.sl:.{info.digits}f} "
-               f"(bot không dời). Thường do EA khác / lá chắn EA PinYinBridge / người sửa tay trên MT5 tín hiệu: "
-               f"xem tab Nhật ký (Journal) của MT5 máy chủ để biết ai sửa.")
-        if ok_room:
-            try:
-                _set_sl(p, want)
-                msg += f" Đã trả SL về {want:.{info.digits}f}."
-            except Exception as e:
-                msg += f" Không trả lại được: {e}"
-        log(msg, "err")
+        log(f"✋ SL lệnh #{p.ticket} đã bị gỡ bằng tay (SL bot: {want:.{info.digits}f}). Bot để nguyên, không đặt lại.", "info")
     for t in [t for t in _sl_seen if t not in {p.ticket for p in ps}]:
         _sl_seen.pop(t, None)
 
