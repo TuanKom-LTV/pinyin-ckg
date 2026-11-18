@@ -47,8 +47,28 @@ def plan_line(src="main"):
     return "Q|%.2f|%d|%.2f" % (P["dist"], P["be"], P["off"])
 
 
+def srcs_of(f):
+    """Các bot mà tài khoản copy đang theo (mặc định Bot 1)."""
+    x = f.get("srcs")
+    if isinstance(x, list):                           # có thể rỗng: đang không copy bot nào
+        return [str(v) for v in x]
+    return [f.get("src") or "main"]
+
+
 def src_of(f):
-    return f.get("src") or "main"
+    x = srcs_of(f)
+    return x[0] if x else "main"
+
+
+def tag_of(src):
+    """Nhãn lệnh trên EA: Bot 1 không nhãn (tương thích EA cũ), bot khác "#<id>"."""
+    return "" if src == "main" else src
+
+
+def dca_src_of(f):
+    """Bot DCA (duy nhất) mà tài khoản theo — chỉ bot này dùng TP1 đặt sẵn trên sàn của EA."""
+    from app.api import ckg_auto
+    return next((s for s in srcs_of(f) if ckg_auto.strategy_of(s) == "dca"), None)
 
 
 # ---- đích gửi lệnh ngoài danh sách copy: bot riêng của từng khách (app/services/cbot.py) ----
@@ -71,7 +91,11 @@ def plan_for(u):
         return "Q|%.2f|%d|%.2f" % (d, be, off)
     if u.startswith("copy:"):
         f = next((x for x in load() if uid(x) == u), None)
-        return plan_line(src_of(f) if f else "main")
+        src = dca_src_of(f) if f else "main"
+        if not src:
+            return "Q|0.00|1|0.00"                       # không theo bot DCA nào: không tách TP1
+        q = plan_line(src)
+        return q + ("|" + tag_of(src) if tag_of(src) else "")
     return None
 
 
@@ -164,7 +188,7 @@ def update(fid, **kw):
         else:
             if kw.get("new_key"):
                 f["key"] = "PC-" + secrets.token_hex(8).upper()
-            for k in ("name", "on", "lot_mode", "lot", "ttl", "slip", "real", "src"):
+            for k in ("name", "on", "lot_mode", "lot", "ttl", "slip", "real", "src", "srcs"):
                 if kw.get(k) is not None:
                     f[k] = kw[k]
         save(lst)
@@ -226,17 +250,19 @@ def _kick(fid):
 def _enqueue(f, line, what, extra=None):
     with _lock:
         q = _q.setdefault(f["id"], [])
-        if line == "CLOSE|0" and any(c["line"] == "CLOSE|0" for c in q):
+        if line == "CLOSE|0" and any(c["line"] == "CLOSE|0" and c.get("tag", "") == (extra or {}).get("tag", "") for c in q):
             return
         q.append({"line": line, "what": what, "t": time.time(), **(extra or {})})
     _start()
     _kick(f["id"])
 
 
-def _each(make_line, what, extra=None, src="main"):
+def _each(make_line, what, extra=None, src="main", dca=False):
+    """Gửi cho mọi tài khoản đang theo bot src (dca=True: chỉ tài khoản lấy bot này làm bot DCA)."""
     for f in load():
-        if not f.get("on") or src_of(f) != src:
+        if not f.get("on") or src not in srcs_of(f) or (dca and dca_src_of(f) != src):
             continue
+        extra = {**(extra or {}), "tag": tag_of(src)}
         line = make_line(f)
         if line:
             _enqueue(f, line, what, extra)
@@ -299,6 +325,11 @@ def _deliver(f, c):
         line += "|B"
     elif c.get("old_line") and not _ver_ok(s, (1, 5)):      # EA cũ chưa có TP1 đặt sẵn trên sàn
         line = c["old_line"]
+    if c.get("tag"):                                    # lệnh của bot khác Bot 1: chỉ áp lên lệnh mang nhãn bot đó
+        if not _ver_ok(s, (1, 7)):
+            _sayf(f, f"{name} EA bản {s.get('ver') or 'cũ'} chưa copy được nhiều bot, cần EA 1.7. Bỏ lệnh: {c['what']}.", "err")
+            return True
+        line += "|T:" + c["tag"]
     r = ea._send(u, line, wait=(ttl - age) if order else None)   # lệnh vào: EA không nhận kịp trong hạn thì hủy
     login = s["acc"]["login"]
     if r.get("ok"):
@@ -319,14 +350,32 @@ def _reconcile(f, s):
         pos = [p for p in pos if p.get("bot")]           # chỉ lệnh bot, không đụng lệnh khách vào tay
     if not pos or _q.get(f["id"]):
         return
-    if f.get("dir_fn"):
-        d = f["dir_fn"]()
-        dirs = {d} if d else set()
-    else:
-        dirs = ckg_auto.copy_dirs(src_of(f))         # chiều các lệnh đang mở của bot nguồn (None = chưa rõ: không đụng)
-        if dirs is None:
-            return
-        d = 1 if dirs else 0
+    if not f.get("dir_fn"):
+        groups = {}
+        for p in pos:
+            groups.setdefault(p.get("tag") or "", []).append(p)
+        follow = {tag_of(x): x for x in srcs_of(f)}
+        for tg, ps in groups.items():
+            src = follow.get(tg)
+            if src is None:
+                dirs, why = set(), "tài khoản không còn copy bot này"
+            else:
+                dirs = ckg_auto.copy_dirs(src)      # chiều các lệnh đang mở của bot nguồn (None = chưa rõ: không đụng)
+                if dirs is None:
+                    continue
+                why = "bot không còn lệnh" if not dirs else "khác chiều lệnh của bot"
+            bad = not dirs or any((1 if p["t"] == "BUY" else -1) not in dirs for p in ps)
+            fl = _flag.setdefault(f["id"] + "#" + tg, {})
+            if bad and time.time() - fl.get("rec", 0) > 30 and time.time() - fl.setdefault("seen", time.time()) > 10:
+                fl["rec"] = time.time()
+                bn = ckg_auto.bot_name(src or tg or "main")
+                _sayf(f, f"[{f['name']}] còn {len(ps)} lệnh copy của [{bn}] nhưng {why} → tự đóng.", "err")
+                _enqueue(f, "CLOSE|0", "đóng lệnh lệch", {"tag": tg})
+            if not bad:
+                fl["seen"] = time.time()
+        return
+    d = f["dir_fn"]()
+    dirs = {d} if d else set()
     bad = not dirs or any((1 if p["t"] == "BUY" else -1) not in dirs for p in pos)
     fl = _flag.setdefault(f["id"], {})
     if bad and time.time() - fl.get("rec", 0) > 30 and time.time() - fl.setdefault("seen", time.time()) > 10:
@@ -400,17 +449,17 @@ def copy_open(direction, master_lot, sl_dist, pct=0, entry_px=None, src="main"):
     side = "BUY" if direction > 0 else "SELL"
     d = max(0.0, float(sl_dist))
     for f in load():
-        if f.get("on") and src_of(f) == src:
+        if f.get("on") and dca_src_of(f) == src:
             lot = _lot(f, master_lot)
             _enqueue(f, f"DORD|{side}|{lot:.2f}|{d:.2f}|{float(pct or 0):.0f}", f"vào {side}",
-                     {"old_line": f"ORDER|{side}|{lot:.2f}|now|{d:.2f}|0|0|M1", "side": side, "px": entry_px})
+                     {"old_line": f"ORDER|{side}|{lot:.2f}|now|{d:.2f}|0|0|M1", "side": side, "px": entry_px, "tag": tag_of(src)})
 
 
 def copy_part(frac, why, src="main"):
     if not (0 < frac <= 1):
         return
     if why == "TP1":       # EA 1.5: đóng phần "PinYin TP1" (sàn có thể đã tự chốt trước) — EA cũ: chốt theo tỉ lệ
-        _each(lambda f: f"TP1PART|{frac:.4f}", "chốt TP1", {"old_line": f"PART|{frac:.4f}"}, src=src)
+        _each(lambda f: f"TP1PART|{frac:.4f}", "chốt TP1", {"old_line": f"PART|{frac:.4f}"}, src=src, dca=True)
     else:
         _each(lambda f: f"PART|{frac:.4f}", f"chốt {why}", src=src)
 
@@ -428,9 +477,9 @@ def copy_order(direction, master_lot, sl_dist, tp_dist, entry_px=None, src="main
     side = "BUY" if direction > 0 else "SELL"
     s, t = max(0.0, float(sl_dist or 0)), max(0.0, float(tp_dist or 0))
     for f in load():
-        if f.get("on") and src_of(f) == src:
+        if f.get("on") and src in srcs_of(f):
             lot = _lot(f, master_lot)
-            _enqueue(f, f"ORDER|{side}|{lot:.2f}|now|{s:.2f}|{t:.2f}|0|M1", f"vào {side}", {"side": side, "px": entry_px})
+            _enqueue(f, f"ORDER|{side}|{lot:.2f}|now|{s:.2f}|{t:.2f}|0|M1", f"vào {side}", {"side": side, "px": entry_px, "tag": tag_of(src)})
 
 
 def status():
@@ -439,7 +488,7 @@ def status():
     for f in load():
         s = ea._st.get(uid(f)) or {}
         a = s.get("acc")
-        out.append({**f, "src": src_of(f), "online": bool(a) and ea._online(s), "ver": s.get("ver"), "old": ea._old(s.get("ver")) if s.get("ver") else None,
+        out.append({**f, "src": src_of(f), "srcs": srcs_of(f), "online": bool(a) and ea._online(s), "ver": s.get("ver"), "old": ea._old(s.get("ver")) if s.get("ver") else None,
                     "acc": {k: a.get(k) for k in ("login", "server", "currency", "equity", "balance", "demo", "algo")} if a else None,
                     "same": _same(a), "npos": len(s.get("pos") or []), "queue": len(_q.get(f["id"]) or []), "pnl": round(sum(p["profit"] for p in (s.get("pos") or [])), 2)})
     return out

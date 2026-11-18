@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.60"
+#property version   "1.70"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.6"
+#define EA_VER   "1.7"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -33,6 +33,9 @@ string  doneIds[50];
 // Copy lệnh bot: TP1 đặt sẵn trên sàn (lệnh tách phần "PinYin TP1"), EA tự dời hòa vốn khi sàn đã chốt TP1
 double  gTp1Dist = 0, gTp1Applied = -1, gAvg0 = 0, gBeOff = 0;
 bool    gBeOnTp1 = true, gHadTp1 = false, gTp1Done = false, gSplit = false;
+// 1.7: copy NHIỀU bot cùng lúc. Lệnh của bot khác Bot 1 gắn nhãn "#<bot>" trong ghi chú (vd "PinYin #b2", "PinYin #b2 TP1").
+// Lệnh máy chủ có trường cuối "T:<bot>" → chỉ áp lên lệnh mang đúng nhãn đó. Không nhãn = Bot 1 (như các bản cũ).
+string  gTag = "", gTp1Tag = "";
 int     gNPos = -1;
 int     doneN = 0;
 
@@ -98,7 +101,21 @@ bool HiLo(int i, double &hi, double &lo)
 
 bool gScope = false;      // true: lệnh từ bot chỉ áp lên lệnh của bot (ghi chú "PinYin BOT"), không đụng lệnh vào tay qua buồng lái
 bool IsBotC() { return StringFind(PositionGetString(POSITION_COMMENT), "PinYin BOT") == 0; }
-bool Mine(ulong ticket) { return PositionSelectByTicket(ticket) && PositionGetInteger(POSITION_MAGIC) == EA_MAGIC && PositionGetString(POSITION_SYMBOL) == Sym && (!gScope || IsBotC()); }
+string TagOf()                       // nhãn bot nguồn trong ghi chú lệnh đang chọn ("" = Bot 1 / lệnh không nhãn)
+{
+   string c = PositionGetString(POSITION_COMMENT);
+   int i = StringFind(c, "#"); if(i < 0) return "";
+   int j = StringFind(c, " ", i);
+   return j < 0 ? StringSubstr(c, i + 1) : StringSubstr(c, i + 1, j - i - 1);
+}
+string CmT(bool tp1)                 // ghi chú lệnh mới theo phạm vi + nhãn đang xử lý
+{
+   string b = gScope ? "PinYin BOT" : "PinYin";
+   if(gTag != "") b += " #" + gTag;
+   if(tp1) b += " TP1";
+   return b;
+}
+bool Mine(ulong ticket) { return PositionSelectByTicket(ticket) && PositionGetInteger(POSITION_MAGIC) == EA_MAGIC && PositionGetString(POSITION_SYMBOL) == Sym && (!gScope || IsBotC()) && TagOf() == gTag; }
 bool AnyBot()
 {
    bool o = gScope; gScope = true; bool r = false;
@@ -134,12 +151,12 @@ string DoOrder(string side, double lot, string mode, double sl, double tp, doubl
    if(sl > 0) { double d = MathMax(sl * u, mind); s = NormalizeDouble(buy ? entry - d : entry + d, dg); }
    if(tp > 0) { double d = MathMax(tp * u, mind); p = NormalizeDouble(buy ? entry + d : entry - d, dg); }
    bool ok;
-   if(!pend) ok = buy ? trade.Buy(lot, Sym, 0, s, p, "PinYin") : trade.Sell(lot, Sym, 0, s, p, "PinYin");
+   if(!pend) ok = buy ? trade.Buy(lot, Sym, 0, s, p, CmT(false)) : trade.Sell(lot, Sym, 0, s, p, CmT(false));
    else
    {
       bool below = entry < mkt;
-      if(buy) ok = below ? trade.BuyLimit(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, "PinYin") : trade.BuyStop(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, "PinYin");
-      else    ok = below ? trade.SellStop(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, "PinYin") : trade.SellLimit(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, "PinYin");
+      if(buy) ok = below ? trade.BuyLimit(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, CmT(false)) : trade.BuyStop(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, CmT(false));
+      else    ok = below ? trade.SellStop(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, CmT(false)) : trade.SellLimit(lot, entry, Sym, s, p, ORDER_TIME_GTC, 0, CmT(false));
    }
    if(!ok || !OkRet()) return "0|" + Rej();
    double px = pend ? entry : trade.ResultPrice();
@@ -332,9 +349,10 @@ string BeAt(double be, int dir)
 // Theo dõi mỗi giây: sàn đã chốt phần TP1 → EA tự dời SL phần còn lại về giá vào TB (không cần máy chủ)
 void Tp1Watch()
 {
+   string o = gTag; gTag = gTp1Tag;
    gScope = AnyBot();
    Tp1Watch0();
-   gScope = false;
+   gScope = false; gTag = o;
 }
 
 void Tp1Watch0()
@@ -376,14 +394,14 @@ string DoDOrd(string side, double lot, double sl, double pct)
    string msg = "";
    if(la > 0)
    {
-      bool ok = buy ? trade.Buy(la, Sym, 0, s, p, gScope ? "PinYin BOT TP1" : "PinYin TP1") : trade.Sell(la, Sym, 0, s, p, gScope ? "PinYin BOT TP1" : "PinYin TP1");
+      bool ok = buy ? trade.Buy(la, Sym, 0, s, p, CmT(true)) : trade.Sell(la, Sym, 0, s, p, CmT(true));
       if(!ok || !OkRet()) return "0|" + Rej();
       gSplit = true;
       msg = D(la, 2) + " lot (TP1 " + D(p, dg) + " đặt sẵn trên sàn)";
    }
    if(lb > 0)
    {
-      bool ok = buy ? trade.Buy(lb, Sym, 0, s, 0, gScope ? "PinYin BOT" : "PinYin") : trade.Sell(lb, Sym, 0, s, 0, gScope ? "PinYin BOT" : "PinYin");
+      bool ok = buy ? trade.Buy(lb, Sym, 0, s, 0, CmT(false)) : trade.Sell(lb, Sym, 0, s, 0, CmT(false));
       if(!ok || !OkRet()) return (la > 0 ? "1|Đã vào " + msg + " nhưng phần còn lại lỗi: " : "0|") + Rej();
       msg += (msg != "" ? " + " : "") + D(lb, 2) + " lot";
    }
@@ -418,7 +436,14 @@ void Exec(string &f[])
 {
    int n = ArraySize(f); if(n < 3) return;
    string id = f[1], c = f[2], r;
-   gScope = f[n - 1] == "B";
+   gScope = false; gTag = "";
+   while(n > 3)
+   {
+      string x = f[n - 1];
+      if(x == "B") { gScope = true; n--; }
+      else if(StringFind(x, "T:") == 0) { gTag = StringSubstr(x, 2); n--; }
+      else break;
+   }
    if(Done(id)) return;
    MarkDone(id);
    if(!MQLInfoInteger(MQL_TRADE_ALLOWED) || !TerminalInfoInteger(TERMINAL_TRADE_ALLOWED)) r = "0|MT5 đang tắt nút Algo Trading / EA chưa được phép giao dịch.";
@@ -432,7 +457,7 @@ void Exec(string &f[])
    else if(c == "DORD" && n >= 7) r = DoDOrd(f[3], StringToDouble(f[4]), StringToDouble(f[5]), StringToDouble(f[6]));
    else if(c == "TP1PART" && n > 3) r = DoTp1Part(StringToDouble(f[3]));
    else r = "0|Lệnh không hỗ trợ: " + c;
-   gScope = false;
+   gScope = false; gTag = "";
    results += "R|" + id + "|" + StringSubstr(r, 0, 1) + "|" + Clean(StringSubstr(r, 2)) + "\n";   // r = "1|thông báo"
 }
 
@@ -526,12 +551,12 @@ string Body()
    for(int i = 0; i < PositionsTotal(); i++)
    {
       ulong k = PositionGetTicket(i);
-      if(!Mine(k)) continue;
+      if(!PositionSelectByTicket(k) || PositionGetInteger(POSITION_MAGIC) != EA_MAGIC || PositionGetString(POSITION_SYMBOL) != Sym) continue;
       b += "P|" + IntegerToString((long)k) + "|" + (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? "BUY" : "SELL")
            + "|" + D(PositionGetDouble(POSITION_VOLUME), 2) + "|" + D(PositionGetDouble(POSITION_PRICE_OPEN), dg)
            + "|" + D(PositionGetDouble(POSITION_SL), dg) + "|" + D(PositionGetDouble(POSITION_TP), dg)
            + "|" + D(PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP), 2)
-           + "|" + (GlobalVariableCheck("PY_H_" + IntegerToString((long)k)) ? "1" : "0") + "|" + (IsBotC() ? "1" : "0") + "\n";
+           + "|" + (GlobalVariableCheck("PY_H_" + IntegerToString((long)k)) ? "1" : "0") + "|" + (IsBotC() ? "1" : "0") + "|" + TagOf() + "\n";
    }
    for(int i = 0; i < OrdersTotal(); i++)
    {
@@ -577,7 +602,12 @@ void Sync()
          gTr = f[4] == "1"; gTrAt = StringToDouble(f[5]); gTrStep = StringToDouble(f[6]); gHalf = f[7] == "1";
          if(m >= 12) { gMan = f[8] == "1"; gAuto = f[9] == "1"; gSl = StringToDouble(f[10]); gTp = StringToDouble(f[11]); }
       }
-      if(f[0] == "Q" && m >= 4) { gTp1Dist = StringToDouble(f[1]); gBeOnTp1 = f[2] == "1"; gBeOff = StringToDouble(f[3]); }
+      if(f[0] == "Q" && m >= 4)
+      {
+         string tg = m >= 5 ? f[4] : "";
+         if(tg != gTp1Tag) { gTp1Done = false; gHadTp1 = false; gSplit = false; gTp1Applied = -1; gNPos = 0; }   // đổi bot DCA nguồn
+         gTp1Dist = StringToDouble(f[1]); gBeOnTp1 = f[2] == "1"; gBeOff = StringToDouble(f[3]); gTp1Tag = tg;
+      }
       if(f[0] == "C") Exec(f);
    }
 }

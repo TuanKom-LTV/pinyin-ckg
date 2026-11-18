@@ -972,6 +972,19 @@ def _copy():
     return _CopySrc(C().sid) if C().copy else _NOCOPY
 
 
+def strategy_of(src):
+    ctx = _ctx_of(src)
+    if not ctx:
+        return None
+    with _use(ctx):
+        return _cfg().get("strategy")
+
+
+def bot_name(src):
+    ctx = _ctx_of(src)
+    return ctx.name if ctx else src
+
+
 def copy_dirs(src):
     """Chiều các lệnh đang mở của bot nguồn (cho copy lệnh đối chiếu). None = chưa rõ / bot không còn."""
     ctx = _ctx_of(src)
@@ -1509,7 +1522,7 @@ def auto_slots():
         with _use(ctx):
             c = _cfg()
         n, pnl = bym.get(ctx.magic, [0, 0.0])
-        nf = sum(1 for f in copytrade.load() if copytrade.src_of(f) == ctx.sid)
+        nf = sum(1 for f in copytrade.load() if ctx.sid in copytrade.srcs_of(f))
         out.append({"id": ctx.sid, "name": ctx.name, "magic": ctx.magic, "copy": ctx.copy, "nfollow": nf, "on": bool(c.get("on")),
                     "zr": c.get("strategy") == "cpb" and (c.get("cpb") or {}).get("mg") == "zr",
                     "strategy": c.get("strategy"), "sname": STRATS.get(c.get("strategy"), ""), "tf": c.get("tf"),
@@ -1562,7 +1575,7 @@ def auto_slots_set(x: SlotIn):
                 n = 0
             if n:
                 return {"ok": False, "loi": f"Bot còn {n} lệnh mở. Đóng hết rồi mới xóa."}
-            nf = sum(1 for f in copytrade.load() if copytrade.src_of(f) == x.id)
+            nf = sum(1 for f in copytrade.load() if x.id in copytrade.srcs_of(f))
             if nf:
                 return {"ok": False, "loi": f"Có {nf} tài khoản copy đang theo bot này. Đổi chúng sang bot khác rồi mới xóa."}
             sl["bots"] = [b for b in sl["bots"] if b["id"] != x.id]
@@ -1587,7 +1600,8 @@ class CopyIn(BaseModel):
     ttl: int | None = None              # lệnh vào chờ EA tối đa (giây)
     slip: float | None = None           # bỏ lệnh vào nếu giá đã chạy ngược quá X$ (0 = không xét)
     real: bool | None = None            # cho phép copy sang tài khoản THẬT này (bật cần mật khẩu chủ)
-    src: str | None = None              # copy theo bot nào (id bot: main, b2, ...)
+    src: str | None = None              # (cũ) copy theo 1 bot
+    srcs: list[str] | None = None       # copy theo NHIỀU bot cùng lúc (id bot: main, b2, ...)
     pw: str = ""
 
 
@@ -1620,17 +1634,24 @@ def copy_set(x: CopyIn):
                 return {"ok": False, "loi": "Thời hạn lệnh vào từ 5 đến 600 giây."}
             if x.slip is not None and not (0 <= x.slip <= 100):
                 return {"ok": False, "loi": "Trượt giá tối đa từ 0 đến 100$."}
-            if x.src is not None and not _ctx_of(x.src):
-                return {"ok": False, "loi": "Không có bot này."}
+            if x.src is not None and x.srcs is None:
+                x.srcs = [x.src]
+            if x.srcs is not None:
+                x.srcs = list(dict.fromkeys(str(v) for v in x.srcs))
+                if any(not _ctx_of(v) for v in x.srcs):
+                    return {"ok": False, "loi": "Không có bot này."}
+                dca = [bot_name(v) for v in x.srcs if strategy_of(v) == "dca"]
+                if len(dca) > 1:
+                    return {"ok": False, "loi": f"Mỗi tài khoản chỉ copy được 1 bot DCA cùng lúc ({', '.join(dca)}). Bot Cloud PB thì bật bao nhiêu cũng được."}
             if x.real:
                 import hmac
                 pw = os.getenv("PINYIN_PASSWORD", "")
                 if not pw or not hmac.compare_digest(x.pw.encode(), pw.encode()):
                     return {"ok": False, "loi": "Sai mật khẩu chủ."}
             f = copytrade.update(x.id, name=(x.name or "").strip()[:40] or None, on=x.on, lot_mode=x.lot_mode, lot=x.lot,
-                                 ttl=x.ttl, slip=x.slip, real=x.real, src=x.src)
-            if x.src is not None:
-                log(f"[{f['name']}] chuyển sang copy theo [{_ctx_of(x.src).name}].", "info")
+                                 ttl=x.ttl, slip=x.slip, real=x.real, srcs=x.srcs, src=x.srcs[0] if x.srcs else None)
+            if x.srcs is not None:
+                log(f"[{f['name']}] copy theo: " + (", ".join(bot_name(v) for v in x.srcs) or "(không bot nào)") + ".", "info")
             if x.real is not None:
                 log(f"{'🔓 CHO PHÉP' if x.real else '🔒 CHẶN'} copy lệnh sang tài khoản THẬT [{f['name']}].", "info")
             if x.on is not None:

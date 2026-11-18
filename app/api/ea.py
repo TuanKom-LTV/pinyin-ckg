@@ -20,7 +20,7 @@ from app.core import users
 
 router = APIRouter(tags=["PinYin · cầu nối EA khách"])
 EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.ex5"
-EA_LATEST = "1.6"          # phiên bản EA mới nhất trên máy chủ
+EA_LATEST = "1.7"          # phiên bản EA mới nhất trên máy chủ
 ONLINE_SEC = 15         # EA gọi mỗi giây; mạng chập chờn vài lần vẫn tính online
 WAIT_SEC = 10
 GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
@@ -100,7 +100,8 @@ async def sync(request: Request):
                 ind[l[1]] = {"ema9": _f(l[2]) or None, "hi10": _f(l[3]) or None, "lo10": _f(l[4]) or None}
             elif t == "P" and len(l) >= 9:
                 pos.append({"ticket": int(_f(l[1])), "t": l[2], "lot": _f(l[3]), "e": _f(l[4]), "sl": _f(l[5]),
-                            "tp": _f(l[6]), "profit": _f(l[7]), "half": l[8] == "1", "bot": len(l) > 9 and l[9] == "1"})
+                            "tp": _f(l[6]), "profit": _f(l[7]), "half": l[8] == "1", "bot": len(l) > 9 and l[9] == "1",
+                            "tag": l[10] if len(l) > 10 else ""})                # 1.7: nhãn bot nguồn ("" = Bot 1)
             elif t == "O" and len(l) >= 7:
                 pend.append({"ticket": int(_f(l[1])), "t": l[2], "lot": _f(l[3]), "e": _f(l[4]), "sl": _f(l[5]), "tp": _f(l[6])})
             elif t == "R" and len(l) >= 4:
