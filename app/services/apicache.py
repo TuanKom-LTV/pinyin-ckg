@@ -10,11 +10,19 @@ import threading
 import time
 
 STATS = {"hit": 0, "miss": 0}
+_ALL = []
+
+
+def clear_all():
+    """Đổi tài khoản MT5: bỏ toàn bộ kết quả đệm của tài khoản / sàn cũ."""
+    for c in _ALL:
+        c.clear()
 
 
 def ttl(seconds):
     def deco(fn):
         cache, locks, glock = {}, {}, threading.Lock()
+        _ALL.append(cache)
 
         @functools.wraps(fn)
         def wrapper(*a, **k):

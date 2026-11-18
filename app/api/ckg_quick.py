@@ -531,6 +531,23 @@ class LoginIn(BaseModel):
     server: str
 
 
+def _fresh_account(a):
+    """Sau khi đổi tài khoản (gọi trong phiên MT5): dò lại tên mã của sàn mới, bỏ đệm cũ, nạp sẵn nến vàng
+    để trang tải lại là có biểu đồ ngay (không phải chờ bảng tên mã cũ hết hạn 60 giây)."""
+    from app.services import apicache, symbols, copytrade
+    symbols.reset()
+    apicache.clear_all()
+    try:
+        symbols.mapping()
+        if mt5.symbol_select("XAUUSD", True):
+            for tf in (mt5.TIMEFRAME_M1, mt5.TIMEFRAME_M5, mt5.TIMEFRAME_M15):
+                mt5.copy_rates_from_pos("XAUUSD", tf, 0, 300)
+        if a:
+            copytrade.set_master(a.login, a.server)
+    except Exception:
+        pass
+
+
 @router.post("/login")
 def q_login(x: LoginIn):
     server = x.server.strip()
@@ -552,9 +569,11 @@ def q_login(x: LoginIn):
                     else:
                         back = f" ⚠️ Chưa quay lại được tài khoản cũ #{before.login}, đăng nhập lại trên trang này."
                 hint = " Kiểm tra số tài khoản, mật khẩu, và tên máy chủ đúng như trong email của sàn." if code in (-6, -2, -10005) or "auth" in str(msg).lower() else ""
+                _fresh_account(mt5.account_info())
                 return _err(f"Đăng nhập thất bại ({code} {msg}).{hint}{back}")
             a = mt5.account_info()
             _remember(a)
+            _fresh_account(a)
         # đổi tài khoản: tắt bot để không vào lệnh nhầm, xóa theo dõi lệnh của tài khoản cũ
         try:
             from app.api import ckg_auto

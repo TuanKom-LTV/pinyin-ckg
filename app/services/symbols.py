@@ -122,6 +122,12 @@ def _build():
         _map.update(key=key, t=time.time(), full=time.time(), fwd=fwd, rev={v: k for k, v in fwd.items()})
 
 
+def reset():
+    """Đổi tài khoản / sàn: bỏ bảng tên mã cũ, lần gọi sau dò lại ngay (không chờ 60 giây)."""
+    with _lock:
+        _map.update(key=None, t=0, full=0, fwd={}, rev={})
+
+
 def to_broker(sym):
     if not isinstance(sym, str):
         return sym
