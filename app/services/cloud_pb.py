@@ -150,6 +150,12 @@ def compute(bars, p=None):
 
 BOT_DEF = {
     **CPB_DEF,
+    "entry": "pb",      # pb = giá hồi về chạm mây (bản Pine) | flip = mây đổi màu: sang xanh BUY, sang đỏ SELL
+                        # | hold = mây đang xanh mà chưa có lệnh BUY thì vào (đỏ: SELL), chốt xong còn màu đó thì vào tiếp
+    "sl_mode": "swing", # swing = đáy/đỉnh nhịp hồi ± slbuf×ATR (Pine) | atr = giá vào ± sl_atr × ATR
+    "sl_atr": 1.5,
+    "be_on": False,     # lá chắn hòa vốn: lãi đạt be_at R thì dời SL về giá vào ± be_off $
+    "be_at": 1.0,
     "mg": "pine",       # pine = 1 SL + 1 TP như Pine | half = chốt một phần ở half_r rồi dời SL hòa vốn
     "half_r": 1.0,      # chốt một phần khi lãi đạt ... R
     "half_pct": 50,     # % khối lượng chốt
@@ -168,13 +174,13 @@ BOT_DEF = {
     "sess_on": False,
     "sess": "1400-2300",
 }
-NUM = {"fast": (2, 100, int), "slow": (3, 200, int), "minw": (0, 5, float), "slope": (1, 50, int), "deep": (0, 5, float),
+NUM = {"sl_atr": (0.1, 20, float), "be_at": (0.1, 20, float), "fast": (2, 100, int), "slow": (3, 200, int), "minw": (0, 5, float), "slope": (1, 50, int), "deep": (0, 5, float),
        "wait": (1, 50, int), "gap": (1, 500, int), "slbuf": (0, 5, float), "rr": (0.1, 20, float),
        "half_r": (0.1, 10, float), "half_pct": (1, 99, int), "be_off": (0, 50, float), "tr_at": (0.1, 20, float),
        "tr_dist": (0.05, 20, float), "legs": (1, 10, int), "min_sl": (0, 100, float), "max_sl": (0, 500, float),
        "mart_v": (0.01, 10, float), "mart_max": (0, 10, int), "max_spr": (0, 50, float)}
-ENUM = {"conf": ("touch", "rej", "brk"), "mg": ("pine", "half"), "mart": ("off", "x", "add")}
-BOOL = ("tr_on", "rev", "sess_on")
+ENUM = {"entry": ("pb", "flip", "hold"), "sl_mode": ("swing", "atr"), "conf": ("touch", "rej", "brk"), "mg": ("pine", "half"), "mart": ("off", "x", "add")}
+BOOL = ("tr_on", "rev", "sess_on", "be_on")
 
 
 def bot_params(over=None, base=None):
@@ -204,6 +210,25 @@ def bot_params(over=None, base=None):
     if d["max_sl"] and d["min_sl"] > d["max_sl"]:
         return None, "Cloud PB: SL tối thiểu phải nhỏ hơn SL tối đa."
     return d, None
+
+
+def entries(bars, d, res=None):
+    """Tín hiệu vào lệnh theo d["entry"] cho từng nến đã đóng: {i: [{"go", "sl"}]} (SL theo d["sl_mode"]).
+    hold trả màu mây mỗi nến (bot tự xét đã có lệnh chưa)."""
+    res = res or compute(bars, d)
+    A, st, out = res["atr"], res["st"], {}
+    if d["entry"] == "pb":
+        for x in res["sig"]:
+            sl = x["sl"] if d["sl_mode"] == "swing" else x["e"] - x["go"] * d["sl_atr"] * x["atr"]
+            out.setdefault(x["i"], []).append({"go": x["go"], "sl": sl, "R": x["go"] * (x["e"] - sl)})
+        return out
+    for i in range(1, len(bars)):
+        g = st[i]
+        if not g or A[i] is None or (d["entry"] == "flip" and st[i - 1] == g):
+            continue
+        c = bars[i][4]
+        out[i] = [{"go": g, "sl": c - g * d["sl_atr"] * A[i], "R": d["sl_atr"] * A[i], "hold": d["entry"] == "hold"}]
+    return out
 
 
 def mart_lot(lot, d, step_n, vstep=0.01):

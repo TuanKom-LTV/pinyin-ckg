@@ -283,9 +283,7 @@ def run_cpb(sim, d, lot, warm):
     Tăng lot sau lệnh dính SL lỗ (mart), lệnh có lãi thì về lot gốc."""
     from app.services import cloud_pb
     bars = sim.bars
-    sig = {}
-    for x in cloud_pb.compute(bars, d)["sig"]:
-        sig.setdefault(x["i"], []).append(x)
+    sig = cloud_pb.entries(bars, d)
     st = {"n": 0}
 
     def close(p, vol, px, k, why):
@@ -323,6 +321,13 @@ def run_cpb(sim, d, lot, warm):
             if x is not None:
                 close(p, p["lot"], x, k, "TP")
         c = bars[k][4]
+        if d["be_on"]:                                          # lá chắn hòa vốn (theo R)
+            for p in sim.pos:
+                if not p.get("be") and p["d"] * (sim.exit_px(p, k, c) - p["e"]) >= d["be_at"] * p["R"]:
+                    p["be"] = True
+                    be = p["e"] + p["d"] * d["be_off"]
+                    if p["d"] * (be - p.get("sl_new", p["sl"])) > 0:
+                        p["sl_new"], p["slw_new"] = be, "hòa vốn"
         if d["tr_on"]:
             for p in sim.pos:
                 px = sim.exit_px(p, k, c)
@@ -337,6 +342,8 @@ def run_cpb(sim, d, lot, warm):
             if (d["min_sl"] and s["R"] < d["min_sl"]) or (d["max_sl"] and s["R"] > d["max_sl"]):
                 continue
             go = s["go"]
+            if s.get("hold") and any(p["d"] == go for p in sim.pos):
+                continue                                        # hold: đã có lệnh theo màu mây rồi
             opp = [p for p in sim.pos if p["d"] != go]
             if opp:
                 if not d["rev"]:
