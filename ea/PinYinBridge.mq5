@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.70"
+#property version   "1.80"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.7"
+#define EA_VER   "1.8"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -626,14 +626,57 @@ int OnInit()
    return INIT_SUCCEEDED;
 }
 
-void OnDeinit(const int reason) { EventKillTimer(); for(int i = 0; i < 3; i++) IndicatorRelease(hEma[i]); Comment(""); }
+void OnDeinit(const int reason) { EventKillTimer(); for(int i = 0; i < 3; i++) IndicatorRelease(hEma[i]); Comment(""); Warn(false, ""); }
+
+//---------------- 1.8: cảnh báo khi MT5 tắt quyền giao dịch của EA ----------------
+// MT5 không cho EA tự bật lại quyền của chính nó, nên EA báo thật rõ: chữ đỏ to trên chart + cửa sổ Alert có tiếng
+// (máy chủ PinYin cũng báo Telegram cho chủ). Hay gặp nhất: đổi khung / mã của chart đang gắn EA.
+bool gWarned = false;
+void Warn(bool on, string why)
+{
+   string n1 = "PY_WARN_1", n2 = "PY_WARN_2", n3 = "PY_WARN_3";
+   if(!on) { ObjectDelete(0, n1); ObjectDelete(0, n2); ObjectDelete(0, n3); return; }
+   string t[3]; t[0] = "⛔ EA PinYin KHÔNG ĐƯỢC PHÉP GIAO DỊCH - không vào / đóng lệnh được!"; t[1] = why;
+   t[2] = "Đừng đổi khung / mã của chart gắn EA. Muốn xem khung khác: File > New Chart.";
+   string nm[3]; nm[0] = n1; nm[1] = n2; nm[2] = n3;
+   for(int i = 0; i < 3; i++)
+   {
+      if(ObjectFind(0, nm[i]) < 0) ObjectCreate(0, nm[i], OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, nm[i], OBJPROP_CORNER, CORNER_LEFT_LOWER);
+      ObjectSetInteger(0, nm[i], OBJPROP_XDISTANCE, 10);
+      ObjectSetInteger(0, nm[i], OBJPROP_YDISTANCE, 70 - i * 22);
+      ObjectSetInteger(0, nm[i], OBJPROP_COLOR, i == 0 ? clrRed : clrOrange);
+      ObjectSetInteger(0, nm[i], OBJPROP_FONTSIZE, i == 0 ? 14 : 11);
+      ObjectSetString(0, nm[i], OBJPROP_FONT, "Arial Bold");
+      ObjectSetString(0, nm[i], OBJPROP_TEXT, t[i]);
+      ObjectSetInteger(0, nm[i], OBJPROP_SELECTABLE, false);
+   }
+   ChartRedraw();
+}
+
+void CheckAllowed()
+{
+   bool term = TerminalInfoInteger(TERMINAL_TRADE_ALLOWED) != 0, mine = MQLInfoInteger(MQL_TRADE_ALLOWED) != 0;
+   if(term && mine) { if(gWarned) { gWarned = false; Warn(false, ""); } return; }
+   string why = !term ? "Cách bật: bấm nút Algo Trading trên thanh công cụ MT5 (chuyển màu xanh)."
+                      : "Cách bật: bấm F7 > tab Common > tích Allow Algo Trading > OK.";
+   Warn(true, why);
+   if(!gWarned)
+   {
+      gWarned = true;
+      Alert("PinYin: MT5 đang TẮT quyền giao dịch của EA PinYinBridge (", Sym, ") - EA KHÔNG vào / đóng lệnh được. ", why);
+      PlaySound("alert2.wav");
+   }
+}
 
 void OnTimer()
 {
+   CheckAllowed();
    Guard();
    Tp1Watch();
    Sync();
-   Comment("PinYin Bridge " + EA_VER + "\n" + gStatus + "\n" + TimeToString(TimeLocal(), TIME_SECONDS));
+   Comment("PinYin Bridge " + EA_VER + "\n" + gStatus + "\n" + TimeToString(TimeLocal(), TIME_SECONDS)
+           + "\n(Không đổi khung / mã của chart này: MT5 sẽ tắt quyền EA)");
 }
 
 void OnTick() {}
