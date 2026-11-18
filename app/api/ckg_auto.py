@@ -861,10 +861,17 @@ class BtIn(BaseModel):
     cap: float = 1000                   # vốn ban đầu (đơn vị tiền của tài khoản)
     comm: float = 0.0                   # phí mỗi lot (khứ hồi)
     sweep: dict | None = None           # {"key": "dca.gap", "values": [0.2, 0.5, 1]} → so sánh nhiều giá trị
+    strategy: str = "dca"               # dca | cpb (PinYin EMA Cloud Pullback)
+    cpb: dict = {}                      # cài đặt Cloud PB (thiếu thì lấy mặc định / cài đặt đang lưu)
 
 
 BT_PER_DAY = {"M1": 1440, "M5": 288, "M15": 96}
 BT_SWEEP = {"dca." + k for k in DCA_NUM}
+
+
+def _bt_sweep_keys():
+    from app.services import cloud_pb
+    return BT_SWEEP | {"cpb." + k for k in cloud_pb.NUM}
 
 
 @router.post("/auto/backtest")
@@ -876,6 +883,12 @@ def auto_backtest(x: BtIn):
     c.update({k: v for k, v in over.items() if k in DEFAULT and k not in ("on", "dca")})
     c["dca"] = {**c["dca"], **{k: v for k, v in dca_over.items() if k in DCA_DEF}}
     c["strategy"] = "dca"
+    if x.strategy == "cpb":
+        from app.services import cloud_pb
+        d, err = cloud_pb.bot_params(x.cpb, c.get("cpb"))
+        if err:
+            return {"ok": False, "loi": err}
+        c = {"strategy": "cpb", "tf": (x.cfg or {}).get("tf") or "M5", "cpb": d}
     if c["tf"] not in TFS:
         return {"ok": False, "loi": "Khung chỉ M1, M5 hoặc M15."}
     if not (1 <= x.days <= 730):
@@ -885,7 +898,7 @@ def auto_backtest(x: BtIn):
     sw = None
     if x.sweep:
         key, vals = str(x.sweep.get("key", "")), x.sweep.get("values") or []
-        if key not in BT_SWEEP or not (1 <= len(vals) <= 10):
+        if key not in _bt_sweep_keys() or not (1 <= len(vals) <= 10):
             return {"ok": False, "loi": "So sánh: chọn thông số hợp lệ và 1–10 giá trị."}
         try:
             sw = (key, [float(v) for v in vals])
@@ -938,6 +951,10 @@ def auto_backtest(x: BtIn):
             if key.startswith("dca."):
                 k2 = key[4:]
                 cc["dca"][k2] = DCA_NUM[k2][2](v)
+            elif key.startswith("cpb."):
+                from app.services import cloud_pb
+                k2 = key[4:]
+                cc["cpb"][k2] = cloud_pb.NUM[k2][2](v)
             s = bt_run(bars, spr, cc, **common)
             rows.append({"v": v, **{k: s[k] for k in ("net", "net_pct", "n", "winrate", "pf", "mdd", "mdd_pct", "streak", "avg_win", "avg_loss")}})
         return {"ok": True, "range": rng, "meta": meta, "cfg": c, "sweep": {"key": key, "rows": rows}}

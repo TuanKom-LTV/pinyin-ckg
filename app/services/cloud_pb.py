@@ -144,3 +144,70 @@ def compute(bars, p=None):
             sig.append({"i": i, "t": bars[i][0], "side": "BUY" if go > 0 else "SELL", "go": go, "e": c[i], "sl": sl,
                         "tp": c[i] + go * d["rr"] * R, "R": R, "atr": atr})
     return {"sig": sig, "e1": E1, "e2": E2, "st": st, "atr": A}
+
+
+# ---------------- Cài đặt bot / backtest (quản lý lệnh) ----------------
+
+BOT_DEF = {
+    **CPB_DEF,
+    "mg": "pine",       # pine = 1 SL + 1 TP như Pine | half = chốt một phần ở half_r rồi dời SL hòa vốn
+    "half_r": 1.0,      # chốt một phần khi lãi đạt ... R
+    "half_pct": 50,     # % khối lượng chốt
+    "be_off": 0.0,      # SL hòa vốn = giá vào ± ... $ (khóa lãi)
+    "tr_on": False,     # trailing stop
+    "tr_at": 1.0,       # bắt đầu trailing khi lãi đạt ... R
+    "tr_dist": 0.5,     # SL bám cách giá ... R
+    "legs": 10,         # tối đa số lệnh cùng chiều (tín hiệu cùng chiều thì vào thêm)
+    "rev": True,        # tín hiệu ngược chiều: đóng hết lệnh đang mở rồi đảo chiều
+    "min_sl": 0.0,      # bỏ tín hiệu có SL gần hơn ... $ (0 = không xét)
+    "max_sl": 0.0,      # bỏ tín hiệu có SL xa hơn ... $ (0 = không xét)
+    "mart": "off",      # lệnh trước dính SL thì lệnh sau tăng lot: off | x (nhân) | add (cộng)
+    "mart_v": 2.0,      # nhân ×... hoặc cộng +... lot
+    "mart_max": 3,      # tăng tối đa ... lần liên tiếp, lệnh thắng thì về lot gốc
+    "max_spr": 0.0,     # bỏ tín hiệu khi spread lớn hơn ... $ (0 = không xét)
+    "sess_on": False,
+    "sess": "1400-2300",
+}
+NUM = {"fast": (2, 100, int), "slow": (3, 200, int), "minw": (0, 5, float), "slope": (1, 50, int), "deep": (0, 5, float),
+       "wait": (1, 50, int), "gap": (1, 500, int), "slbuf": (0, 5, float), "rr": (0.1, 20, float),
+       "half_r": (0.1, 10, float), "half_pct": (1, 99, int), "be_off": (0, 50, float), "tr_at": (0.1, 20, float),
+       "tr_dist": (0.05, 20, float), "legs": (1, 10, int), "min_sl": (0, 100, float), "max_sl": (0, 500, float),
+       "mart_v": (0.01, 10, float), "mart_max": (0, 10, int), "max_spr": (0, 50, float)}
+ENUM = {"conf": ("touch", "rej", "brk"), "mg": ("pine", "half"), "mart": ("off", "x", "add")}
+BOOL = ("tr_on", "rev", "sess_on")
+
+
+def bot_params(over=None, base=None):
+    """Gộp + kiểm tra cài đặt. Trả (dict, None) hoặc (None, lỗi)."""
+    d = dict(BOT_DEF)
+    d.update({k: v for k, v in (base or {}).items() if k in BOT_DEF})
+    for k, v in (over or {}).items():
+        if k in NUM:
+            lo, hi, typ = NUM[k]
+            try:
+                v = typ(v)
+            except (TypeError, ValueError):
+                return None, f"Cloud PB: {k} không hợp lệ."
+            if not lo <= v <= hi:
+                return None, f"Cloud PB: {k} phải từ {lo} đến {hi}."
+            d[k] = v
+        elif k in ENUM:
+            if v not in ENUM[k]:
+                return None, f"Cloud PB: {k} không hợp lệ."
+            d[k] = v
+        elif k in BOOL:
+            d[k] = bool(v)
+        elif k == "sess":
+            d[k] = str(v).replace(" ", "").replace(":", "")
+    if d["slow"] <= d["fast"]:
+        return None, "Cloud PB: EMA chậm phải lớn hơn EMA nhanh."
+    if d["max_sl"] and d["min_sl"] > d["max_sl"]:
+        return None, "Cloud PB: SL tối thiểu phải nhỏ hơn SL tối đa."
+    return d, None
+
+
+def mart_lot(lot, d, step_n, vstep=0.01):
+    """Lot lệnh mới sau step_n lệnh dính SL liên tiếp."""
+    n = min(step_n, d["mart_max"]) if d["mart"] != "off" else 0
+    v = lot * d["mart_v"] ** n if d["mart"] == "x" else lot + d["mart_v"] * n if d["mart"] == "add" else lot
+    return max(vstep, round(round(v / vstep) * vstep, 2))

@@ -208,12 +208,14 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 Cách gắn: <a href="/ea/download">tải EA PinYinBridge</a> → chép vào MQL5\Experts của MT5 sàn đó → Tools › Options › Expert Advisors: tick <i>Allow WebRequest</i>, thêm <code>https://pinyin.id.vn</code> → kéo EA vào chart vàng, dán <b>Mã kết nối</b> của tài khoản → bật Algo Trading. Mỗi MT5 chỉ dùng cho bot, không vào tay bằng EA đó. <b>EA bản 1.5</b>: phần chốt TP1 có TP đặt sẵn trên sàn, sàn chốt xong EA tự dời SL hòa vốn, mất mạng vẫn chạy.</div>
 <div id="cpl"></div></div>
 <div class="c" id="btc"><div class="top"><h2 style="margin:0">🧪 Backtest lịch sử</h2><span class="mut" style="font-size:12px">chạy lại đúng luật của bot trên nến MT5 đã qua · lệnh giả, không gửi lệnh</span></div>
-<div class="mut" style="font-size:12px;margin:6px 0 10px">Dùng cài đặt đang nhập ở ô <b>Bot tự động</b> phía trên (khung, lot, thông số DCA). Sửa số ở trên rồi chạy lại để so sánh, chưa cần bấm Lưu.</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0"><label class="mut">Chiến lược <select id="bts" style="width:auto" onchange="btStrat()"><option value="dca">PinYin HA Pro DCA (bot đang chạy)</option><option value="cpb">PinYin EMA Cloud Pullback (đang thử)</option></select></label></div>
+<div class="mut" id="btdcanote" style="font-size:12px;margin:6px 0 10px">Dùng cài đặt đang nhập ở ô <b>Bot tự động</b> phía trên (khung, lot, thông số DCA). Sửa số ở trên rồi chạy lại để so sánh, chưa cần bấm Lưu.</div>
+<div id="btcpb" style="display:none;margin:6px 0 10px"></div>
 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
  <label class="mut">Khoảng <select id="btd" style="width:auto"><option value="7">7 ngày</option><option value="30" selected>30 ngày</option><option value="90">3 tháng</option><option value="180">6 tháng</option><option value="365">1 năm</option><option value="730">2 năm</option></select></label>
  <label class="mut">Vốn ban đầu <input id="btcap" type="number" step="100" min="1" style="width:96px"></label>
  <label class="mut">Phí mỗi lot <input id="btcm" type="number" step=".5" min="0" value="0" style="width:64px"></label>
- <button onclick="btRun()" style="font-weight:700">▶ Chạy backtest</button></div>
+ <button onclick="btRun()" style="font-weight:700">▶ Chạy backtest</button><button id="btmtf" onclick="btRun(2)" style="display:none">⚖️ Chạy M1 + M5</button></div>
 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px">
  <label class="mut">So sánh thông số <select id="btsk" style="width:auto"></select></label>
  <label class="mut">các giá trị <input id="btsv" placeholder="vd: 0.2, 0.5, 1" style="width:150px"></label>
@@ -717,15 +719,29 @@ setInterval(()=>{if(VIEWMODE=='bot')cpTick()},3000);
 
 // ===== Backtest lịch sử =====
 const BTK={dca:[['dca.legs','Số lệnh tối đa'],['dca.gap','Lệnh DCA tốt hơn (×ATR)'],['dca.min_bars','Cách tối thiểu (nến)'],['dca.sl_buf','SL cộng thêm ($)'],['dca.sl_k','k ATR của SL'],['dca.tp1r','TP1 (R)'],['dca.tp1p','% chốt TP1'],['dca.tp2r','TP2 (R)'],['dca.tp2p','% chốt TP2'],['dca.time','Hết giờ (nến)'],['dca.stretch','Giãn VWAP tối đa (σ)'],['dca.soft_sig','SL mềm (σ)'],['dca.risk','Rủi ro tổng (%)']]};
-let BTS='';function btKeys(){const s='dca';if(s==BTS)return;BTS=s;$('btsk').innerHTML=(BTK[s]||[]).map(k=>`<option value="${k[0]}">${k[1]}</option>`).join('')||'<option value="">(chỉ HA Pro / DCA)</option>'}
+BTK.cpb=[['cpb.rr','TP (R)'],['cpb.minw','Mây dày tối thiểu (×ATR)'],['cpb.deep','Xuyên EMA chậm tối đa (×ATR)'],['cpb.slbuf','Đệm SL (×ATR)'],['cpb.min_sl','SL tối thiểu ($)'],['cpb.max_sl','SL tối đa ($)'],['cpb.legs','Số lệnh cùng chiều tối đa'],['cpb.gap','Cách tín hiệu trước (nến)'],['cpb.slope','EMA chậm dốc so với (nến)'],['cpb.half_r','Chốt một phần ở (R)'],['cpb.tr_at','Trailing bắt đầu (R)'],['cpb.tr_dist','Trailing cách giá (R)'],['cpb.mart_v','Tăng lot sau SL (× hoặc +)'],['cpb.mart_max','Tăng lot tối đa (lần)'],['cpb.max_spr','Spread tối đa ($)']];
+// Cài đặt Cloud PB cho backtest: [khóa, nhãn, kiểu, mặc định, tùy chọn]
+const CPBF=[['tf','Khung','sel','M5',['M1','M5','M15']],['lot','Lot gốc','num',0.01,.01],['conf','Cách vào lệnh','sel','touch',[['touch','Chạm mây (vào ngay)'],['rej','Nến từ chối'],['brk','Phá nến chạm']]],
+ ['rr','TP (R)','num',1.5,.1],['minw','Mây dày ≥ (×ATR)','num',0.15,.05],['deep','Xuyên EMA chậm ≤ (×ATR)','num',0.3,.1],['slbuf','Đệm SL (×ATR)','num',0.2,.1],['slope','EMA chậm dốc so với (nến)','num',3,1],['wait','Chờ xác nhận (nến)','num',5,1],['gap','Cách tín hiệu trước (nến)','num',5,1],['fast','EMA nhanh','num',9,1],['slow','EMA chậm','num',21,1],
+ ['mg','Quản lý lệnh','sel','pine',[['pine','Đúng Pine: 1 SL + 1 TP'],['half','Chốt một phần rồi dời hòa vốn']]],['half_r','Chốt một phần ở (R)','num',1,.1],['half_pct','% chốt','num',50,5],['be_off','Hòa vốn + ($)','num',0,.1],
+ ['tr_on','Trailing stop','chk',false],['tr_at','Trailing bắt đầu (R)','num',1,.1],['tr_dist','Trailing cách giá (R)','num',.5,.1],
+ ['legs','Cùng chiều: tối đa (lệnh)','num',10,1],['rev','Ngược chiều: đóng + đảo chiều','chk',true],['min_sl','Bỏ nếu SL < ($)','num',0,.5],['max_sl','Bỏ nếu SL > ($, 0 = không)','num',0,1],
+ ['mart','Lệnh trước dính SL thì lot sau','sel','off',[['off','giữ nguyên'],['x','nhân ×'],['add','cộng +']]],['mart_v','… giá trị','num',2,.1],['mart_max','… tối đa (lần liên tiếp)','num',3,1],
+ ['max_spr','Bỏ nếu spread > ($, 0 = không)','num',0,.05],['sess_on','Chỉ vào lệnh trong giờ','chk',false],['sess','Khung giờ VN','txt','1400-2300']];
+function btCpbForm(){const d=$('btcpb');if(d.innerHTML)return;d.innerHTML='<div class="mut" style="font-size:12px;margin-bottom:6px">Thử chiến lược <b>PinYin EMA Cloud Pullback</b> (bản Pine) với các tùy chọn quản lý lệnh. Chưa gắn vào bot, chỉ chạy lệnh giả trên nến MT5 đã qua.</div><div style="display:flex;flex-wrap:wrap;gap:8px 14px">'+CPBF.map(([k,l,t,v,o])=>`<label class="mut" style="font-size:12px">${l} `+(t=='sel'?`<select id="cpb_${k}" style="width:auto">${o.map(q=>Array.isArray(q)?`<option value="${q[0]}"${q[0]==v?' selected':''}>${q[1]}</option>`:`<option${q==v?' selected':''}>${q}</option>`).join('')}</select>`:t=='chk'?`<input type="checkbox" id="cpb_${k}"${v?' checked':''}>`:`<input id="cpb_${k}" ${t=='num'?`type="number" step="${o}"`:''} value="${v}" style="width:${t=='txt'?90:64}px">`)+'</label>').join('')+'</div>'}
+function cpbVals(){const o={};CPBF.forEach(([k,l,t])=>{if(k=='tf'||k=='lot')return;const e=$('cpb_'+k);o[k]=t=='chk'?e.checked:t=='num'?+e.value:e.value});return o}
+function btStrat(){const c=$('bts').value=='cpb';$('btcpb').style.display=c?'':'none';$('btdcanote').style.display=c?'none':'';$('btmtf').style.display=c?'':'none';if(c)btCpbForm();btKeys()}
+let BTS='';function btKeys(){const s=($('bts')||{}).value||'dca';if(s==BTS)return;BTS=s;$('btsk').innerHTML=(BTK[s]||[]).map(k=>`<option value="${k[0]}">${k[1]}</option>`).join('')||'<option value="">(chỉ HA Pro / DCA)</option>'}
 function btInit(){if(!$('btcap').value)$('btcap').value=TR&&TR.equity?Math.round(TR.equity):1000;btKeys()}
-async function btRun(sw){btInit();const v=botVals(),cfg={...v};delete cfg.lot;delete cfg.lot_auto;
- const b={days:+$('btd').value,cfg,lot:v.lot_auto?null:v.lot,cap:+$('btcap').value||1000,comm:+$('btcm').value||0};
+async function btRun(sw){btInit();const CPB=$('bts').value=='cpb';let cfg,b;
+ if(CPB){btCpbForm();cfg={strategy:'cpb',tf:$('cpb_tf').value};b={days:+$('btd').value,strategy:'cpb',cfg:{tf:cfg.tf},cpb:cpbVals(),lot:+$('cpb_lot').value||0.01,cap:+$('btcap').value||1000,comm:+$('btcm').value||0}}
+ else{const v=botVals();cfg={...v};delete cfg.lot;delete cfg.lot_auto;b={days:+$('btd').value,cfg,lot:v.lot_auto?null:v.lot,cap:+$('btcap').value||1000,comm:+$('btcm').value||0}}
+ if(sw==2)return btMtf(b);
  if(sw){const vals=$('btsv').value.split(/[,; ]+/).filter(x=>x!=='').map(Number);if(!vals.length||vals.some(isNaN)){$('btm').innerHTML='<span class="no">Nhập các giá trị cần so sánh, cách nhau dấu phẩy.</span>';return}b.sweep={key:$('btsk').value,values:vals}}
  $('btm').innerHTML='⏳ Đang chạy backtest '+b.days+' ngày '+cfg.tf+(sw?' · so sánh '+b.sweep.values.length+' giá trị':'')+'…';$('btres').innerHTML='';
  let j;try{j=await jpost('api/auto/backtest',b)}catch(e){$('btm').innerHTML='<span class="no">⚠️ '+e.message+'</span>';return}
  if(!j||!j.ok){$('btm').innerHTML='<span class="no">⚠️ '+String(j&&j.loi||'Lỗi').replace(/</g,'&lt;')+'</span>';return}
- const R=j.range,M=j.meta,cu=M.ccy||'',nm='PinYin HA Pro DCA';
+ const R=j.range,M=j.meta,cu=M.ccy||'',nm=CPB?'PinYin EMA Cloud Pullback':'PinYin HA Pro DCA';
  $('btm').innerHTML=`<b>${nm}</b> · ${cfg.tf} · ${R.from} → ${R.to} (${R.bars.toLocaleString()} nến) · lot ${b.lot?b.lot:'theo bảng vốn'}${cfg.strategy=='dca'&&cfg.dca.risk>0?' · rủi ro '+cfg.dca.risk+'%':''} · spread TB ${M.spread_avg}$ · 1 lot × 1$ = ${M.vpu} ${cu}`+(R.short?' · <span class="wn">MT5 không đủ lịch sử cho cả khoảng đã chọn</span>':'');
  const f=x=>(+x).toLocaleString(undefined,{maximumFractionDigits:2}),cl=x=>x>0?'ok':x<0?'no':'mut';
  if(j.sweep){const kn=(BTK[cfg.strategy]||[]).find(k=>k[0]==j.sweep.key),rows=j.sweep.rows,best=Math.max(...rows.map(r=>r.net));
@@ -745,6 +761,16 @@ async function btRun(sw){btInit();const v=botVals(),cfg={...v};delete cfg.lot;de
   s.list.map(t=>`<tr><td data-l="Mở">${t.t0}</td><td data-l="Đóng">${t.t1}</td><td data-l="Loại" class="${t.side=='BUY'?'ok':'no'}"><b>${t.side}</b></td><td data-l="Lệnh">${t.legs}</td><td data-l="Lot">${t.lot}</td><td data-l="Lãi/lỗ" class="${cl(t.pnl)}"><b>${f(t.pnl)}</b></td><td data-l="Lý do">${t.why}</td></tr>`).join('')+'</table></div></details>';
  h+=`<div class="mut" style="font-size:12px;margin-top:8px">Giả định: giá vào/thoát chủ động = giá đóng nến (+spread thật từng nến); nến quét cả SL và TP thì tính chạm SL trước; SL hòa vốn/trailing có hiệu lực từ nến sau. Kết quả quá khứ không bảo đảm tương lai, có thể lệch vài lệnh so với chạy thật do trượt giá và giá trong nến.</div>`;
  $('btres').innerHTML=h;btCurve(s.curve,b.cap)}
+// Cloud PB: chạy cùng cài đặt trên M1 và M5 rồi so sánh
+async function btMtf(b){const f=x=>(+x).toLocaleString(undefined,{maximumFractionDigits:2}),cl=x=>x>0?'ok':x<0?'no':'mut',rows=[];$('btres').innerHTML='';
+ for(const tf of ['M1','M5']){$('btm').innerHTML='⏳ Đang chạy PinYin EMA Cloud Pullback '+b.days+' ngày khung '+tf+'…';
+  let j;try{j=await jpost('api/auto/backtest',{...b,cfg:{tf}})}catch(e){$('btm').innerHTML='<span class="no">⚠️ '+e.message+'</span>';return}
+  if(!j||!j.ok){$('btm').innerHTML='<span class="no">⚠️ '+tf+': '+String(j&&j.loi||'Lỗi').replace(/</g,'&lt;')+'</span>';return}rows.push({tf,j})}
+ const cu=rows[0].j.meta.ccy||'';
+ $('btm').innerHTML=`<b>PinYin EMA Cloud Pullback</b> · ${b.days} ngày · lot ${b.lot} · vốn ${b.cap} ${cu} · spread TB ${rows[0].j.meta.spread_avg}$`;
+ $('btres').innerHTML=`<div class="sc" style="margin-top:10px"><table class="pt"><tr><th>Khung</th><th>Từ → đến</th><th>Lãi/lỗ</th><th>%</th><th>Số lệnh</th><th>Thắng</th><th>PF</th><th>Sụt vốn tối đa</th><th>Thua liên tiếp</th><th>TB thắng / thua</th></tr>`+
+  rows.map(({tf,j})=>{const s=j.res,R=j.range;return `<tr><td data-l="Khung"><b>${tf}</b></td><td data-l="Thời gian" class="mut">${R.from} → ${R.to}${R.short?' <span class="wn">(thiếu lịch sử)</span>':''}</td><td data-l="Lãi/lỗ" class="${cl(s.net)}"><b>${f(s.net)}</b></td><td data-l="%" class="${cl(s.net)}">${s.net_pct}%</td><td data-l="Số lệnh">${s.n}</td><td data-l="Thắng">${s.winrate}%</td><td data-l="PF" class="${s.pf>=1.3?'ok':s.pf<1?'no':'wn'}">${s.pf??'-'}</td><td data-l="Sụt vốn" class="no">${f(s.mdd)} (${s.mdd_pct}%)</td><td data-l="Thua liên tiếp">${s.streak}</td><td data-l="TB">${f(s.avg_win)} / ${f(s.avg_loss)}</td></tr>`}).join('')+
+  '</table></div><div class="mut" style="font-size:12px;margin-top:6px">PF (tổng lãi ÷ tổng lỗ) dưới 1 là lỗ, từ 1.3 trở lên mới đáng chạy thật. Xem chi tiết một khung: chọn ô Khung rồi bấm ▶ Chạy backtest.</div>'}
 function btCurve(cv,cap){const c=$('btcv');if(!c||!cv.length)return;const W=c.clientWidth,H=220,r=devicePixelRatio||1;c.width=W*r;c.height=H*r;const x=c.getContext('2d');x.scale(r,r);
  const st=getComputedStyle(document.body),col=n=>st.getPropertyValue(n).trim()||'#888';const vs=cv.map(p=>p[1]),mn=Math.min(cap,...vs),mx=Math.max(cap,...vs),pad=(mx-mn)*.08||1,L=56;
  const Y=v=>H-18-(v-(mn-pad))/((mx+pad)-(mn-pad))*(H-30),X=i=>L+i/(cv.length-1||1)*(W-L-6);

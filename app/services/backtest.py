@@ -1,6 +1,6 @@
 """Backtest lịch sử cho bot tự động: chạy lại ĐÚNG luật vào/thoát lệnh của bot trên nến MT5 đã qua.
 
-Chiến lược: PinYin HA Pro DCA (chiến lược duy nhất của bot).
+Chiến lược: PinYin HA Pro DCA (run_dca) và PinYin EMA Cloud Pullback (run_cpb).
 Tín hiệu dùng chung code với bot (ha_pro.analyze, ha_pro_dca.compute). Phần quản lý lệnh là bản sao
 của ckg_auto (_step / _dca_live / _dca_bar) nhưng chạy trên lệnh giả, không đụng MT5.
 
@@ -274,6 +274,87 @@ def run_dca(sim, c, lot_fixed, warm):
 
 # ---------------- Thống kê ----------------
 
+# ---------------- PinYin EMA Cloud Pullback (mỗi lệnh độc lập: SL/TP riêng) ----------------
+
+def run_cpb(sim, d, lot, warm):
+    """Luật: tín hiệu ở nến đóng → vào lệnh giá đóng nến. Cùng chiều: vào thêm tới d["legs"] lệnh.
+    Ngược chiều: d["rev"] → đóng hết lệnh đang mở rồi đảo chiều; không thì bỏ tín hiệu.
+    Quản lý: pine = 1 SL + 1 TP; half = chốt half_pct% ở half_r R rồi dời SL hòa vốn. Trailing (R) tùy chọn.
+    Tăng lot sau lệnh dính SL lỗ (mart), lệnh có lãi thì về lot gốc."""
+    from app.services import cloud_pb
+    bars = sim.bars
+    sig = {}
+    for x in cloud_pb.compute(bars, d)["sig"]:
+        sig.setdefault(x["i"], []).append(x)
+    st = {"n": 0}
+
+    def close(p, vol, px, k, why):
+        b0 = sim.bal
+        sim.close(p, vol, px, k, why)
+        p["pnl"] += sim.bal - b0
+        if p not in sim.pos:                                    # lệnh đã đóng hết
+            if p["pnl"] > 0:
+                st["n"] = 0
+            elif why == "SL" and p["pnl"] < 0:
+                st["n"] += 1
+
+    for k in range(warm, len(bars)):
+        for p in sim.pos:                                       # SL dời ở nến trước có hiệu lực từ nến này
+            if "sl_new" in p:
+                p["sl"], p["slw"] = p.pop("sl_new"), p.pop("slw_new")
+        for p in list(sim.pos):
+            if p["k"] >= k:
+                continue
+            x = sim.stop_hit(p, k, p["sl"])
+            if x is not None:
+                close(p, p["lot"], x, k, p["slw"])
+                continue
+            if d["mg"] == "half" and not p["half"]:
+                x = sim.limit_hit(p, k, p["e"] + p["d"] * d["half_r"] * p["R"])
+                if x is not None:
+                    p["half"] = True
+                    vol = math.floor(p["lot0"] * d["half_pct"] / 100 / sim.step + EPS) * sim.step
+                    if sim.vmin - EPS <= vol < p["lot"] - EPS:
+                        close(p, vol, x, k, f"chốt {d['half_pct']}%")
+                    be = p["e"] + p["d"] * d["be_off"]
+                    if p["d"] * (be - p["sl"]) > 0:
+                        p["sl_new"], p["slw_new"] = be, "hòa vốn"
+            x = sim.limit_hit(p, k, p["tp"])
+            if x is not None:
+                close(p, p["lot"], x, k, "TP")
+        c = bars[k][4]
+        if d["tr_on"]:
+            for p in sim.pos:
+                px = sim.exit_px(p, k, c)
+                if p["d"] * (px - p["e"]) >= d["tr_at"] * p["R"]:
+                    ns = px - p["d"] * d["tr_dist"] * p["R"]
+                    cur = p.get("sl_new", p["sl"])
+                    if p["d"] * (ns - cur) > 0:
+                        p["sl_new"], p["slw_new"] = ns, "trailing"
+        for s in sig.get(k, ()):
+            if not _in_sess(d, bars[k][0]) or (d["max_spr"] and sim.spr[k] > d["max_spr"]):
+                continue
+            if (d["min_sl"] and s["R"] < d["min_sl"]) or (d["max_sl"] and s["R"] > d["max_sl"]):
+                continue
+            go = s["go"]
+            opp = [p for p in sim.pos if p["d"] != go]
+            if opp:
+                if not d["rev"]:
+                    continue
+                for p in opp:
+                    close(p, p["lot"], sim.exit_px(p, k, c), k, "đảo chiều")
+            if sum(1 for p in sim.pos if p["d"] == go) >= d["legs"]:
+                continue
+            fill = c + sim.spr[k] if go > 0 else c
+            R = go * (fill - s["sl"])
+            if R <= 0:
+                continue
+            lt = cloud_pb.mart_lot(lot, d, st["n"], sim.step)
+            p = sim.open(go, lt, fill, s["sl"], fill + go * d["rr"] * R, k, tag=f"x{lt}" if lt != lot else "")
+            p.update(R=R, lot0=lt, pnl=0.0, slw="SL")
+        sim.mark(k)
+
+
 def stats(sim, cap0, by_camp):
     tr = sim.trades
     eq = [v for _, v in sim.eq] or [cap0]
@@ -334,12 +415,16 @@ def run(bars, spr, cfg, lot, cap0, vpu, comm=0.0, warm=300, step=0.01, vmin=0.01
     """Chạy 1 lần backtest. bars: nến đã đóng (Bid), spr: spread (đơn vị giá) từng nến."""
     sim = Sim(bars, spr, cap0, vpu, comm, step, vmin)
     warm = min(warm, max(0, len(bars) - 1))
-    run_dca(sim, cfg, lot, warm)
+    cpb = cfg.get("strategy") == "cpb"
+    if cpb:
+        run_cpb(sim, cfg["cpb"], lot or 0.01, warm)
+    else:
+        run_dca(sim, cfg, lot, warm)
     # lệnh còn mở cuối dữ liệu: tính theo giá đóng cửa cuối (ghi lý do "hết dữ liệu")
     k = len(bars) - 1
     left = len(sim.pos)
     for p in list(sim.pos):
         sim.close(p, p["lot"], sim.exit_px(p, k, bars[k][4]), k, "còn mở (hết dữ liệu)")
-    out = stats(sim, cap0, by_camp=True)
+    out = stats(sim, cap0, by_camp=not cpb)
     out["open_left"] = left
     return out
