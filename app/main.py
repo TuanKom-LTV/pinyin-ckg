@@ -59,6 +59,20 @@ def _start_bot():
     copytrade._start()
 
 
+@app.on_event("startup")
+async def _start_perf():
+    # hàm đồng bộ (def) chạy trong threadpool 40 luồng mặc định: nhiều trang / EA chờ MT5 cùng lúc thì hết luồng,
+    # request sau (kể cả /health) phải xếp hàng → nâng lên 120
+    import asyncio
+    from app.services import health
+    try:
+        import anyio.to_thread
+        anyio.to_thread.current_default_thread_limiter().total_tokens = 120
+    except Exception:
+        pass
+    asyncio.get_running_loop().create_task(health.lag_probe())
+
+
 @app.get("/", include_in_schema=False)
 def home():
     # Trang chính cũ (PinYin AI) không dùng nữa: địa chỉ gốc vào thẳng trang CKG.

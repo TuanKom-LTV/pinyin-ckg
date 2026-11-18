@@ -32,6 +32,57 @@ def beat(name):
     _beats[name] = time.time()
 
 
+# ---------- đo độ trễ (cho /quan-ly) ----------
+REQ = {}                # nhóm đường dẫn → [số lần, tổng giây, lâu nhất]
+LAG = {"max": 0.0, "sum": 0.0, "n": 0, "slow": 0}
+
+
+def _grp(path):
+    if path.startswith("/static/"):
+        return "/static"
+    return path if len(path) < 60 else path[:60]
+
+
+def req(path, dt):
+    r = REQ.setdefault(_grp(path), [0, 0.0, 0.0])
+    r[0] += 1
+    r[1] += dt
+    r[2] = max(r[2], dt)
+
+
+async def lag_probe():
+    """Vòng sự kiện bị chặn (code đồng bộ chạy trong hàm async, GIL...) thì mọi request, kể cả EA, đều chậm."""
+    import asyncio
+    while True:
+        t = time.perf_counter()
+        await asyncio.sleep(0.5)
+        d = max(0.0, time.perf_counter() - t - 0.5)
+        LAG["n"] += 1
+        LAG["sum"] += d
+        LAG["max"] = max(LAG["max"], d)
+        if d > 0.3:
+            LAG["slow"] += 1
+
+
+def perf(reset=False):
+    from app.services.mt5_service import mt5_service
+    m = mt5_service.stats
+    n = max(1, m["n"])
+    top = sorted(REQ.items(), key=lambda kv: -kv[1][1])[:12]
+    out = {"mt5": {"phien": m["n"], "cho_tb_ms": round(m["wait_sum"] / n * 1000, 1), "cho_max_s": round(m["wait_max"], 2),
+                   "giu_tb_ms": round(m["hold_sum"] / n * 1000, 1), "giu_max_s": round(m["hold_max"], 2),
+                   "noi_lai": m["reconnect"], "ban": m["busy"], "trong_s": int(time.time() - m["since"])},
+           "vong_su_kien": {"tre_tb_ms": round(LAG["sum"] / max(1, LAG["n"]) * 1000, 1), "tre_max_s": round(LAG["max"], 2),
+                            "lan_tre_0_3s": LAG["slow"]},
+           "request": [{"path": k, "n": v[0], "tb_ms": round(v[1] / v[0] * 1000), "max_s": round(v[2], 2), "tong_s": round(v[1], 1)}
+                       for k, v in top]}
+    if reset:
+        REQ.clear()
+        LAG.update(max=0.0, sum=0.0, n=0, slow=0)
+        m.update(n=0, wait_sum=0.0, wait_max=0.0, hold_sum=0.0, hold_max=0.0, busy=0, since=time.time())
+    return out
+
+
 def _tg(msg):
     try:
         from app.api.ckg_auto import tg_send
@@ -189,6 +240,7 @@ def owner():
     return {"ok": True, "uptime_s": int(now - START), "mt5": {"ok": MT5["ok"], "ping_ms": MT5["ping"], "err": MT5["err"],
             "since_s": int(now - MT5["since"])}, "loops": _ages(), "ea_online": online, "ea_total": len(ea._st), "targets": q,
             "cache": {"hit": h["hit"], "miss": h["miss"], "rate": round(h["hit"] / max(1, h["hit"] + h["miss"]) * 100)},
+            "perf": perf(),
             "backup": {"last": datetime.fromtimestamp(BK["last"], VN).strftime("%d/%m %H:%M") if BK["last"] else None,
                        "file": BK["file"], "dirs": BK["dirs"] or [str(d) + ("" if e else " (không kèm .env)") for d, e in _dirs()],
                        "err": BK["err"], "size_kb": round(BK["size"] / 1024)}}

@@ -147,6 +147,16 @@ button{{width:100%;margin-top:12px;font:inherit;font-weight:700;padding:10px;bor
 
 
 async def auth_middleware(request: Request, call_next):
+    """Đo thời gian xử lý từng request (cho /quan-ly: tìm chỗ làm máy chủ chậm)."""
+    t0 = time.time()
+    try:
+        return await _auth_middleware(request, call_next)
+    finally:
+        from app.services import health
+        health.req(request.url.path, time.time() - t0)
+
+
+async def _auth_middleware(request: Request, call_next):
     path = request.url.path
 
     if not is_remote(request):

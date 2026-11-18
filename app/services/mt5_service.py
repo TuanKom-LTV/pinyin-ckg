@@ -4,6 +4,7 @@ _symbols.install()   # tên chuẩn (XAUUSD) ↔ tên trên sàn (XAUUSD.sc, XAU
 from datetime import datetime, timezone
 from contextlib import contextmanager
 from threading import RLock
+import time as _time
 
 
 import os
@@ -41,24 +42,55 @@ class MT5Service:
     def __init__(self):
         self.connected = False
         self._lock = RLock()
+        self._depth = 0
+        self._checked = 0.0
+        # thống kê cho /quan-ly: thời gian chờ khóa / giữ khóa / số lần nối lại MT5
+        self.stats = {"n": 0, "wait_sum": 0.0, "wait_max": 0.0, "hold_sum": 0.0, "hold_max": 0.0, "reconnect": 0,
+                      "busy": 0, "since": _time.time()}
 
     @contextmanager
     def session(self):
-        """Giữ một phiên MT5 độc quyền cho toàn bộ thao tác đọc.
+        """Giữ một phiên MT5 độc quyền cho toàn bộ thao tác đọc / gửi lệnh.
 
+        Kết nối MT5 giữ LUÔN MỞ (trước đây mỗi phiên initialize + shutdown: chậm, mọi vòng bot / EA / trang web
+        xếp hàng chờ nhau). Cứ vài giây kiểm tra terminal_info(); MT5 mất kết nối hoặc khởi động lại thì nối lại.
         Không chờ khóa vô hạn: nếu một lệnh MT5 khác bị kẹt, request này báo lỗi
         sau LOCK_WAIT giây thay vì xếp hàng mãi làm treo cả máy chủ.
         """
+        t0 = _time.time()
         if not self._lock.acquire(timeout=LOCK_WAIT):
+            self.stats["busy"] += 1
             raise RuntimeError("MT5 đang bận (lệnh trước chưa xong), thử lại sau vài giây.")
+        t1 = _time.time()
+        self._depth += 1
+        ok = False
         try:
-            self.connect()
-            try:
-                yield self
-            finally:
-                self.disconnect()
+            if self._depth == 1:
+                self._ensure()
+            yield self
+            ok = True
         finally:
+            self._depth -= 1
+            if not ok and self._depth == 0:
+                self._checked = 0.0              # có lỗi: lần sau kiểm tra lại kết nối ngay
+            if self._depth == 0:
+                st, t2 = self.stats, _time.time()
+                st["n"] += 1
+                st["wait_sum"] += t1 - t0
+                st["wait_max"] = max(st["wait_max"], t1 - t0)
+                st["hold_sum"] += t2 - t1
+                st["hold_max"] = max(st["hold_max"], t2 - t1)
             self._lock.release()
+
+    def _ensure(self):
+        now = _time.time()
+        if self.connected and now - self._checked < 3:
+            return
+        if self.connected and mt5.terminal_info() is None:     # MT5 tắt / khởi động lại: nối lại
+            self.disconnect()
+            self.stats["reconnect"] += 1
+        self.connect()
+        self._checked = now
 
     def connect(self):
         if self.connected:
