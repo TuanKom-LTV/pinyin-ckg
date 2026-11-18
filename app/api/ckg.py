@@ -230,6 +230,43 @@ def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
         return {"ok": False, "loi": str(e)}
 
 
+@router.get("/ckg/api/cloudpb")
+@ttl(10)
+def ckg_cloudpb(sym: str = "XAUUSD", tf: str = "M5"):
+    """Tín hiệu PinYin EMA Cloud Pullback (bản Pine) trên nến MT5 đã đóng, để vẽ lên biểu đồ và so với TradingView.
+    cl: [t, ema nhanh, ema chậm, trạng thái mây (0 mỏng / 1 tăng / -1 giảm)] mỗi nến."""
+    from app.services import cloud_pb
+    sym, tf = sym.upper().strip(), tf.upper().strip()
+    if tf not in CHART_TF:
+        return {"ok": True, "sig": [], "cl": []}
+    try:
+        from app.api.ckg_auto import _cfg
+        p = _cfg().get("cpb")
+    except Exception:
+        p = None
+    d = cloud_pb.params(p)
+    try:
+        with mt5_service.session():
+            if not mt5.symbol_select(sym, True):
+                return {"ok": False, "loi": f"Broker không có mã {sym}."}
+            off, _ = server_offset()
+            info = mt5.symbol_info(sym)
+            r = mt5.copy_rates_from_pos(sym, CHART_TF[tf][0], 1, 1500)
+        if r is None or len(r) < 100:
+            return {"ok": True, "sig": [], "cl": []}
+        dg = info.digits if info else 2
+        bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"])) for x in r]
+        res = cloud_pb.compute(bars, d)
+        sig = [{"t": s["t"], "side": s["side"], "e": round(s["e"], dg), "sl": round(s["sl"], dg), "tp": [round(s["tp"], dg)],
+                "rr": [d["rr"]], "R": round(s["R"], dg)} for s in res["sig"]]
+        cl = [[b[0], round(e1, dg), round(e2, dg), st] for b, e1, e2, st in zip(bars, res["e1"], res["e2"], res["st"])
+              if e1 is not None and e2 is not None]
+        return {"ok": True, "sym": sym, "tf": tf, "sig": sig, "cl": cl[-600:],
+                "info": f"{cloud_pb.CONF_NAMES.get(d['conf'], d['conf'])} · TP {d['rr']}R"}
+    except Exception as e:
+        return {"ok": False, "loi": str(e)}
+
+
 @router.get("/ckg/api/dcasig")
 @ttl(10)
 def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):

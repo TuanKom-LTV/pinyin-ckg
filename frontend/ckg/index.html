@@ -443,10 +443,16 @@ function toHA(a){let po=null,pc=null;return a.map(x=>{const c=(x.o+x.h+x.l+x.c)/
 // m = 'hapro' (chiến lược HA Pro gốc) | 'dcasig' (tín hiệu bot DCA, theo cài đặt DCA đang lưu của bot)
 async function hapFetch(m){if(!LV||!IND[m]||HAPB[m])return;if(m=='dcasig'&&cs!='XAUUSD')return;const k=HK(m),c=HAP[k];if(c&&Date.now()-c.at<15000)return;HAPB[m]=1;
  if(m=='dcasig'&&!VIEW&&Date.now()-BOTTFAT>60000){BOTTFAT=Date.now();jget('api/auto',8000).then(j=>{if(j&&j.ok&&j.cfg)BOTTF=j.cfg.tf}).catch(()=>{})}
- const u=m=='dcasig'?'api/dcasig?sym='+cs+'&tf='+TF:'api/hapro?sym='+cs+'&tf='+TF+'&candles='+(IND.heikin?'ha':'std');
- try{const j=await jget(u,20000);if(j&&j.ok){HAP[k]={at:Date.now(),sig:j.sig,info:j.info||''};redraw()}}catch(e){}finally{HAPB[m]=0}}
-function drawHap(f,a){['hapro','dcasig'].forEach(m=>drawHap1(f,a,m))}
-function drawHap1(f,a,m){if(!IND[m]||(m=='dcasig'&&cs!='XAUUSD'))return;const c=HAP[HK(m)];if(!c||!c.sig.length){hapFetch(m);return}if(Date.now()-c.at>15000)hapFetch(m);
+ const u=m=='dcasig'?'api/dcasig?sym='+cs+'&tf='+TF:m=='cloudpb'?'api/cloudpb?sym='+cs+'&tf='+TF:'api/hapro?sym='+cs+'&tf='+TF+'&candles='+(IND.heikin?'ha':'std');
+ try{const j=await jget(u,20000);if(j&&j.ok){HAP[k]={at:Date.now(),sig:j.sig,info:j.info||'',cl:j.cl||null};redraw()}}catch(e){}finally{HAPB[m]=0}}
+// Mây EMA của PinYin EMA Cloud Pullback (vẽ dưới nến): xanh = xu hướng tăng, đỏ = giảm, xám = mây mỏng (không xu hướng)
+function drawCloud(f,a){if(!IND.cloudpb)return;const c=HAP[HK('cloudpb')];if(!c||!c.cl)return;const m={};c.cl.forEach(r=>m[r[0]]=r);const x=f.x;
+ x.save();x.beginPath();x.rect(0,8,f.pw,f.ph);x.clip();let pv=null,px=0;
+ a.forEach((q,i)=>{const r=q.ts!=null?m[Math.round(q.ts/1000)]:null,cx=i*f.w+f.w/2;if(r&&pv){
+  x.fillStyle=r[3]==0?'rgba(148,163,184,.22)':r[3]>0?'rgba(20,184,166,.22)':'rgba(239,68,68,.20)';x.beginPath();x.moveTo(px,f.y(pv[1]));x.lineTo(cx,f.y(r[1]));x.lineTo(cx,f.y(r[2]));x.lineTo(px,f.y(pv[2]));x.closePath();x.fill()}
+  pv=r;px=cx});x.restore()}
+function drawHap(f,a){['hapro','dcasig','cloudpb'].forEach(m=>drawHap1(f,a,m))}
+function drawHap1(f,a,m){if(!IND[m]||(m=='dcasig'&&cs!='XAUUSD'))return;if(m=='cloudpb')return drawCpb(f,a);const c=HAP[HK(m)];if(!c||!c.sig.length){hapFetch(m);return}if(Date.now()-c.at>15000)hapFetch(m);
  const dca=m=='dcasig',both=IND.hapro&&IND.dcasig&&cs=='XAUUSD';
  const x=f.x,idx={};a.forEach((q,i)=>{if(q.ts!=null)idx[Math.round(q.ts/1000)]=i});
  c.sig.forEach(s=>{const i=idx[s.t];if(i==null)return;const q=a[i],cx=i*f.w+f.w/2,b=s.side=='BUY',txt=s.side+(s.rev?(s.ctr?' ĐC*':' ĐC'):'');
@@ -461,14 +467,24 @@ function drawHap1(f,a,m){if(!IND[m]||(m=='dcasig'&&cs!='XAUUSD'))return;const c=
  x.fillStyle='rgba(220,38,38,.12)';x.fillRect(x0,Math.min(f.y(L.e),f.y(L.sl)),x1-x0,Math.abs(f.y(L.e)-f.y(L.sl)));
  x.fillStyle='rgba(22,163,74,.10)';x.fillRect(x0,Math.min(f.y(L.e),f.y(tl)),x1-x0,Math.abs(f.y(L.e)-f.y(tl)));
  ln(L.e,'#64748b',(dca?'DCA ':'')+'ENTRY '+L.e.toFixed(DG));ln(L.sl,'#dc2626',(dca?'SL chung ':'SL ')+L.sl.toFixed(DG));L.tp.forEach((v,k)=>ln(v,'#0e9fb4',(L.names?L.names[k]:'TP'+(k+1)+' (1:'+(L.rr?L.rr[k]:k+1)+')')+' '+v.toFixed(DG),[5,3]))}
-setInterval(()=>{if(VIEWMODE!='ai'&&VIEWMODE!='news'){if(IND.hapro)hapFetch('hapro');if(IND.dcasig)hapFetch('dcasig')}},15000);
+function drawCpb(f,a){const c=HAP[HK('cloudpb')];if(!c||!c.sig){hapFetch('cloudpb');return}if(Date.now()-c.at>15000)hapFetch('cloudpb');if(!c.sig.length)return;
+ const x=f.x,idx={},sh=IND.dcasig&&cs=='XAUUSD'?20:0;a.forEach((q,i)=>{if(q.ts!=null)idx[Math.round(q.ts/1000)]=i});
+ c.sig.forEach(s=>{const i=idx[s.t];if(i==null)return;const q=a[i],cx=i*f.w+f.w/2,b=s.side=='BUY',txt='☁ '+s.side;
+  x.font='bold 11px sans-serif';const tw=x.measureText(txt).width+10,yy=b?f.y(q.l)+8+sh:f.y(q.h)-24-sh;
+  x.fillStyle=b?'#0d9488':'#b91c1c';x.fillRect(cx-tw/2,yy,tw,16);x.strokeStyle='#22d3ee';x.lineWidth=1.5;x.strokeRect(cx-tw/2,yy,tw,16);x.lineWidth=1;x.fillStyle='#fff';x.fillText(txt,cx-tw/2+5,yy+12)});
+ if(IND.dcasig&&cs=='XAUUSD')return;                       // đang bật cả tín hiệu DCA: chỉ vẽ nhãn, mức giá để DCA vẽ
+ const L=c.sig[c.sig.length-1],i0=idx[L.t];if(i0==null)return;const x0=i0*f.w,x1=Math.min(f.pw,x0+f.w*15);
+ const ln=(v,col,txt,dash)=>{const y=f.y(v);x.strokeStyle=col;x.setLineDash(dash||[]);x.beginPath();x.moveTo(x0,y);x.lineTo(x1,y);x.stroke();x.setLineDash([]);x.font='11px sans-serif';
+  const tw=x.measureText(txt).width+8;x.fillStyle=col;x.globalAlpha=.85;x.fillRect(x1-tw,y-14,tw,13);x.globalAlpha=1;x.fillStyle='#fff';x.fillText(txt,x1-tw+4,y-4)};
+ ln(L.e,'#64748b','ENTRY '+L.e.toFixed(DG));ln(L.sl,'#dc2626','SL '+L.sl.toFixed(DG),[5,3]);ln(L.tp[0],'#16a34a','TP (1:'+L.rr[0]+') '+L.tp[0].toFixed(DG),[5,3])}
+setInterval(()=>{if(VIEWMODE!='ai'&&VIEWMODE!='news'){if(IND.hapro)hapFetch('hapro');if(IND.dcasig)hapFetch('dcasig');if(IND.cloudpb)hapFetch('cloudpb')}},15000);
 function candles(f,a){const x=f.x,y=f.y,w=f.w;a.forEach((c,i)=>{const cx=i*w+w/2;x.strokeStyle=x.fillStyle=c.c>=c.o?f.B:f.S;x.beginPath();x.moveTo(cx,y(c.h));x.lineTo(cx,y(c.l));x.stroke();x.fillRect(cx-w*.32,Math.min(y(c.o),y(c.c)),w*.64,Math.max(1,Math.abs(y(c.o)-y(c.c))))})}
 // ===== Thu phóng / kéo xem + bật tắt chỉ báo =====
 let ZN=null,PAN=0,DOPEN=0,CW=10,CLEN=0,YM=null,FL=0,FH=1,FPW=1,FPH=1;// YM: thang giá thủ công {lo,hi}, null = tự động
-const IND={ema9:1,ema21:1,ema50:1,ema200:1,vwap:1,fvg:1,sig:1,sltp:1,d1:1,r10:1,heikin:1,hapro:1,dcasig:1};try{Object.assign(IND,JSON.parse(localStorage.getItem('ckg-ind')||'{}'))}catch(e){}
+const IND={ema9:1,ema21:1,ema50:1,ema200:1,vwap:1,fvg:1,sig:1,sltp:1,d1:1,r10:1,heikin:1,hapro:1,dcasig:1,cloudpb:1};try{Object.assign(IND,JSON.parse(localStorage.getItem('ckg-ind')||'{}'))}catch(e){}
 ['heikin','hapro','ema50','ema200','vwap','fvg','sig','sltp','d1','r10'].forEach(k=>IND[k]=0);   // đã bỏ khỏi biểu đồ
-const IND_L={heikin:['Nến Heikin Ashi','--wn'],hapro:['Tín hiệu HA Pro v5','--h2'],dcasig:['Tín hiệu DCA (bot)','--wn'],ema9:['EMA 9','--e9'],ema21:['EMA 21','--e21'],ema50:['EMA 50','--e50'],ema200:['EMA 200','--e200'],vwap:['VWAP','--vw'],fvg:['FVG',''],sig:['Tín hiệu ▲▼',''],sltp:['SL / TP',''],d1:['Giá mở D1','--mut'],r10:['Cao/Thấp 10 nến','--no']};
-function indBar(){const ks=['dcasig','ema9','ema21'];$('ind').innerHTML=ks.map(k=>`<button class="chip ${IND[k]?'on':''}" onclick="togInd('${k}')" title="Bật/tắt ${IND_L[k][0]}">${IND_L[k][1]?`<i style="background:var(${IND_L[k][1]})"></i>`:''}${IND_L[k][0]}</button>`).join('')}
+const IND_L={heikin:['Nến Heikin Ashi','--wn'],hapro:['Tín hiệu HA Pro v5','--h2'],dcasig:['Tín hiệu DCA (bot)','--wn'],cloudpb:['Cloud PB','--h2'],ema9:['EMA 9','--e9'],ema21:['EMA 21','--e21'],ema50:['EMA 50','--e50'],ema200:['EMA 200','--e200'],vwap:['VWAP','--vw'],fvg:['FVG',''],sig:['Tín hiệu ▲▼',''],sltp:['SL / TP',''],d1:['Giá mở D1','--mut'],r10:['Cao/Thấp 10 nến','--no']};
+function indBar(){const ks=['dcasig','cloudpb','ema9','ema21'];$('ind').innerHTML=ks.map(k=>`<button class="chip ${IND[k]?'on':''}" onclick="togInd('${k}')" title="Bật/tắt ${IND_L[k][0]}">${IND_L[k][1]?`<i style="background:var(${IND_L[k][1]})"></i>`:''}${IND_L[k][0]}</button>`).join('')}
 function togInd(k){IND[k]=IND[k]?0:1;try{localStorage.setItem('ckg-ind',JSON.stringify(IND))}catch(e){}indBar();redraw()}
 const zn=()=>ZN||SLN();
 function zoom(f){ZN=Math.round(Math.max(15,Math.min(400,zn()*f)));redraw()}
@@ -527,14 +543,14 @@ function drawG(){const tc=tfc(IX),g=gsig(tc),v=view(g.c.length),off=v.off,n=v.n,
  const ln=GL&&IND.sltp?[[GL.sl,'SL'],...GL.tp.map((q,i)=>[q,'TP'+(i+1)])]:[];
  const R=IND.r10?r10(g.c):null,rg=fit(a,[...ln.map(l=>l[0]),IND.vwap?GV:null,...(R?[R.hi,R.lo]:[])]),f=frame(rg[0],rg[1],n,i=>g.c[off+i].ts),x=f.x,y=f.y,w=f.w;
  if(IND.fvg)g.fv.forEach(z=>{const i=z.i-off;if(i>=n)return;const i0=Math.max(0,i);x.fillStyle=z.t>0?'rgba(46,204,113,.18)':'rgba(255,92,92,.18)';x.fillRect(i0*w,y(z.a),f.pw-i0*w,y(z.b)-y(z.a))});
- drawR10(f,R,off);candles(f,IND.heikin?toHA(g.c).slice(off,v.end):a);drawHap(f,a);const gcl=g.c.map(c=>c.c),E50=IND.ema50?ema(gcl,50):null,E200=IND.ema200?ema(gcl,200):null;if(E200)eline(f,E200.slice(off,v.end),f.E200);if(E50)eline(f,E50.slice(off,v.end),f.E50);if(IND.ema21)eline(f,g.E2.slice(off,v.end),f.E21);if(IND.ema9)eline(f,g.E.slice(off,v.end),f.E9);
+ drawR10(f,R,off);drawCloud(f,a);candles(f,IND.heikin?toHA(g.c).slice(off,v.end):a);drawHap(f,a);const gcl=g.c.map(c=>c.c),E50=IND.ema50?ema(gcl,50):null,E200=IND.ema200?ema(gcl,200):null;if(E200)eline(f,E200.slice(off,v.end),f.E200);if(E50)eline(f,E50.slice(off,v.end),f.E50);if(IND.ema21)eline(f,g.E2.slice(off,v.end),f.E21);if(IND.ema9)eline(f,g.E.slice(off,v.end),f.E9);
  if(IND.sig)g.sg.forEach(q=>{const i=q.i-off;if(i<0||i>=n)return;x.fillStyle=q.t>0?f.B:f.S;x.font='15px sans-serif';x.fillText(q.t>0?'▲':'▼',i*w+w/2-6,q.t>0?y(a[i].l)+16:y(a[i].h)-5)});
  x.font='11px sans-serif';ln.forEach(([q,t],k)=>hline(f,q,f.M,[4,3],t+' '+q.toFixed(DG),k%2==1));
  if(IND.vwap&&GV!=null)hline(f,GV,f.VW,[6,4],'VWAP '+GV.toFixed(DG),false);
  x.restore();tag(f,a[a.length-1].c,f.A);const le=v.end-1;axTags(f,[IND.ema9?[g.E[le],f.E9,'EMA 9']:null,IND.ema21?[g.E2[le],f.E21,'EMA 21']:null,E50?[E50[le],f.E50,'EMA 50']:null,E200?[E200[le],f.E200,'EMA 200']:null].filter(Boolean),a[a.length-1].c)}
 function draw(open,ix){IX=ix;DOPEN=open;if(CM=='tv'){tvSync();return}if(G){drawG();return}const all=tfc(ix),v=view(all.length),a=all.slice(v.off,v.end),cl=all.map(c=>c.c),
  R=IND.r10?r10(all):null,rg=fit(a,[...(IND.d1?[open]:[]),...(R?[R.hi,R.lo]:[])]),f=frame(rg[0],rg[1],a.length,i=>a[i].ts),x=f.x;$('ct').textContent='Nến '+TF+' · giá và ngày giờ ('+SRC()+')';
- drawR10(f,R,v.off);candles(f,IND.heikin?toHA(all).slice(v.off,v.end):a);drawHap(f,a);const EE={};[[9,'ema9'],[21,'ema21'],[50,'ema50'],[200,'ema200']].forEach(([n,k])=>{if(IND[k])EE[n]=ema(cl,n)});[200,50,21,9].forEach(n=>{if(EE[n])eline(f,EE[n].slice(v.off,v.end),f['E'+n])});
+ drawR10(f,R,v.off);drawCloud(f,a);candles(f,IND.heikin?toHA(all).slice(v.off,v.end):a);drawHap(f,a);const EE={};[[9,'ema9'],[21,'ema21'],[50,'ema50'],[200,'ema200']].forEach(([n,k])=>{if(IND[k])EE[n]=ema(cl,n)});[200,50,21,9].forEach(n=>{if(EE[n])eline(f,EE[n].slice(v.off,v.end),f['E'+n])});
  if(IND.d1)hline(f,open,f.M,[5,4],'Giá mở cửa D1 '+open.toFixed(DG),true);x.restore();
  tag(f,a[a.length-1].c,f.A);axTags(f,[9,21,50,200].filter(n=>EE[n]).map(n=>[EE[n][v.end-1],f['E'+n],'EMA '+n]),a[a.length-1].c)}
 
