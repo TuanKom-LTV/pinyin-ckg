@@ -156,6 +156,15 @@ BOT_DEF = {
     "sl_atr": 1.5,
     "be_on": False,     # lá chắn hòa vốn: lãi đạt be_at R thì dời SL về giá vào ± be_off $
     "be_at": 1.0,
+    # mg = zr: KHÔNG SL, gồng + nhân đôi đảo chiều (zone recovery): lệnh đầu lãi zr_tp $ giá thì đóng; giá đi ngược
+    # và ra tín hiệu ngược (mây đổi màu ngược / nến đóng bên kia EMA chậm) → vào lệnh NGƯỢC chiều lot × zr_mult;
+    # tổng các lệnh về hòa vốn (+ zr_be tiền) → đóng tất cả. Tối đa zr_max lệnh. Vốn về mức cháy (so_pct) → đóng hết.
+    "zr_tp": 1.0,
+    "zr_mult": 2.0,
+    "zr_max": 6,
+    "zr_be": 0.0,
+    "zr_trig": "flip",  # flip = mây đổi màu ngược | ema = thêm: nến đóng bên kia EMA chậm
+    "so_pct": 0.0,      # cháy tài khoản khi vốn thực ≤ ...% vốn ban đầu (0 = vốn về 0)
     "mg": "pine",       # pine = 1 SL + 1 TP như Pine | half = chốt một phần ở half_r rồi dời SL hòa vốn
     "half_r": 1.0,      # chốt một phần khi lãi đạt ... R
     "half_pct": 50,     # % khối lượng chốt
@@ -174,12 +183,13 @@ BOT_DEF = {
     "sess_on": False,
     "sess": "1400-2300",
 }
-NUM = {"sl_atr": (0.1, 20, float), "be_at": (0.1, 20, float), "fast": (2, 100, int), "slow": (3, 200, int), "minw": (0, 5, float), "slope": (1, 50, int), "deep": (0, 5, float),
+NUM = {"zr_tp": (0.05, 50, float), "zr_mult": (1, 5, float), "zr_max": (1, 15, int), "zr_be": (0, 1000, float),
+       "so_pct": (0, 90, float), "sl_atr": (0.1, 20, float), "be_at": (0.1, 20, float), "fast": (2, 100, int), "slow": (3, 200, int), "minw": (0, 5, float), "slope": (1, 50, int), "deep": (0, 5, float),
        "wait": (1, 50, int), "gap": (1, 500, int), "slbuf": (0, 5, float), "rr": (0.1, 20, float),
        "half_r": (0.1, 10, float), "half_pct": (1, 99, int), "be_off": (0, 50, float), "tr_at": (0.1, 20, float),
        "tr_dist": (0.05, 20, float), "legs": (1, 10, int), "min_sl": (0, 100, float), "max_sl": (0, 500, float),
        "mart_v": (0.01, 10, float), "mart_max": (0, 10, int), "max_spr": (0, 50, float)}
-ENUM = {"entry": ("pb", "flip", "hold"), "sl_mode": ("swing", "atr"), "conf": ("touch", "rej", "brk"), "mg": ("pine", "half"), "mart": ("off", "x", "add")}
+ENUM = {"entry": ("pb", "flip", "hold"), "sl_mode": ("swing", "atr"), "conf": ("touch", "rej", "brk"), "mg": ("pine", "half", "zr"), "zr_trig": ("flip", "ema"), "mart": ("off", "x", "add")}
 BOOL = ("tr_on", "rev", "sess_on", "be_on")
 
 

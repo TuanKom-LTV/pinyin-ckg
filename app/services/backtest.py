@@ -362,6 +362,79 @@ def run_cpb(sim, d, lot, warm):
         sim.mark(k)
 
 
+def run_zr(sim, d, lot, warm, cap0):
+    """Không SL, nhân đôi đảo chiều (xem cloud_pb mg = zr). Trả thống kê riêng (bậc gấp thếp, lot lớn nhất, cháy)."""
+    from app.services import cloud_pb
+    bars, vpu = sim.bars, sim.vpu
+    res = cloud_pb.compute(bars, d)
+    st, E2 = res["st"], res["e2"]
+    camp, last, trig_used, dead = 0, None, False, False
+    info = {"steps": {}, "max_lot": 0.0, "min_eq": cap0, "dead_at": None}
+    floor_eq = cap0 * d["so_pct"] / 100
+
+    def lvl(target, k):
+        """Giá Bid mà tổng lãi/lỗ các lệnh = target. Trả (giá, N) với N = khối lượng ròng (BUY − SELL)."""
+        N = sum(p["d"] * p["lot"] for p in sim.pos)
+        C = sum(-p["d"] * p["lot"] * p["e"] - (p["lot"] * sim.spr[k] if p["d"] < 0 else 0) for p in sim.pos)
+        return ((target / vpu - C) / N if abs(N) > EPS else None), N
+
+    def pnl(bid, k):
+        return sum(p["d"] * (sim.exit_px(p, k, bid) - p["e"]) * p["lot"] * vpu for p in sim.pos)
+
+    def close_all(bid, k, why):
+        n = len({p["id"] for p in sim.pos})
+        for p in list(sim.pos):
+            sim.close(p, p["lot"], sim.exit_px(p, k, bid), k, why)
+        info["steps"][n] = info["steps"].get(n, 0) + 1
+
+    for k in range(warm, len(bars)):
+        t, o, h, l, c = bars[k][:5]
+        if sim.pos and min(p["k"] for p in sim.pos) < k:
+            N = sum(p["d"] * p["lot"] for p in sim.pos)
+            adv = l if N > 0 else h                         # giá bất lợi nhất trong nến (xét trước, thận trọng)
+            eq_adv = sim.bal + pnl(adv, k)
+            info["min_eq"] = min(info["min_eq"], eq_adv)
+            if eq_adv <= floor_eq:
+                # cháy: đóng ở giá làm vốn chạm mức cháy (hoặc giá mở cửa nếu nhảy qua)
+                P, N = lvl(floor_eq - sim.bal, k)
+                px = adv if P is None else (min(o, max(P, l)) if N > 0 else max(o, min(P, h)))
+                close_all(px, k, "CHÁY TÀI KHOẢN")
+                dead, info["dead_at"] = True, datetime.fromtimestamp(t, VN).strftime("%d/%m/%Y %H:%M")
+                sim.mark(k)
+                break
+            target = d["zr_tp"] * sim.pos[0]["lot"] * vpu if len(sim.pos) == 1 else d["zr_be"]
+            P, N = lvl(target, k)
+            if P is not None:
+                if N > 0 and h >= P:
+                    close_all(max(P, o), k, "chốt lời" if len(sim.pos) == 1 else "hòa vốn cả cụm")
+                elif N < 0 and l <= P:
+                    close_all(min(P, o), k, "chốt lời" if len(sim.pos) == 1 else "hòa vốn cả cụm")
+        flip = st[k] != 0 and k > 0 and st[k] != st[k - 1]
+        if not sim.pos:
+            last, trig_used = None, False
+            if flip and _in_sess(d, t):
+                camp += 1
+                g = st[k]
+                p = sim.open(g, lot, c + sim.spr[k] if g > 0 else c, 0, 0, k, camp=camp)
+                last = p
+        elif last is not None and len(sim.pos) < d["zr_max"]:
+            g = -last["d"]
+            hit = flip and st[k] == g
+            if not hit and d["zr_trig"] == "ema" and not trig_used and E2[k] is not None:
+                hit = (c < E2[k]) if last["d"] > 0 else (c > E2[k])
+            if hit:
+                lt = max(sim.vmin, round(round(last["lot"] * d["zr_mult"] / sim.step) * sim.step, 2))
+                p = sim.open(g, lt, c + sim.spr[k] if g > 0 else c, 0, 0, k, camp=camp)
+                last, trig_used = p, False
+                info["max_lot"] = max(info["max_lot"], lt)
+            elif d["zr_trig"] == "ema" and E2[k] is not None and ((c < E2[k]) if last["d"] > 0 else (c > E2[k])):
+                trig_used = True
+        info["max_lot"] = max(info["max_lot"], max((p["lot"] for p in sim.pos), default=0))
+        sim.mark(k)
+    info["dead"] = dead
+    return info
+
+
 def stats(sim, cap0, by_camp):
     tr = sim.trades
     eq = [v for _, v in sim.eq] or [cap0]
@@ -423,7 +496,10 @@ def run(bars, spr, cfg, lot, cap0, vpu, comm=0.0, warm=300, step=0.01, vmin=0.01
     sim = Sim(bars, spr, cap0, vpu, comm, step, vmin)
     warm = min(warm, max(0, len(bars) - 1))
     cpb = cfg.get("strategy") == "cpb"
-    if cpb:
+    zr = None
+    if cpb and cfg["cpb"].get("mg") == "zr":
+        zr = run_zr(sim, cfg["cpb"], lot or 0.01, warm, cap0)
+    elif cpb:
         run_cpb(sim, cfg["cpb"], lot or 0.01, warm)
     else:
         run_dca(sim, cfg, lot, warm)
@@ -432,6 +508,9 @@ def run(bars, spr, cfg, lot, cap0, vpu, comm=0.0, warm=300, step=0.01, vmin=0.01
     left = len(sim.pos)
     for p in list(sim.pos):
         sim.close(p, p["lot"], sim.exit_px(p, k, bars[k][4]), k, "còn mở (hết dữ liệu)")
-    out = stats(sim, cap0, by_camp=not cpb)
+    out = stats(sim, cap0, by_camp=not cpb or zr is not None)
+    if zr is not None:
+        out["zr"] = {**zr, "min_eq": round(zr["min_eq"], 2), "max_lot": round(zr["max_lot"], 2),
+                     "steps": [{"n": n, "count": v} for n, v in sorted(zr["steps"].items())]}
     out["open_left"] = left
     return out
