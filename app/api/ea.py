@@ -23,6 +23,7 @@ EA_FILE = Path(__file__).resolve().parent.parent.parent / "ea" / "PinYinBridge.e
 EA_LATEST = "1.9"          # phiên bản EA mới nhất trên máy chủ
 ONLINE_SEC = 15         # EA gọi mỗi giây; mạng chập chờn vài lần vẫn tính online
 WAIT_SEC = 10
+RESEND_SEC = 3          # lệnh đã giao mà chưa có kết quả sau ... giây → gửi lại
 GUARD_DEF = {"be_on": False, "be_at": 1.5, "be_lock": 0.25, "tr_on": False, "tr_at": 2.2, "tr_step": 0.6, "half": True,
              "manual": False, "auto_sltp": True, "sl": 2.5, "tp": 5.0}
 _lock = threading.RLock()
@@ -117,10 +118,16 @@ async def sync(request: Request):
         pl = copytrade.plan_for(uid)
         if pl:
             out.append(pl)
+        # lệnh giữ trong hàng chờ tới khi EA báo kết quả: máy chủ / mạng chậm làm EA hết hạn chờ (5 giây) và bỏ mất
+        # câu trả lời chứa lệnh → 3 giây chưa có kết quả thì gửi lại (EA nhớ mã lệnh đã chạy nên không vào trùng)
+        now = time.time()
+        s["queue"] = [c for c in s["queue"] if c["id"] not in s["res"]]
         for c in s["queue"]:
-            out.append("C|" + c["id"] + "|" + c["line"])
-            s["sent"].add(c["id"])
-        s["queue"] = []
+            if c.get("at") is None or now - c["at"] > RESEND_SEC:
+                out.append("C|" + c["id"] + "|" + c["line"])
+                c["at"] = now
+                c["n"] = c.get("n", 0) + 1
+                s["sent"].add(c["id"])
         for k in [k for k, v in s["res"].items() if time.time() - v["t"] > 120]:   # dọn kết quả cũ
             s["res"].pop(k, None)
     return PlainTextResponse("\n".join(out) + "\n")
@@ -170,8 +177,11 @@ def _send(uid, line, wait=None):
         if r:
             return {"ok": True, "msg": r["msg"]} if r["ok"] else {"ok": False, "loi": r["msg"]}
     with _lock:
+        s["queue"] = [c for c in s["queue"] if c["id"] != cid]      # hết hạn: thôi gửi lại
+        r = s["res"].pop(cid, None)
+        if r:
+            return {"ok": True, "msg": r["msg"]} if r["ok"] else {"ok": False, "loi": r["msg"]}
         if cid not in s["sent"]:                       # EA chưa nhận: hủy để không vào lệnh trễ
-            s["queue"] = [c for c in s["queue"] if c["id"] != cid]
             return {"ok": False, "loi": "EA không phản hồi, lệnh đã hủy. Kiểm tra MT5 của bạn."}
     return {"ok": False, "loi": "Lệnh đã gửi tới MT5 nhưng chưa có kết quả. Kiểm tra lại trên MT5 trước khi bấm lại."}
 
