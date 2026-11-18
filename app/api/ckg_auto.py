@@ -372,6 +372,41 @@ def _dca_levels(d, sg=None):
     copytrade.set_plan(abs(t1 - avg), d["be"], d["be_off"])      # khoảng TP1 cho TP1 đặt sẵn trên sàn của tài khoản copy
 
 
+_sl_seen = {}
+
+
+def _sl_watch(ps, dr, px):
+    """SL lệnh bot chỉ do bot đặt (SL chung lúc vào, hoặc hòa vốn sau TP1). Thấy SL khác → có EA / người / phần mềm
+    khác trên MT5 tín hiệu đang sửa lệnh bot: báo Telegram và trả SL về đúng mức của bot."""
+    want = _dca["sl_be"] if _dca["tp1"] and _dca["sl_be"] else _dca["sl"]
+    if not want:
+        return
+    info = mt5.symbol_info(SYM)
+    if not info:
+        return
+    mind = (info.trade_stops_level + 1) * info.point
+    for p in ps:
+        if p.sl and abs(p.sl - want) <= info.point * 1.5:
+            continue
+        key = (p.ticket, round(p.sl, info.digits))
+        if _sl_seen.get(p.ticket) == key:                      # đã báo / đã thử trả lại mức này
+            continue
+        _sl_seen[p.ticket] = key
+        ok_room = dr * (px - want) >= mind
+        msg = (f"⚠️ SL lệnh bot #{p.ticket} bị sửa từ BÊN NGOÀI: {want:.{info.digits}f} → {p.sl:.{info.digits}f} "
+               f"(bot không dời). Thường do EA khác / lá chắn EA PinYinBridge / người sửa tay trên MT5 tín hiệu: "
+               f"xem tab Nhật ký (Journal) của MT5 máy chủ để biết ai sửa.")
+        if ok_room:
+            try:
+                _set_sl(p, want)
+                msg += f" Đã trả SL về {want:.{info.digits}f}."
+            except Exception as e:
+                msg += f" Không trả lại được: {e}"
+        log(msg, "err")
+    for t in [t for t in _sl_seen if t not in {p.ticket for p in ps}]:
+        _sl_seen.pop(t, None)
+
+
 def _dca_live(c):
     """Chạy mỗi vòng (2 giây): phát hiện chiến dịch đã kết thúc, giá chạm TP1/TP2 → chốt từng phần, dời SL hòa vốn."""
     d = c["dca"]
@@ -388,6 +423,7 @@ def _dca_live(c):
         return
     dr = _dca["dir"]
     px = tick.bid if dr > 0 else tick.ask                       # giá đóng lệnh
+    _sl_watch(ps, dr, px)
     tp2p = max(0, min(d["tp2p"], 100 - d["tp1p"]))
     changed = False
     if not _dca["tp1"] and _dca["tp1px"] and dr * (px - _dca["tp1px"]) >= 0:
@@ -923,6 +959,8 @@ class CopyIn(BaseModel):
     lot: float | None = None
     ttl: int | None = None              # lệnh vào chờ EA tối đa (giây)
     slip: float | None = None           # bỏ lệnh vào nếu giá đã chạy ngược quá X$ (0 = không xét)
+    real: bool | None = None            # cho phép copy sang tài khoản THẬT này (bật cần mật khẩu chủ)
+    pw: str = ""
 
 
 @router.get("/auto/copy")
@@ -954,8 +992,15 @@ def copy_set(x: CopyIn):
                 return {"ok": False, "loi": "Thời hạn lệnh vào từ 5 đến 600 giây."}
             if x.slip is not None and not (0 <= x.slip <= 100):
                 return {"ok": False, "loi": "Trượt giá tối đa từ 0 đến 100$."}
+            if x.real:
+                import hmac
+                pw = os.getenv("PINYIN_PASSWORD", "")
+                if not pw or not hmac.compare_digest(x.pw.encode(), pw.encode()):
+                    return {"ok": False, "loi": "Sai mật khẩu chủ."}
             f = copytrade.update(x.id, name=(x.name or "").strip()[:40] or None, on=x.on, lot_mode=x.lot_mode, lot=x.lot,
-                                 ttl=x.ttl, slip=x.slip)
+                                 ttl=x.ttl, slip=x.slip, real=x.real)
+            if x.real is not None:
+                log(f"{'🔓 CHO PHÉP' if x.real else '🔒 CHẶN'} copy lệnh sang tài khoản THẬT [{f['name']}].", "info")
             if x.on is not None:
                 log(f"{'BẬT' if x.on else 'TẮT'} copy lệnh bot sang [{f['name']}].", "info")
             return {"ok": True, "item": f}

@@ -147,7 +147,7 @@ def update(fid, **kw):
         else:
             if kw.get("new_key"):
                 f["key"] = "PC-" + secrets.token_hex(8).upper()
-            for k in ("name", "on", "lot_mode", "lot", "ttl", "slip"):
+            for k in ("name", "on", "lot_mode", "lot", "ttl", "slip", "real"):
                 if kw.get(k) is not None:
                     f[k] = kw[k]
         save(lst)
@@ -261,8 +261,8 @@ def _deliver(f, c):
     if not own and _same(s["acc"]):
         _say(f"{name} là CHÍNH tài khoản tín hiệu #{s['acc']['login']} — không copy sang chính nó (sẽ gấp đôi lệnh). Gắn EA vào tài khoản khác.", "err")
         return True
-    if not own and not s["acc"]["demo"] and not allow_real():
-        _say(f"{name} là tài khoản THẬT nhưng đang chặn lệnh thật (nút 🔒 Lệnh THẬT), không {c['what']}.", "err")
+    if not own and not s["acc"]["demo"] and not (f.get("real") or allow_real()):
+        _say(f"{name} là tài khoản THẬT nhưng chưa cho phép lệnh thật (bấm 🔒 Cho phép lệnh THẬT trên thẻ tài khoản này ở mục Tài khoản vào lệnh), không {c['what']}.", "err")
         return True
     ttl = int(f.get("ttl") or ORDER_TTL)
     if order and age > ttl:
