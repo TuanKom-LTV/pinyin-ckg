@@ -20,7 +20,7 @@ from pathlib import Path
 import MetaTrader5 as mt5
 
 from app.services import copytrade
-from app.services.ha_pro_dca import dca_signals
+from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot
 from app.services.mt5_service import mt5_service
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -260,7 +260,7 @@ def _open(u, c, dr, sl, sg, b, bid, ask, first, why=""):
             log(u, "Bỏ tín hiệu: vốn dưới 100 của bảng vốn (chọn lot cố định).", "err")
             return
     else:
-        lot = E["lot"]
+        lot = dca_leg_lot(E["lot"], d, E["legs"] + 1)
     lot = round(float(lot), 2)
     n = 1 if first else E["legs"] + 1
     P.append({"lot": lot, "e": px, "sl": sl})
@@ -331,7 +331,8 @@ def _bar(u, c, bars, sigs, b, bid, ask):
                     sl = slv if d["sl_mode"] == "vwap" else slw if d["sl_mode"] == "swing" else (min(slv, slw) if go > 0 else max(slv, slw))
                 _open(u, c, go, sl, sg, b, bid, ask, True, "đảo chiều" if want_rev else "")
     elif dr and go == dr and not E["tp1"] and E["legs"] < _cap(d, b):
-        gap_ok = (sg["c"] <= E["last_px"] - d["gap"] * sg["atr"] if dr > 0 else sg["c"] >= E["last_px"] + d["gap"] * sg["atr"]) \
+        gp = dca_gap(d, sg["atr"])
+        gap_ok = (sg["c"] <= E["last_px"] - gp if dr > 0 else sg["c"] >= E["last_px"] + gp) \
             and since(E["last_t"]) >= d["min_bars"]
         struct_ok = (sg["c"] > E["sl"] if dr > 0 else sg["c"] < E["sl"]) and (E["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
         if gap_ok and struct_ok:

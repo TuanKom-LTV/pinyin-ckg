@@ -36,7 +36,7 @@ from pydantic import BaseModel
 from app.api.ckg import server_offset
 from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION, MAX_LOT
 from app.services.mt5_service import mt5_service
-from app.services.ha_pro_dca import dca_signals
+from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_units
 from app.services import copytrade
 from app.services import cloud_pb
 
@@ -73,11 +73,14 @@ DCA_DEF = {"legs": 3, "gap": 0.5, "min_bars": 5, "risk": 0.0, "dir": "both", "st
            "tp1r": 1.0, "tp1p": 50, "tp2r": 2.0, "tp2p": 30, "cap": True, "be": True, "be_off": 0.0,
            "trail": True, "trail_after": 2, "time": 60, "rev": True, "candles": "std", "sig": "v5",
            "sess_on": False, "sess": "1400-2300",   # chỉ MỞ/THÊM lệnh trong khung giờ VN (như useSession của Pine)
-           "sl_lock": True}      # True: SL bị sửa từ bên ngoài thì bot trả lại; False: nhận SL sửa tay làm SL chung
+           "sl_lock": True,
+           "gap_usd": 0.0,       # lệnh DCA thêm khi giá tốt hơn ≥ ... $ (0 = dùng gap × ATR)
+           "lot_mult": 1.0}      # lot lệnh DCA thứ n = lot đầu × lot_mult^(n-1) (1 = bằng lệnh đầu)      # True: SL bị sửa từ bên ngoài thì bot trả lại; False: nhận SL sửa tay làm SL chung
 DCA_NUM = {"legs": (1, 5, int), "gap": (0, 10, float), "min_bars": (1, 200, int), "risk": (0, 10, float),
            "stretch": (0.5, 10, float), "sl_k": (0, 10, float), "sl_buf": (0, 100, float), "soft_sig": (0.1, 5, float),
            "tp1r": (0.1, 10, float), "tp1p": (1, 100, int), "tp2r": (0.2, 20, float), "tp2p": (0, 100, int),
-           "be_off": (0, 100, float), "trail_after": (1, 2, int), "time": (0, 2000, int)}
+           "be_off": (0, 100, float), "trail_after": (1, 2, int), "time": (0, 2000, int),
+           "gap_usd": (0, 100, float), "lot_mult": (1, 5, float)}
 DCA_ENUM = {"dir": ("both", "buy", "sell"), "sl_mode": ("min", "vwap", "swing"), "candles": ("ha", "std"), "sig": ("v5", "dca")}
 DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_lock")
 
@@ -601,7 +604,8 @@ def _dca_bar(c, bars, b, fixed):
             return
         _dca_open(c, go, sl, sg, b, fixed, first=True, why="đảo chiều" if want_rev else "")
     elif dr and go == dr and not C().dca["tp1"] and C().dca["legs"] < _dca_cap(d, b, fixed):
-        gap_ok = (sg["c"] <= C().dca["last_px"] - d["gap"] * sg["atr"] if dr > 0 else sg["c"] >= C().dca["last_px"] + d["gap"] * sg["atr"]) \
+        gp = dca_gap(d, sg["atr"])
+        gap_ok = (sg["c"] <= C().dca["last_px"] - gp if dr > 0 else sg["c"] >= C().dca["last_px"] + gp) \
             and since(C().dca["last_t"]) >= d["min_bars"]
         struct_ok = (sg["c"] > C().dca["sl"] if dr > 0 else sg["c"] < C().dca["sl"]) and (C().dca["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
         if gap_ok and struct_ok:
@@ -644,7 +648,7 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
                 log("DCA: không tính được lot theo % rủi ro.", "err")
                 return
             step = info.volume_step or 0.01
-            lot = math.floor(a.equity * d["risk"] / 100 / (d["legs"] * loss1) / step + 1e-9) * step
+            lot = math.floor(a.equity * d["risk"] / 100 / (dca_units(d, d["legs"]) * loss1) / step + 1e-9) * step
             if lot < info.volume_min - 1e-9:
                 log(f"DCA: rủi ro {d['risk']}% chia {d['legs']} lệnh ra lot {lot:.3f} < tối thiểu {info.volume_min}, bỏ tín hiệu.", "err")
                 return
@@ -656,7 +660,7 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
             log("DCA: vốn dưới mức 100$ của bảng vốn.", "err")
             return
     else:
-        lot = C().dca["lot"]
+        lot = dca_leg_lot(C().dca["lot"], d, C().dca["legs"] + 1)
     try:
         lot = _norm_lot(info, lot)
         n = 1 if first else C().dca["legs"] + 1
@@ -1400,6 +1404,11 @@ def _auto_set(x: AutoIn):
             if not hed:
                 return {"ok": False, "loi": f"Đang chạy {', '.join(others)}. Chạy nhiều bot cùng lúc cần tài khoản HEDGING "
                                             "(tài khoản này là Netting: các lệnh cùng mã gộp làm một, bot sẽ giẫm lên nhau)."}
+    if c["on"] and c["strategy"] == "dca" and c.get("lot") and c["dca"].get("risk", 0) <= 0:
+        big = dca_leg_lot(c["lot"], c["dca"], c["dca"]["legs"])
+        if big > MAX_LOT + 1e-9:
+            return {"ok": False, "loi": f"Lot {c['lot']} × {c['dca']['lot_mult']} qua {c['dca']['legs']} lệnh DCA → lệnh cuối {big:.2f} lot, vượt giới hạn {MAX_LOT} "
+                                        "(PINYIN_MAX_LOT trong .env). Giảm lot / hệ số / số lệnh, hoặc tăng giới hạn."}
     if c["on"] and c["strategy"] == "cpb":
         d = c["cpb"]
         try:

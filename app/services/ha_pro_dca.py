@@ -409,6 +409,24 @@ def v5_entries(bars, candles="std", sl_buffer=2.0, sl_lookback=20):
     return out
 
 
+# ---- luật thêm lệnh DCA dùng chung (bot chủ, bot khách, backtest) ----
+def dca_gap(d, atr):
+    """Khoảng giá tối thiểu để thêm lệnh DCA: gap_usd $ nếu > 0, không thì gap × ATR."""
+    g = float(d.get("gap_usd") or 0)
+    return g if g > 0 else d["gap"] * atr
+
+
+def dca_leg_lot(lot0, d, n):
+    """Lot lệnh DCA thứ n (n = 1 là lệnh đầu) = lot đầu × lot_mult^(n-1)."""
+    return lot0 * float(d.get("lot_mult") or 1.0) ** (n - 1)
+
+
+def dca_units(d, legs):
+    """Tổng khối lượng của `legs` lệnh tính theo lot đầu = 1 (để chia % rủi ro)."""
+    m = float(d.get("lot_mult") or 1.0)
+    return sum(m ** i for i in range(int(legs)))
+
+
 def dca_signals(bars, d):
     """Tín hiệu cho chiến lược DCA: d["sig"] = "v5" (đúng nhãn chỉ báo v5 trên TradingView) hoặc "dca" (bản Pine chiến lược DCA)."""
     extra = V5 if d.get("sig", "v5") == "v5" else {}

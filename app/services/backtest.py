@@ -15,7 +15,7 @@ Giả định mô phỏng (thận trọng):
 import math
 from datetime import datetime, timedelta, timezone
 
-from app.services.ha_pro_dca import dca_signals
+from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_units
 
 VN = timezone(timedelta(hours=7))
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
@@ -166,7 +166,7 @@ def run_dca(sim, c, lot_fixed, warm):
         if first:
             if d["risk"] > 0:
                 loss1 = abs(px - sl) * sim.vpu
-                lot = math.floor(sim.bal * d["risk"] / 100 / (d["legs"] * loss1) / sim.step + EPS) * sim.step
+                lot = math.floor(sim.bal * d["risk"] / 100 / (dca_units(d, d["legs"]) * loss1) / sim.step + EPS) * sim.step
                 if lot < sim.vmin - EPS:
                     return
             elif lot_fixed:
@@ -177,7 +177,7 @@ def run_dca(sim, c, lot_fixed, warm):
                     return
                 lot = b[2]
         else:
-            lot = E["lot"]
+            lot = round(round(dca_leg_lot(E["lot"], d, E["legs"] + 1) / sim.step) * sim.step, 2)
         nleg = 1 if first else E["legs"] + 1
         sim.open(dr, lot, px, sl, 0.0, k, camp=E.get("cid", k) if not first else k, tag=f"DCA{nleg}")
         if first:
@@ -262,7 +262,8 @@ def run_dca(sim, c, lot_fixed, warm):
                         sl = slv if d["sl_mode"] == "vwap" else slw if d["sl_mode"] == "swing" else (min(slv, slw) if go > 0 else max(slv, slw))
                     open_leg(k, go, sl, sg, True)
         elif dr and go == dr and not E["tp1"] and E["legs"] < cap_legs():
-            gap_ok = (sg["c"] <= E["last_px"] - d["gap"] * sg["atr"] if dr > 0 else sg["c"] >= E["last_px"] + d["gap"] * sg["atr"]) \
+            gp = dca_gap(d, sg["atr"])
+            gap_ok = (sg["c"] <= E["last_px"] - gp if dr > 0 else sg["c"] >= E["last_px"] + gp) \
                 and k - E["last_k"] >= d["min_bars"]
             struct_ok = (sg["c"] > E["sl"] if dr > 0 else sg["c"] < E["sl"]) and (E["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
             if gap_ok and struct_ok:
