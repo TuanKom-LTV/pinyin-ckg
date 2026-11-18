@@ -72,13 +72,14 @@ DCA_DEF = {"legs": 3, "gap": 0.5, "min_bars": 5, "risk": 0.0, "dir": "both", "st
            "sl_mode": "min", "sl_k": 0.5, "sl_buf": 1.0, "soft": True, "soft_sig": 1.0,
            "tp1r": 1.0, "tp1p": 50, "tp2r": 2.0, "tp2p": 30, "cap": True, "be": True, "be_off": 0.0,
            "trail": True, "trail_after": 2, "time": 60, "rev": True, "candles": "std", "sig": "v5",
-           "sess_on": False, "sess": "1400-2300"}   # chỉ MỞ/THÊM lệnh trong khung giờ VN (như useSession của Pine)
+           "sess_on": False, "sess": "1400-2300",   # chỉ MỞ/THÊM lệnh trong khung giờ VN (như useSession của Pine)
+           "sl_lock": True}      # True: SL bị sửa từ bên ngoài thì bot trả lại; False: nhận SL sửa tay làm SL chung
 DCA_NUM = {"legs": (1, 5, int), "gap": (0, 10, float), "min_bars": (1, 200, int), "risk": (0, 10, float),
            "stretch": (0.5, 10, float), "sl_k": (0, 10, float), "sl_buf": (0, 100, float), "soft_sig": (0.1, 5, float),
            "tp1r": (0.1, 10, float), "tp1p": (1, 100, int), "tp2r": (0.2, 20, float), "tp2p": (0, 100, int),
            "be_off": (0, 100, float), "trail_after": (1, 2, int), "time": (0, 2000, int)}
 DCA_ENUM = {"dir": ("both", "buy", "sell"), "sl_mode": ("min", "vwap", "swing"), "candles": ("ha", "std"), "sig": ("v5", "dca")}
-DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on")
+DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_lock")
 
 
 def _sess_ok(s):
@@ -197,6 +198,26 @@ def tg_send(text):
     threading.Thread(target=run, daemon=True).start()
 
 
+def _sig(text):
+    """Gửi tin vào/đóng lệnh sang NHÓM TÍN HIỆU cho khách (TELEGRAM_SIGNAL_CHAT), nếu bot này bật gửi.
+    Chỉ nội dung lệnh: không số tài khoản, không số tiền, không tin nội bộ."""
+    chat = _env("TELEGRAM_SIGNAL_CHAT")
+    try:
+        if not chat or not _cfg().get("tg_sig"):
+            return
+        name = C().name
+    except Exception:
+        return
+    msg = f"{text[:1]} [{name}] {text[1:].strip()}" if text[:1] in "🟢🔵🛡✋⚠" else f"[{name}] {text}"
+
+    def run():
+        try:
+            _tg_api("sendMessage", {"chat_id": chat, "text": msg})
+        except Exception:
+            pass
+    threading.Thread(target=run, daemon=True).start()
+
+
 def _set_env(name, value):
     """Ghi/sửa 1 dòng trong .env và cập nhật biến môi trường đang chạy."""
     lines = ENV_FILE.read_text(encoding="utf-8").splitlines() if ENV_FILE.exists() else []
@@ -253,11 +274,15 @@ def _close_pos(p, why, vol=None):
         "price": tick.bid if buy else tick.ask, "deviation": DEVIATION,
         "magic": C().magic, "comment": COMMENT, "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
     })
+    side = "BUY" if buy else "SELL"
+    mv = (res.price - p.price_open) if buy else (p.price_open - res.price)
     if part:
-        log(f"Chốt {vol} / {p.volume} lot #{p.ticket} {'BUY' if buy else 'SELL'} @ {res.price} ({why})", "close")
+        log(f"Chốt {vol} / {p.volume} lot #{p.ticket} {side} @ {res.price} ({why})", "close")
+        _sig(f"🔵 Chốt một phần {side} @ {res.price:.2f} ({why}) · {mv:+.2f} giá")
         return res
     C().st["known"].pop(p.ticket, None)
-    log(f"Đóng #{p.ticket} {'BUY' if buy else 'SELL'} {p.volume} lot @ {res.price} ({why}), lãi/lỗ {p.profit + p.swap:.2f}", "close")
+    log(f"Đóng #{p.ticket} {side} {p.volume} lot @ {res.price} ({why}), lãi/lỗ {p.profit + p.swap:.2f}", "close")
+    _sig(f"🔵 Đóng {side} @ {res.price:.2f} ({why}) · {mv:+.2f} giá")
     return res
 
 
@@ -281,12 +306,18 @@ def _check_closed(off):
             pass
         extra = (f" · mức kích hoạt {sl_now}" if sl_now else "") + (f" · sàn ghi: {note}" if note else "")
         log(f"#{tk} {side} {why} @ {px}, lãi/lỗ {pnl:.2f}{extra}", "close")
+        ins = [d for d in deals if d.entry == mt5.DEAL_ENTRY_IN]
+        if out and ins:
+            mv = (out[-1].price - ins[0].price) * (1 if side == "BUY" else -1)
+            _sig(f"🔵 {side} {why} @ {out[-1].price:.2f} · {mv:+.2f} giá")
+        else:
+            _sig(f"🔵 {side} {why}")
 
 
 # ---------- Chiến lược DCA: trạng thái chiến dịch ----------
 
 DCA_EMPTY = {"dir": 0, "rev": False, "sl": None, "legs": 0, "lot": None, "last_px": None, "last_t": 0, "start_t": 0,
-             "tp1": False, "tp2": False, "tp1px": None, "tp2px": None, "vol_tp": 0.0, "sl_be": None, "wait_msg": False, "sl_how": ""}
+             "tp1": False, "tp2": False, "tp1px": None, "tp2px": None, "vol_tp": 0.0, "sl_be": None, "wait_msg": False, "sl_how": "", "sl_man": None}
 _dca = dict(DCA_EMPTY)
 
 
@@ -387,10 +418,12 @@ def _dca_levels(d, sg=None):
 _sl_seen = {}
 
 
-def _sl_watch(ps, dr, px):
+def _sl_watch(ps, dr, px, d=None):
     """SL lệnh bot chỉ do bot đặt (SL chung lúc vào, hoặc hòa vốn sau TP1). Thấy SL khác → có EA / người / phần mềm
-    khác trên MT5 tín hiệu đang sửa lệnh bot: báo Telegram và trả SL về đúng mức của bot."""
-    want = C().dca["sl_be"] if C().dca["tp1"] and C().dca["sl_be"] else C().dca["sl"]
+    khác trên MT5 tín hiệu đang sửa lệnh bot.
+    Khóa SL BẬT: báo Telegram và trả SL về đúng mức của bot. TẮT: nhận mức mới làm SL chung (dời các lệnh còn lại theo),
+    TP1/TP2 giữ nguyên (SL sửa tay lưu riêng ở sl_man, không đổi R)."""
+    want = C().dca.get("sl_man") or (C().dca["sl_be"] if C().dca["tp1"] and C().dca["sl_be"] else C().dca["sl"])
     if not want:
         return
     info = mt5.symbol_info(SYM)
@@ -404,6 +437,23 @@ def _sl_watch(ps, dr, px):
         if _sl_seen.get(p.ticket) == key:                      # đã báo / đã thử trả lại mức này
             continue
         _sl_seen[p.ticket] = key
+        if d is not None and not d.get("sl_lock", True) and p.sl:
+            new = round(p.sl, info.digits)
+            C().dca["sl_man"] = new
+            _dca_save()
+            moved = 0
+            for q in ps:
+                if q.ticket != p.ticket and abs((q.sl or 0) - new) > info.point * 1.5 and dr * (px - new) >= mind:
+                    try:
+                        _set_sl(q, new)
+                        _sl_seen[q.ticket] = (q.ticket, new)
+                        moved += 1
+                    except Exception as e:
+                        log(f"Không dời SL #{q.ticket} theo SL sửa tay: {e}", "err")
+            log(f"✋ SL lệnh #{p.ticket} được sửa tay: {want:.{info.digits}f} → {new:.{info.digits}f}. Bot nhận làm SL chung"
+                + (f", dời thêm {moved} lệnh cùng chiến dịch" if moved else "") + " (TP1/TP2 giữ nguyên).", "info")
+            _sig(f"✋ Dời SL về {new:.{info.digits}f}")
+            continue
         ok_room = dr * (px - want) >= mind
         msg = (f"⚠️ SL lệnh bot #{p.ticket} bị sửa từ BÊN NGOÀI: {want:.{info.digits}f} → {p.sl:.{info.digits}f} "
                f"(bot không dời). Thường do EA khác / lá chắn EA PinYinBridge / người sửa tay trên MT5 tín hiệu: "
@@ -435,7 +485,7 @@ def _dca_live(c):
         return
     dr = C().dca["dir"]
     px = tick.bid if dr > 0 else tick.ask                       # giá đóng lệnh
-    _sl_watch(ps, dr, px)
+    _sl_watch(ps, dr, px, d)
     tp2p = max(0, min(d["tp2p"], 100 - d["tp1p"]))
     changed = False
     if not C().dca["tp1"] and C().dca["tp1px"] and dr * (px - C().dca["tp1px"]) >= 0:
@@ -454,6 +504,8 @@ def _dca_live(c):
                     except Exception as e:
                         log(f"Không dời SL hòa vốn #{p.ticket}: {e}", "err")
             C().dca["sl_be"] = be
+            C().dca["sl_man"] = None
+            _sig(f"🛡 Chạm TP1 → dời SL về hòa vốn {be:.2f}")
             log(f"DCA: chạm TP1 → dời SL về hòa vốn {be:.2f}", "info")
             _copy().copy_beavg(d["be_off"])
         if tp2p == 0:
@@ -556,7 +608,7 @@ def _dca_bar(c, bars, b, fixed):
             if block:
                 log(f"Không thêm lệnh DCA: {block}", "err")
             else:
-                _dca_open(c, dr, C().dca["sl"], sg, b, fixed, first=False)
+                _dca_open(c, dr, C().dca.get("sl_man") or C().dca["sl"], sg, b, fixed, first=False)
 
     # 5. Cập nhật TP theo giá trung bình (dải TMA/VWAP thay đổi theo nến)
     if C().dca["dir"]:
@@ -627,6 +679,7 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
     _dca_save()
     kind = ("BUY" if buy else "SELL") + (" ĐC*" if C().dca["rev"] else "")
     lbl = (f"Mở chiến dịch {kind}" + (f" ({why})" if why else "")) if first else f"Thêm lệnh DCA {n}/{_dca_cap(d, b, fixed)} {kind}"
+    _sig(f"🟢 {lbl} XAUUSD @ {res.price:.{info.digits}f} · SL {sl:.2f} · TP1 {(C().dca['tp1px'] or 0):.2f} · TP2 {(C().dca['tp2px'] or 0):.2f}")
     log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · SL chung {sl:.2f}{(' = ' + C().dca['sl_how']) if first and C().dca.get('sl_how') else ''} · TP1 {(C().dca['tp1px'] or 0):.2f} · TP2 {(C().dca['tp2px'] or 0):.2f}", "open")
     _copy().copy_open(dr, float(res.volume), abs(float(res.price) - sl), d["tp1p"] if not C().dca["tp1"] else 0, float(res.price))
 
@@ -703,6 +756,7 @@ def _cpb_open(go, lot, sl, tp, why, R=0.0):
     px = float(res.price)
     _copy().copy_order(go, float(res.volume), abs(px - sl) if sl else 0, abs(tp - px) if tp else 0, px)
     lv = (f" · SL {sl:.{info.digits}f} · TP {tp:.{info.digits}f}" if sl else " · KHÔNG SL")
+    _sig(f"🟢 {'BUY' if buy else 'SELL'} XAUUSD @ {res.price:.{info.digits}f}" + lv)
     log(f"Cloud PB {'BUY' if buy else 'SELL'} {res.volume} lot @ {res.price:.{info.digits}f}{lv}" + (f" ({why})" if why else ""), "open")
     return res
 
@@ -1187,6 +1241,7 @@ class AutoIn(BaseModel):
     ha_candles: str | None = None
     dca: dict | None = None
     cpb: dict | None = None
+    tg_sig: bool | None = None          # gửi tin vào/đóng lệnh của bot này sang nhóm tín hiệu cho khách
 
 
 class TgIn(BaseModel):
@@ -1219,7 +1274,8 @@ def _auto_status():
             "sig": C().st["sig"], "pos": pos, "log": [e for e in _log if e.get("b", "main") == C().sid][:30], "camp": dict(C().dca),
             "bot": {"id": C().sid, "name": C().name, "magic": C().magic, "copy": C().copy},
             "cpb": {"mart": C().cpb["mart"], "zr": dict(C().cpb["zr"]), "warn": C().cpb.get("warn", ""), "max_lot": MAX_LOT},
-            "tg": bool(_env("TELEGRAM_BOT_TOKEN")), "tg_chat": bool(_env("TELEGRAM_CHAT_ID"))}
+            "tg": bool(_env("TELEGRAM_BOT_TOKEN")), "tg_chat": bool(_env("TELEGRAM_CHAT_ID")),
+            "tg_group": _env("TELEGRAM_SIGNAL_TITLE") if _env("TELEGRAM_SIGNAL_CHAT") else ""}
 
 
 @router.post("/auto")
@@ -1329,6 +1385,8 @@ def _auto_set(x: AutoIn):
         if not (0.01 <= x.lot <= MAX_LOT):
             return {"ok": False, "loi": f"Lot từ 0.01 đến {MAX_LOT}."}
         c["lot"] = round(x.lot, 2)
+    if x.tg_sig is not None:
+        c["tg_sig"] = bool(x.tg_sig)
     if x.on is not None:
         c["on"] = x.on
     if c["on"] and not was:
@@ -1372,6 +1430,43 @@ def _auto_set(x: AutoIn):
     elif c["on"]:
         log(f"Đổi cài đặt: {nm} · {c['tf']}", tele=False)
     return {"ok": True, "cfg": c}
+
+
+class TgGroupIn(BaseModel):
+    act: str = "connect"                # connect | off
+
+
+@router.post("/auto/telegram_group")
+def auto_telegram_group(x: TgGroupIn):
+    """Nhóm / kênh Telegram cho khách nhận tín hiệu: thêm bot vào nhóm (kênh: làm quản trị), nhắn 1 tin trong nhóm,
+    rồi bấm Kết nối: tìm nhóm mới nhất bot thấy trong getUpdates."""
+    if x.act == "off":
+        _set_env("TELEGRAM_SIGNAL_CHAT", "")
+        _set_env("TELEGRAM_SIGNAL_TITLE", "")
+        return {"ok": True}
+    if not _env("TELEGRAM_BOT_TOKEN"):
+        return {"ok": False, "loi": "Kết nối bot Telegram của chủ trước (ô token ở trên)."}
+    try:
+        up = _tg_api("getUpdates") or {}
+        found = None
+        for u in up.get("result", []):
+            for k in ("message", "channel_post", "my_chat_member", "edited_message"):
+                ch = (u.get(k) or {}).get("chat")
+                if ch and ch.get("type") in ("group", "supergroup", "channel"):
+                    found = ch
+        if not found:
+            me = _tg_api("getMe") or {}
+            un = (me.get("result") or {}).get("username", "")
+            return {"ok": False, "loi": f"Chưa thấy nhóm nào. Thêm bot @{un} vào nhóm (kênh: thêm làm quản trị viên), nhắn 1 tin bất kỳ trong nhóm rồi bấm Kết nối lại."}
+        r = _tg_api("sendMessage", {"chat_id": found["id"], "text": "✅ Nhóm này sẽ nhận tín hiệu vào / đóng lệnh của bot PinYin. "
+                                                                  "Tín hiệu chỉ để tham khảo, không phải lời khuyên đầu tư: https://pinyin.id.vn/mien-tru-trach-nhiem"})
+        if not r or not r.get("ok"):
+            return {"ok": False, "loi": f"Bot không gửi được tin vào nhóm {found.get('title')}: {(r or {}).get('description', '')}. Kênh thì bot phải là quản trị viên."}
+        _set_env("TELEGRAM_SIGNAL_CHAT", str(found["id"]))
+        _set_env("TELEGRAM_SIGNAL_TITLE", (found.get("title") or "nhóm").replace("\n", " ")[:60])
+        return {"ok": True, "title": found.get("title")}
+    except Exception as e:
+        return {"ok": False, "loi": str(e)}
 
 
 @router.post("/auto/telegram")
