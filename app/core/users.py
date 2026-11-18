@@ -127,11 +127,11 @@ def acc_act(uid, act, n=0, name=""):
                         f"(đang {1 + len(keys)}/{lim}). Duyệt ở /quan-ly → nút ＋ MT5.")
             except Exception:
                 pass
-            return True, "Đã gửi yêu cầu thêm tài khoản. Chủ PinYin sẽ liên hệ báo phí và mở thêm cho bạn.", 0
+            return True, "Đã báo chủ PinYin. Nhắn Telegram @TuanKom để được báo phí và mở thêm tài khoản.", 0
         if act == "add":
             if 1 + len(keys) >= lim:
-                return False, (f"Gói của bạn dùng tối đa {lim} tài khoản MT5. Muốn thêm tài khoản (có phí): "
-                               "bấm Xin thêm tài khoản hoặc liên hệ Telegram @TuanKom."), 0
+                return False, (f"Gói của bạn đang dùng tối đa {lim} tài khoản MT5. Để mở thêm tài khoản (có phí), "
+                               "bấm Xin thêm tài khoản để nhắn Telegram @TuanKom."), 0
             n = next(i for i in range(2, HARD_ACC + 1) if str(i) not in keys)
             keys[str(n)] = {"key": "PY-" + secrets.token_urlsafe(18), "name": name or f"Tài khoản {n}"}
             msg = f"Đã thêm {keys[str(n)]['name']}. Gắn EA vào MT5 đó với mã kết nối mới."

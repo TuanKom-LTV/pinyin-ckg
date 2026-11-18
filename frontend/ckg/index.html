@@ -885,13 +885,20 @@ function slotDraw(){const j=SLOTS;if(!j)return;const e=x=>String(x??'').replace(
 async function slotAct(act){const j=SLOTS;if(!j)return;let name='';const cur=(j.accs.find(a=>a.n==j.cur)||{}).name;
  if(act=='add'){name=prompt('Tên tài khoản MT5 mới (vd: Exness chiến lược M5):','');if(name==null)return}
  if(act=='name'){name=prompt('Tên mới cho '+cur+':',cur||'');if(!name)return}
- if(act=='req'&&!confirm('Gói của bạn dùng tối đa '+j.max+' tài khoản MT5. Gửi yêu cầu mở thêm tài khoản (có phí) cho chủ PinYin?'))return;
+ if(act=='req'){
+  if(!confirm('Gói của bạn đang dùng tối đa '+j.max+' tài khoản MT5.\n\nĐể mở thêm tài khoản (có phí), bấm OK: Telegram sẽ mở khung chat với @TuanKom, tin nhắn đã soạn sẵn, bạn chỉ cần bấm Gửi.'))return;
+  const who=ME?(ME.ten||ME.user||''):'',mail=ME&&ME.user?' ('+ME.user+')':'';
+  const txt='Chào anh, em là '+who+mail+'. Em muốn mở thêm tài khoản MT5 cho bot PinYin (đang dùng '+j.accs.length+'/'+j.max+' tài khoản). Anh báo phí giúp em ạ.';
+  window.open('https://t.me/TuanKom?text='+encodeURIComponent(txt),'_blank','noopener');
+  jpost('api/ea/acc',{act:'req',n:0,name:''}).catch(()=>{});
+  return}
  if(act=='del'&&!confirm('Xóa '+cur+' khỏi PinYin?\nBot của tài khoản này sẽ TẮT. Lệnh đang mở trên MT5 đó giữ nguyên (SL/TP vẫn chạy). Gỡ EA khỏi MT5 đó.'))return;
  let r;try{r=await jpost('api/ea/acc',{act,n:act=='add'?0:j.cur,name})}catch(e){alert('Lỗi: '+e.message);return}
  if(!r||!r.ok){alert('Lỗi: '+(r&&r.loi||''));return}
  if(act=='req'){alert(r.msg);return}
  if(act=='add'){alert(r.msg);slotGo(r.n)}else if(act=='del'){slotGo('1')}else{QEAI=null;slotLoad()}}
-async function meInit(){let m;try{m=await jget('/api/me')}catch(e){return}if(!m||!m.ok)return;const b=$('meb');
+let ME=null;
+async function meInit(){let m;try{m=await jget('/api/me')}catch(e){return}if(!m||!m.ok)return;ME=m;const b=$('meb');
  if(m.user&&m.gd){EAMODE=true;QAPI='api/ea/q/';slotLoad();setInterval(slotLoad,15000)}if(m.role=='chu'||(m.user&&m.gd)){$('cktab').style.display=''}if(m.role=='chu')$('bottab').style.display='';if(m.user&&m.bot){CBOT=true;BAPI='api/ea/bot';$('bottab').style.display='';['cpc','btc'].forEach(i=>{const e=$(i);if(e)e.style.display='none'})}if(EAMODE)$('histc').style.display='none';try{const lv=localStorage.getItem('ckg-view');if((lv=='ck'||lv=='bot')&&VIEWMODE!=lv)setView(lv)}catch(e){}if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}
  else if(m.role=='chu'){b.innerHTML=`<a class="tg" style="background:#1c2a3d" href="/quan-ly">👥 Khách hàng${m.cho_duyet?` <b style="background:var(--no);border-radius:9px;padding:0 7px">${m.cho_duyet}</b>`:''}</a>`}}
 let TR=null,BUSY=false,VIEW=false;// VIEW: đăng nhập bằng mật khẩu chỉ xem
