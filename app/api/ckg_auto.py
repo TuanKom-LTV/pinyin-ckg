@@ -6,7 +6,7 @@ Chạy trên máy chủ (luồng nền), không cần mở trang.
   - Có tín hiệu ngược chiều: chốt lệnh bot đang mở rồi vào lệnh mới.
   - Lot theo bảng vốn (vốn quy ra USD): 100$→0.01, 600$→0.02, 1000$→0.03; số lệnh bot tối đa 3/5 theo bậc.
   - Dùng chung chốt an toàn của buồng lái: chỉ tài khoản DEMO (trừ khi PINYIN_ALLOW_REAL=1), cần bật Algo Trading.
-  - Lệnh bot có MAGIC riêng 260117, không đụng lệnh vào tay hay lệnh buồng lái.
+  - Lệnh bot có C().magic riêng 260117, không đụng lệnh vào tay hay lệnh buồng lái.
   - Báo Telegram khi bật/tắt, vào lệnh, đóng lệnh (kể cả chạm SL/TP), lỗi.
 Cài đặt lưu ở data/auto_xau.json (riêng từng máy, mặc định TẮT).
 
@@ -25,6 +25,7 @@ import threading
 import time
 import urllib.parse
 from collections import deque
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -109,7 +110,7 @@ _state = {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": 
 
 def _cfg():
     try:
-        c = {**DEFAULT, **json.loads(CFG_FILE.read_text(encoding="utf-8"))}
+        c = {**DEFAULT, **json.loads(C().cfg_file.read_text(encoding="utf-8"))}
     except Exception:
         c = dict(DEFAULT)
     c["dca"] = {**DCA_DEF, **(c.get("dca") or {})}
@@ -120,8 +121,8 @@ def _cfg():
 
 
 def _save(c):
-    CFG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    CFG_FILE.write_text(json.dumps(c, ensure_ascii=False), encoding="utf-8")
+    C().cfg_file.parent.mkdir(parents=True, exist_ok=True)
+    C().cfg_file.write_text(json.dumps(c, ensure_ascii=False), encoding="utf-8")
 
 
 def _now_vn():
@@ -129,7 +130,14 @@ def _now_vn():
 
 
 def log(msg, kind="info", tele=True):
-    e = {"t": _now_vn(), "k": kind, "m": msg}
+    try:
+        cx = C()
+        if cx is not _MAIN or _ctxs:
+            msg = f"[{cx.name}] {msg}"
+        sid = cx.sid
+    except NameError:
+        sid = "main"
+    e = {"t": _now_vn(), "k": kind, "m": msg, "b": sid}
     _log.appendleft(e)
     try:
         LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -231,7 +239,7 @@ def _tier(a):
 
 
 def _bot_positions():
-    return [p for p in (mt5.positions_get(symbol=SYM) or []) if p.magic == MAGIC]
+    return [p for p in (mt5.positions_get(symbol=SYM) or []) if p.magic == C().magic]
 
 
 def _close_pos(p, why, vol=None):
@@ -243,12 +251,12 @@ def _close_pos(p, why, vol=None):
         "action": mt5.TRADE_ACTION_DEAL, "symbol": SYM, "position": p.ticket, "volume": vol if part else p.volume,
         "type": mt5.ORDER_TYPE_SELL if buy else mt5.ORDER_TYPE_BUY,
         "price": tick.bid if buy else tick.ask, "deviation": DEVIATION,
-        "magic": MAGIC, "comment": COMMENT, "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
+        "magic": C().magic, "comment": COMMENT, "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
     })
     if part:
         log(f"Chốt {vol} / {p.volume} lot #{p.ticket} {'BUY' if buy else 'SELL'} @ {res.price} ({why})", "close")
         return res
-    _state["known"].pop(p.ticket, None)
+    C().st["known"].pop(p.ticket, None)
     log(f"Đóng #{p.ticket} {'BUY' if buy else 'SELL'} {p.volume} lot @ {res.price} ({why}), lãi/lỗ {p.profit + p.swap:.2f}", "close")
     return res
 
@@ -256,8 +264,8 @@ def _close_pos(p, why, vol=None):
 def _check_closed(off):
     """Lệnh bot biến mất (chạm SL/TP hoặc đóng tay trên MT5) → báo kết quả."""
     live = {p.ticket for p in _bot_positions()}
-    for tk in [t for t in _state["known"] if t not in live]:
-        side = _state["known"].pop(tk)
+    for tk in [t for t in C().st["known"] if t not in live]:
+        side = C().st["known"].pop(tk)
         deals = mt5.history_deals_get(position=tk) or []
         out = [d for d in deals if d.entry == mt5.DEAL_ENTRY_OUT]
         pnl = sum(d.profit + d.swap + d.commission for d in deals)
@@ -284,23 +292,23 @@ _dca = dict(DCA_EMPTY)
 
 def _dca_load():
     try:
-        _dca.update({**DCA_EMPTY, **json.loads(DCA_FILE.read_text(encoding="utf-8"))})
+        C().dca.update({**DCA_EMPTY, **json.loads(C().dca_file.read_text(encoding="utf-8"))})
     except Exception:
         pass
 
 
 def _dca_save():
     try:
-        DCA_FILE.parent.mkdir(parents=True, exist_ok=True)
-        DCA_FILE.write_text(json.dumps(_dca, ensure_ascii=False), encoding="utf-8")
+        C().dca_file.parent.mkdir(parents=True, exist_ok=True)
+        C().dca_file.write_text(json.dumps(C().dca, ensure_ascii=False), encoding="utf-8")
     except Exception:
         pass
 
 
 def _dca_reset():
-    copytrade.set_plan(0)
-    _dca.clear()
-    _dca.update(DCA_EMPTY)
+    _copy().set_plan(0)
+    C().dca.clear()
+    C().dca.update(DCA_EMPTY)
     _dca_save()
 
 
@@ -312,11 +320,11 @@ def _avg(ps):
 def _set_sl(p, sl):
     info = mt5.symbol_info(SYM)
     return _send({"action": mt5.TRADE_ACTION_SLTP, "symbol": SYM, "position": p.ticket,
-                  "sl": round(sl, info.digits), "tp": p.tp, "magic": MAGIC})
+                  "sl": round(sl, info.digits), "tp": p.tp, "magic": C().magic})
 
 
 def _close_all(why):
-    copytrade.copy_close(why)
+    _copy().copy_close(why)
     for p in _bot_positions():
         try:
             _close_pos(p, why)
@@ -328,16 +336,16 @@ def _close_part(pct, why):
     """Chốt pct% khối lượng chiến dịch (tính trên khối lượng lúc chạm TP1), chia vào các lệnh theo thứ tự."""
     info = mt5.symbol_info(SYM)
     step, vmin = info.volume_step or 0.01, info.volume_min
-    want = math.floor(_dca["vol_tp"] * pct / 100 / step + 1e-9) * step
+    want = math.floor(C().dca["vol_tp"] * pct / 100 / step + 1e-9) * step
     if want < vmin - 1e-9:
-        log(f"{why}: khối lượng {_dca['vol_tp']:.2f} lot quá nhỏ để chốt {pct}% (tối thiểu {vmin}), giữ nguyên lệnh.", "info")
+        log(f"{why}: khối lượng {C().dca['vol_tp']:.2f} lot quá nhỏ để chốt {pct}% (tối thiểu {vmin}), giữ nguyên lệnh.", "info")
         return
     left = round(want, 2)
     tot = sum(p.volume for p in _bot_positions())
     if tot > 0:
-        copytrade.copy_part(min(1.0, want / tot), why)
+        _copy().copy_part(min(1.0, want / tot), why)
     if why == "TP1":
-        copytrade.set_plan(0)
+        _copy().set_plan(0)
     for p in sorted(_bot_positions(), key=lambda x: x.ticket):
         if left < vmin - 1e-9:
             break
@@ -358,22 +366,22 @@ def _dca_levels(d, sg=None):
     """Tính lại TP1/TP2 theo giá trung bình thật của các lệnh và SL chung (chỉ khi chưa chốt TP1)."""
     ps = _bot_positions()
     avg = _avg(ps)
-    if avg is None or _dca["sl"] is None or _dca["tp1"]:
+    if avg is None or C().dca["sl"] is None or C().dca["tp1"]:
         return
-    R = _dca["dir"] * (avg - _dca["sl"])
+    R = C().dca["dir"] * (avg - C().dca["sl"])
     if R <= 0:
         return
-    t1 = avg + _dca["dir"] * d["tp1r"] * R
-    t2 = avg + _dca["dir"] * d["tp2r"] * R
+    t1 = avg + C().dca["dir"] * d["tp1r"] * R
+    t2 = avg + C().dca["dir"] * d["tp2r"] * R
     if d["cap"] and sg:
-        if _dca["dir"] == 1:
+        if C().dca["dir"] == 1:
             band = min(sg["up"], sg["upx"]) if sg["ready"] and sg["upx"] is not None else sg["up"]
         else:
             band = max(sg["lo"], sg["lox"]) if sg["ready"] and sg["lox"] is not None else sg["lo"]
-        if _dca["dir"] * (band - t1) > 0 and _dca["dir"] * (band - t2) < 0:
+        if C().dca["dir"] * (band - t1) > 0 and C().dca["dir"] * (band - t2) < 0:
             t2 = band
-    _dca["tp1px"], _dca["tp2px"] = t1, t2
-    copytrade.set_plan(abs(t1 - avg), d["be"], d["be_off"])      # khoảng TP1 cho TP1 đặt sẵn trên sàn của tài khoản copy
+    C().dca["tp1px"], C().dca["tp2px"] = t1, t2
+    _copy().set_plan(abs(t1 - avg), d["be"], d["be_off"])      # khoảng TP1 cho TP1 đặt sẵn trên sàn của tài khoản copy
 
 
 _sl_seen = {}
@@ -382,7 +390,7 @@ _sl_seen = {}
 def _sl_watch(ps, dr, px):
     """SL lệnh bot chỉ do bot đặt (SL chung lúc vào, hoặc hòa vốn sau TP1). Thấy SL khác → có EA / người / phần mềm
     khác trên MT5 tín hiệu đang sửa lệnh bot: báo Telegram và trả SL về đúng mức của bot."""
-    want = _dca["sl_be"] if _dca["tp1"] and _dca["sl_be"] else _dca["sl"]
+    want = C().dca["sl_be"] if C().dca["tp1"] and C().dca["sl_be"] else C().dca["sl"]
     if not want:
         return
     info = mt5.symbol_info(SYM)
@@ -414,25 +422,25 @@ def _sl_watch(ps, dr, px):
 def _dca_live(c):
     """Chạy mỗi vòng (2 giây): phát hiện chiến dịch đã kết thúc, giá chạm TP1/TP2 → chốt từng phần, dời SL hòa vốn."""
     d = c["dca"]
-    if not _dca["dir"]:
+    if not C().dca["dir"]:
         return
     ps = _bot_positions()
     if not ps:
-        log(f"Chiến dịch {'BUY' if _dca['dir'] > 0 else 'SELL'} DCA kết thúc ({_dca['legs']} lệnh).", "info", tele=False)
-        copytrade.copy_close("chiến dịch đã kết thúc trên tài khoản tín hiệu")
+        log(f"Chiến dịch {'BUY' if C().dca['dir'] > 0 else 'SELL'} DCA kết thúc ({C().dca['legs']} lệnh).", "info", tele=False)
+        _copy().copy_close("chiến dịch đã kết thúc trên tài khoản tín hiệu")
         _dca_reset()
         return
     tick = mt5.symbol_info_tick(SYM)
     if not tick or tick.bid <= 0:
         return
-    dr = _dca["dir"]
+    dr = C().dca["dir"]
     px = tick.bid if dr > 0 else tick.ask                       # giá đóng lệnh
     _sl_watch(ps, dr, px)
     tp2p = max(0, min(d["tp2p"], 100 - d["tp1p"]))
     changed = False
-    if not _dca["tp1"] and _dca["tp1px"] and dr * (px - _dca["tp1px"]) >= 0:
+    if not C().dca["tp1"] and C().dca["tp1px"] and dr * (px - C().dca["tp1px"]) >= 0:
         avg0 = _avg(ps)                                         # giá TB cả chiến dịch (trước khi chốt từng phần)
-        _dca["tp1"], _dca["vol_tp"], changed = True, round(sum(p.volume for p in ps), 2), True
+        C().dca["tp1"], C().dca["vol_tp"], changed = True, round(sum(p.volume for p in ps), 2), True
         _close_part(d["tp1p"], "TP1")
         ps = _bot_positions()
         if d["be"] and ps:
@@ -445,13 +453,13 @@ def _dca_live(c):
                         _set_sl(p, be)
                     except Exception as e:
                         log(f"Không dời SL hòa vốn #{p.ticket}: {e}", "err")
-            _dca["sl_be"] = be
+            C().dca["sl_be"] = be
             log(f"DCA: chạm TP1 → dời SL về hòa vốn {be:.2f}", "info")
-            copytrade.copy_beavg(d["be_off"])
+            _copy().copy_beavg(d["be_off"])
         if tp2p == 0:
-            _dca["tp2"] = True
-    if _dca["tp1"] and not _dca["tp2"] and tp2p > 0 and _dca["tp2px"] and dr * (px - _dca["tp2px"]) >= 0 and _bot_positions():
-        _dca["tp2"], changed = True, True
+            C().dca["tp2"] = True
+    if C().dca["tp1"] and not C().dca["tp2"] and tp2p > 0 and C().dca["tp2px"] and dr * (px - C().dca["tp2px"]) >= 0 and _bot_positions():
+        C().dca["tp2"], changed = True, True
         _close_part(tp2p, "TP2")
     if changed:
         _dca_save()
@@ -463,25 +471,25 @@ def _dca_bar(c, bars, b, fixed):
     sigs = dca_signals(bars, d)
     sg = sigs[-1] if sigs else None
     if not sg:
-        _state["msg"] += " · DCA: chưa đủ nến"
+        C().st["msg"] += " · DCA: chưa đủ nến"
         return
     t_now = bars[-1][0]
     since = lambda t0: sum(1 for x in bars if x[0] > t0)
     ps = _bot_positions()
-    dr = _dca["dir"]
+    dr = C().dca["dir"]
     if dr and not ps:                                           # SL/đóng tay giữa 2 vòng
-        copytrade.copy_close("chiến dịch đã kết thúc trên tài khoản tín hiệu")
+        _copy().copy_close("chiến dịch đã kết thúc trên tài khoản tín hiệu")
         _dca_reset()
         dr = 0
     if not dr and ps:                                           # lệnh bot cũ (chiến lược khác) còn mở
-        if not _dca["wait_msg"]:
-            _dca["wait_msg"] = True
+        if not C().dca["wait_msg"]:
+            C().dca["wait_msg"] = True
             log(f"DCA: còn {len(ps)} lệnh bot cũ đang mở, chờ chúng đóng mới bắt đầu chiến dịch.", "info", tele=False)
         return
-    _dca["wait_msg"] = False
+    C().dca["wait_msg"] = False
     go = sg["go"]
     if go:
-        _state["sig"] = {"t": go, "side": "BUY" if go > 0 else "SELL", "e": sg["c"], "sl": _dca["sl"] or 0,
+        C().st["sig"] = {"t": go, "side": "BUY" if go > 0 else "SELL", "e": sg["c"], "sl": C().dca["sl"] or 0,
                          "bar": int(t_now), "kind": "ĐC*" if sg["rev"] else "", "at": _now_vn()}
         log(f"Tín hiệu DCA {'BUY' if go > 0 else 'SELL'}{' ĐC*' if sg['rev'] else ''} {c['tf']} @ {sg['c']:.2f}", "info", tele=False)
 
@@ -490,9 +498,9 @@ def _dca_bar(c, bars, b, fixed):
     if dr:
         cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
         opp = go == -dr
-        soft = d["soft"] and not _dca["rev"] and sg["ready"] and (cl < vw - d["soft_sig"] * sd if dr > 0 else cl > vw + d["soft_sig"] * sd)
-        tout = d["time"] > 0 and not _dca["tp1"] and since(_dca["start_t"]) >= d["time"]
-        tr_on = _dca["tp1"] if d["trail_after"] == 1 else _dca["tp2"]
+        soft = d["soft"] and not C().dca["rev"] and sg["ready"] and (cl < vw - d["soft_sig"] * sd if dr > 0 else cl > vw + d["soft_sig"] * sd)
+        tout = d["time"] > 0 and not C().dca["tp1"] and since(C().dca["start_t"]) >= d["time"]
+        tr_on = C().dca["tp1"] if d["trail_after"] == 1 else C().dca["tp2"]
         trail = d["trail"] and tr_on and (cl < sg["ema21"] if dr > 0 else cl > sg["ema21"])
         why = "tín hiệu ngược" if opp else "SL mềm VWAP" if soft else "hết giờ" if tout else "trail EMA21" if trail else ""
         if why:
@@ -527,18 +535,18 @@ def _dca_bar(c, bars, b, fixed):
             log(f"Không vào lệnh DCA: {block}", "err")
             return
         _dca_open(c, go, sl, sg, b, fixed, first=True, why="đảo chiều" if want_rev else "")
-    elif dr and go == dr and not _dca["tp1"] and _dca["legs"] < _dca_cap(d, b, fixed):
-        gap_ok = (sg["c"] <= _dca["last_px"] - d["gap"] * sg["atr"] if dr > 0 else sg["c"] >= _dca["last_px"] + d["gap"] * sg["atr"]) \
-            and since(_dca["last_t"]) >= d["min_bars"]
-        struct_ok = (sg["c"] > _dca["sl"] if dr > 0 else sg["c"] < _dca["sl"]) and (_dca["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
+    elif dr and go == dr and not C().dca["tp1"] and C().dca["legs"] < _dca_cap(d, b, fixed):
+        gap_ok = (sg["c"] <= C().dca["last_px"] - d["gap"] * sg["atr"] if dr > 0 else sg["c"] >= C().dca["last_px"] + d["gap"] * sg["atr"]) \
+            and since(C().dca["last_t"]) >= d["min_bars"]
+        struct_ok = (sg["c"] > C().dca["sl"] if dr > 0 else sg["c"] < C().dca["sl"]) and (C().dca["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
         if gap_ok and struct_ok:
             if block:
                 log(f"Không thêm lệnh DCA: {block}", "err")
             else:
-                _dca_open(c, dr, _dca["sl"], sg, b, fixed, first=False)
+                _dca_open(c, dr, C().dca["sl"], sg, b, fixed, first=False)
 
     # 5. Cập nhật TP theo giá trung bình (dải TMA/VWAP thay đổi theo nến)
-    if _dca["dir"]:
+    if C().dca["dir"]:
         _dca_levels(d, sg)
         _dca_save()
 
@@ -583,31 +591,31 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
             log("DCA: vốn dưới mức 100$ của bảng vốn.", "err")
             return
     else:
-        lot = _dca["lot"]
+        lot = C().dca["lot"]
     try:
         lot = _norm_lot(info, lot)
-        n = 1 if first else _dca["legs"] + 1
+        n = 1 if first else C().dca["legs"] + 1
         res = _send({
             "action": mt5.TRADE_ACTION_DEAL, "symbol": SYM, "volume": lot,
             "type": mt5.ORDER_TYPE_BUY if buy else mt5.ORDER_TYPE_SELL, "price": price, "deviation": DEVIATION,
-            "magic": MAGIC, "comment": f"{COMMENT} DCA{n}", "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
+            "magic": C().magic, "comment": f"{COMMENT} DCA{n}", "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
             "sl": round(sl, info.digits), "tp": 0.0,
         })
     except Exception as e:
         log(f"Bỏ lệnh DCA {'BUY' if buy else 'SELL'}: {e}", "err")
         return
-    _state["known"][res.order] = "BUY" if buy else "SELL"
+    C().st["known"][res.order] = "BUY" if buy else "SELL"
     if first:
-        _dca.update({**DCA_EMPTY, "dir": dr, "rev": bool(sg["rev"]), "sl": sl, "legs": 1, "lot": lot,
+        C().dca.update({**DCA_EMPTY, "dir": dr, "rev": bool(sg["rev"]), "sl": sl, "legs": 1, "lot": lot,
                      "last_px": sg["c"], "last_t": sg["t"], "start_t": sg["t"]})
     else:
-        _dca.update({"legs": n, "last_px": sg["c"], "last_t": sg["t"]})
+        C().dca.update({"legs": n, "last_px": sg["c"], "last_t": sg["t"]})
     _dca_levels(d, sg)
     _dca_save()
-    kind = ("BUY" if buy else "SELL") + (" ĐC*" if _dca["rev"] else "")
+    kind = ("BUY" if buy else "SELL") + (" ĐC*" if C().dca["rev"] else "")
     lbl = (f"Mở chiến dịch {kind}" + (f" ({why})" if why else "")) if first else f"Thêm lệnh DCA {n}/{_dca_cap(d, b, fixed)} {kind}"
-    log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · SL chung {sl:.2f} · TP1 {(_dca['tp1px'] or 0):.2f} · TP2 {(_dca['tp2px'] or 0):.2f}", "open")
-    copytrade.copy_open(dr, float(res.volume), abs(float(res.price) - sl), d["tp1p"] if not _dca["tp1"] else 0, float(res.price))
+    log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · SL chung {sl:.2f} · TP1 {(C().dca['tp1px'] or 0):.2f} · TP2 {(C().dca['tp2px'] or 0):.2f}", "open")
+    _copy().copy_open(dr, float(res.volume), abs(float(res.price) - sl), d["tp1p"] if not C().dca["tp1"] else 0, float(res.price))
 
 
 # ---------- Chiến lược PinYin EMA Cloud Pullback (strategy = "cpb") ----------
@@ -625,16 +633,16 @@ _cpb = json.loads(json.dumps(CPB_EMPTY))
 
 def _cpb_load():
     try:
-        x = json.loads(CPB_FILE.read_text(encoding="utf-8"))
-        _cpb.update({**json.loads(json.dumps(CPB_EMPTY)), **x})
+        x = json.loads(C().cpb_file.read_text(encoding="utf-8"))
+        C().cpb.update({**json.loads(json.dumps(CPB_EMPTY)), **x})
     except Exception:
         pass
 
 
 def _cpb_save():
     try:
-        CPB_FILE.parent.mkdir(parents=True, exist_ok=True)
-        CPB_FILE.write_text(json.dumps(_cpb, ensure_ascii=False), encoding="utf-8")
+        C().cpb_file.parent.mkdir(parents=True, exist_ok=True)
+        C().cpb_file.write_text(json.dumps(C().cpb, ensure_ascii=False), encoding="utf-8")
     except Exception:
         pass
 
@@ -657,8 +665,8 @@ def cpb_max_lot(d, base):
 
 def _cpb_warn(msg):
     """Báo 1 lần cho cùng một lỗi (không spam Telegram mỗi nến)."""
-    if _cpb.get("warn") != msg:
-        _cpb["warn"] = msg
+    if C().cpb.get("warn") != msg:
+        C().cpb["warn"] = msg
         log(msg, "err")
         _cpb_save()
 
@@ -671,12 +679,12 @@ def _cpb_open(go, lot, sl, tp, why, R=0.0):
     lot = _norm_lot(info, lot)
     req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYM, "volume": lot,
            "type": mt5.ORDER_TYPE_BUY if buy else mt5.ORDER_TYPE_SELL, "price": price, "deviation": DEVIATION,
-           "magic": MAGIC, "comment": CPB_COMMENT, "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
+           "magic": C().magic, "comment": CPB_COMMENT, "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
            "sl": round(sl, info.digits) if sl else 0.0, "tp": round(tp, info.digits) if tp else 0.0}
     res = _send(req)
-    _state["known"][res.order] = "BUY" if buy else "SELL"
-    _cpb["pos"][str(res.order)] = {"R": R, "lot0": float(res.volume), "half": False, "be": False}
-    _cpb["warn"] = ""
+    C().st["known"][res.order] = "BUY" if buy else "SELL"
+    C().cpb["pos"][str(res.order)] = {"R": R, "lot0": float(res.volume), "half": False, "be": False}
+    C().cpb["warn"] = ""
     _cpb_save()
     lv = (f" · SL {sl:.{info.digits}f} · TP {tp:.{info.digits}f}" if sl else " · KHÔNG SL")
     log(f"Cloud PB {'BUY' if buy else 'SELL'} {res.volume} lot @ {res.price:.{info.digits}f}{lv}" + (f" ({why})" if why else ""), "open")
@@ -686,8 +694,8 @@ def _cpb_open(go, lot, sl, tp, why, R=0.0):
 def _cpb_gone(ps):
     """Lệnh Cloud PB đã đóng (SL/TP/đóng tay): cập nhật đếm tăng lot sau SL."""
     live = {str(p.ticket) for p in ps}
-    for t in [t for t in _cpb["pos"] if t not in live]:
-        _cpb["pos"].pop(t, None)
+    for t in [t for t in C().cpb["pos"] if t not in live]:
+        C().cpb["pos"].pop(t, None)
         try:
             deals = mt5.history_deals_get(position=int(t)) or []
         except Exception:
@@ -695,9 +703,9 @@ def _cpb_gone(ps):
         pnl = sum(x.profit + x.swap + x.commission for x in deals)
         out = [x for x in deals if x.entry == mt5.DEAL_ENTRY_OUT]
         if pnl > 0:
-            _cpb["mart"] = 0
+            C().cpb["mart"] = 0
         elif out and out[-1].reason == mt5.DEAL_REASON_SL and pnl < 0:
-            _cpb["mart"] += 1
+            C().cpb["mart"] += 1
         _cpb_save()
 
 
@@ -707,8 +715,8 @@ def _cpb_live(c):
     ps = _cpb_positions()
     _cpb_gone(ps)
     if not ps:
-        if _cpb["zr"]["dir"]:
-            _cpb["zr"].update(dir=0, lot=0.0, trig=False, eq0=None)
+        if C().cpb["zr"]["dir"]:
+            C().cpb["zr"].update(dir=0, lot=0.0, trig=False, eq0=None)
             _cpb_save()
         return
     info = mt5.symbol_info(SYM)
@@ -716,7 +724,7 @@ def _cpb_live(c):
     if not info or not tick or tick.bid <= 0:
         return
     if d["mg"] == "zr":
-        z = _cpb["zr"]
+        z = C().cpb["zr"]
         if not z["dir"]:                                        # khởi động lại giữa cụm: lấy lại từ lệnh mới nhất
             p = max(ps, key=lambda x: x.time_msc)
             z.update(dir=1 if p.type == mt5.POSITION_TYPE_BUY else -1, lot=p.volume)
@@ -743,7 +751,7 @@ def _cpb_live(c):
         step, vmin = info.volume_step or 0.01, info.volume_min
         mind = (info.trade_stops_level + 1) * info.point
         for p in ps:
-            m = _cpb["pos"].get(str(p.ticket))
+            m = C().cpb["pos"].get(str(p.ticket))
             if not m or m["half"] or not m["R"]:
                 continue
             buy = p.type == mt5.POSITION_TYPE_BUY
@@ -782,7 +790,7 @@ def _cpb_bar(c, bars, b, fixed):
     t_bar = bars[i][0]
     if sig and d["entry"] != "hold":
         s = sig[0]
-        _state["sig"] = {"t": s["go"], "side": "BUY" if s["go"] > 0 else "SELL", "e": bars[i][4], "sl": s["sl"],
+        C().st["sig"] = {"t": s["go"], "side": "BUY" if s["go"] > 0 else "SELL", "e": bars[i][4], "sl": s["sl"],
                          "bar": int(t_bar), "kind": "", "at": _now_vn()}
         log(f"Tín hiệu Cloud PB {'BUY' if s['go'] > 0 else 'SELL'} {c['tf']} @ {bars[i][4]:.2f}", "info", tele=False)
     base = fixed or (b[2] if b else None)
@@ -798,7 +806,7 @@ def _cpb_bar(c, bars, b, fixed):
         return
 
     if d["mg"] == "zr":
-        z = _cpb["zr"]
+        z = C().cpb["zr"]
         if not _hedging(a):
             if sig or ps:
                 _cpb_warn("Cloud PB Không SL cần tài khoản HEDGING (giữ BUY và SELL cùng lúc). Tài khoản này là Netting.")
@@ -837,7 +845,7 @@ def _cpb_bar(c, bars, b, fixed):
 
     # ---- pine / half: lá chắn ở nến đóng (giống backtest) ----
     for p in ps:
-        m = _cpb["pos"].get(str(p.ticket))
+        m = C().cpb["pos"].get(str(p.ticket))
         if not m or not m["R"]:
             continue
         buy = p.type == mt5.POSITION_TYPE_BUY
@@ -888,11 +896,116 @@ def _cpb_bar(c, bars, b, fixed):
         if R < mind:
             log(f"Cloud PB: giá {price} đã quá gần/vượt SL {s['sl']:.2f}, bỏ tín hiệu.", "err")
             continue
-        lot = cloud_pb.mart_lot(base, d, _cpb["mart"], info.volume_step or 0.01)
+        lot = cloud_pb.mart_lot(base, d, C().cpb["mart"], info.volume_step or 0.01)
         try:
-            _cpb_open(go, lot, s["sl"], price + go * d["rr"] * R, f"lot ×{_cpb['mart']} lần sau SL" if _cpb["mart"] and d["mart"] != "off" else "", R)
+            _cpb_open(go, lot, s["sl"], price + go * d["rr"] * R, f"lot ×{C().cpb['mart']} lần sau SL" if C().cpb["mart"] and d["mart"] != "off" else "", R)
         except Exception as e:
             log(f"Cloud PB: bỏ lệnh {'BUY' if go > 0 else 'SELL'}: {e}", "err")
+
+
+# ---------- Nhiều bot chạy song song ----------
+# Bot 1 = cài đặt cũ (data/auto_xau.json, magic 260117, được copy lệnh). Bot phụ: magic 260131+, tệp riêng, KHÔNG copy.
+# Ngữ cảnh theo luồng: luồng không chọn bot (copy lệnh, lá chắn, theo dõi máy chủ) luôn thấy Bot 1.
+
+class _Ctx:
+    def __init__(self, sid, name, magic, cfg_file, dca_file, cpb_file, dca, cpb, st, copy):
+        self.sid, self.name, self.magic, self.copy = sid, name, magic, copy
+        self.cfg_file, self.dca_file, self.cpb_file = cfg_file, dca_file, cpb_file
+        self.dca, self.cpb, self.st = dca, cpb, st
+        self.err_at = 0
+
+
+_MAIN = _Ctx("main", "Bot 1", 260117, CFG_FILE, DCA_FILE, CPB_FILE, _dca, _cpb, _state, True)
+_tl = threading.local()
+SLOTS_FILE = ROOT / "data" / "auto_slots.json"
+MAX_BOTS = 6
+SLOT_MAGIC0 = 260131
+_ctxs = {}                       # id → _Ctx của bot phụ
+
+
+def C():
+    return getattr(_tl, "c", None) or _MAIN
+
+
+@contextmanager
+def _use(ctx):
+    old = getattr(_tl, "c", None)
+    _tl.c = ctx
+    try:
+        yield ctx
+    finally:
+        _tl.c = old
+
+
+class _NoCopy:
+    def __getattr__(self, k):
+        return lambda *a, **kw: None
+
+
+_NOCOPY = _NoCopy()
+
+
+def _copy():
+    return copytrade if C().copy else _NOCOPY
+
+
+def _slots():
+    try:
+        x = json.loads(SLOTS_FILE.read_text(encoding="utf-8"))
+        return {"main": x.get("main") or "Bot 1", "bots": list(x.get("bots") or [])}
+    except Exception:
+        return {"main": "Bot 1", "bots": []}
+
+
+def _slots_save(x):
+    SLOTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    SLOTS_FILE.write_text(json.dumps(x, ensure_ascii=False), encoding="utf-8")
+
+
+def _all_ctx():
+    """[Bot 1, bot phụ...] — đồng bộ với tệp danh sách bot."""
+    x = _slots()
+    _MAIN.name = x["main"]
+    ids = set()
+    for b in x["bots"]:
+        ids.add(b["id"])
+        ctx = _ctxs.get(b["id"])
+        if not ctx:
+            d = ROOT / "data"
+            ctx = _Ctx(b["id"], b["name"], int(b["magic"]), d / f"auto_bot_{b['id']}.json", d / f"auto_dca_{b['id']}.json",
+                       d / f"auto_cpb_{b['id']}.json", dict(DCA_EMPTY), json.loads(json.dumps(CPB_EMPTY)),
+                       {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}, False)
+            with _use(ctx):
+                _dca_load()
+                _cpb_load()
+            _ctxs[b["id"]] = ctx
+        ctx.name = b["name"]
+    for k in [k for k in _ctxs if k not in ids]:
+        _ctxs.pop(k, None)
+    return [_MAIN] + [_ctxs[b["id"]] for b in x["bots"]]
+
+
+def _ctx_of(slot):
+    if not slot or slot == "main":
+        return _MAIN
+    _all_ctx()
+    return _ctxs.get(slot)
+
+
+def _on_of(ctx):
+    with _use(ctx):
+        return bool(_cfg().get("on"))
+
+
+def stop_all(why):
+    """Tắt mọi bot (đổi tài khoản MT5...)."""
+    for ctx in _all_ctx():
+        with _use(ctx):
+            c = _cfg()
+            if c.get("on"):
+                _save({**c, "on": False})
+            C().st["known"].clear()
+            C().st["last_bar"] = 0
 
 
 def _step():
@@ -902,7 +1015,7 @@ def _step():
         off, _ = server_offset()
         _check_closed(off)
         if not mt5.symbol_select(SYM, True):
-            _state["msg"] = "Broker không có XAUUSD"
+            C().st["msg"] = "Broker không có XAUUSD"
             return
         cpb = c["strategy"] == "cpb"
         if cpb:
@@ -911,20 +1024,20 @@ def _step():
             _dca_live(c)                         # chốt TP1/TP2 theo giá thực, mỗi 2 giây
         r = mt5.copy_rates_from_pos(SYM, tf_code, 0, 1500)
         if r is None or len(r) < 30:
-            _state["msg"] = "Chưa đủ nến"
+            C().st["msg"] = "Chưa đủ nến"
             return
         bar = int(r[-2]["time"]) - off            # nến vừa đóng (nến cuối đang chạy)
-        if not _state["last_bar"]:              # vừa bật: không vào theo tín hiệu cũ
-            _state["last_bar"] = bar
+        if not C().st["last_bar"]:              # vừa bật: không vào theo tín hiệu cũ
+            C().st["last_bar"] = bar
         a = mt5.account_info()
         cap, b = _tier(a) if a else (None, None)
         if a:
-            copytrade.set_master(a.login, a.server)
-        _state["lot"] = b[2] if b else None
-        _state["msg"] = f"Đang theo dõi {c['tf']} · nến đóng {datetime.fromtimestamp(bar, VN):%H:%M}"
-        if bar <= _state["last_bar"]:
+            _copy().set_master(a.login, a.server)
+        C().st["lot"] = b[2] if b else None
+        C().st["msg"] = f"Đang theo dõi {c['tf']} · nến đóng {datetime.fromtimestamp(bar, VN):%H:%M}"
+        if bar <= C().st["last_bar"]:
             return
-        _state["last_bar"] = bar
+        C().st["last_bar"] = bar
         bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                  float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]
         if cpb:
@@ -943,24 +1056,25 @@ def _hb(name):
 
 def _loop():
     _load_log()
-    err_at = 0
     while True:
-        try:
-            if _cfg()["on"]:
-                with _lock:
-                    _step()
-                    _state["check"] = time.time()
-            else:
-                _state["msg"] = "Đang tắt"
-                _state["last_bar"] = 0
-                if _state["known"]:              # bot tắt nhưng lệnh cũ còn: vẫn báo khi chạm SL/TP
-                    with _lock, mt5_service.session():
-                        _check_closed(0)
-        except Exception as e:
-            _state["msg"] = f"Lỗi: {e}"
-            if time.time() - err_at > 600:      # báo lỗi tối đa 10 phút/lần
-                err_at = time.time()
-                log(f"Lỗi: {e}", "err")
+        for ctx in _all_ctx():
+            with _use(ctx):
+                try:
+                    if _cfg()["on"]:
+                        with _lock:
+                            _step()
+                            C().st["check"] = time.time()
+                    else:
+                        C().st["msg"] = "Đang tắt"
+                        C().st["last_bar"] = 0
+                        if C().st["known"]:          # bot tắt nhưng lệnh cũ còn: vẫn báo khi chạm SL/TP
+                            with _lock, mt5_service.session():
+                                _check_closed(0)
+                except Exception as e:
+                    C().st["msg"] = f"Lỗi: {e}"
+                    if time.time() - ctx.err_at > 600:  # báo lỗi tối đa 10 phút/lần mỗi bot
+                        ctx.err_at = time.time()
+                        log(f"Lỗi: {e}", "err")
         _hb('bot')
         time.sleep(LOOP_SEC)
 
@@ -977,8 +1091,10 @@ def start():
         threading.Thread(target=_loop, daemon=True, name="pinyin-auto").start()
         try:                                    # nhớ lại các lệnh bot đang mở để báo khi chúng đóng
             with mt5_service.session():
-                for p in _bot_positions():
-                    _state["known"][p.ticket] = "BUY" if p.type == mt5.POSITION_TYPE_BUY else "SELL"
+                for ctx in _all_ctx():
+                    with _use(ctx):
+                        for p in _bot_positions():
+                            C().st["known"][p.ticket] = "BUY" if p.type == mt5.POSITION_TYPE_BUY else "SELL"
         except Exception:
             pass
 
@@ -1016,27 +1132,44 @@ class TgIn(BaseModel):
 
 
 @router.get("/auto")
-def auto_status():
+def auto_status(slot: str = "main"):
+    ctx = _ctx_of(slot)
+    if not ctx:
+        return {"ok": False, "loi": "Không có bot này."}
+    with _lock, _use(ctx):
+        return _auto_status()
+
+
+def _auto_status():
     c = _cfg()
     pos = []
     try:
         with mt5_service.session():
             a = mt5.account_info()
-            if a and _state["lot"] is None:
+            if a and C().st["lot"] is None:
                 b = _tier(a)[1]
-                _state["lot"] = b[2] if b else None
+                C().st["lot"] = b[2] if b else None
             pos = [{"ticket": p.ticket, "t": "BUY" if p.type == mt5.POSITION_TYPE_BUY else "SELL", "lot": p.volume,
                     "e": p.price_open, "sl": p.sl, "tp": p.tp, "profit": p.profit + p.swap} for p in _bot_positions()]
     except Exception:
         pass
-    return {"ok": True, "cfg": c, "msg": _state["msg"], "check": _state["check"], "lot": _state["lot"],
-            "sig": _state["sig"], "pos": pos, "log": list(_log)[:30], "camp": dict(_dca),
-            "cpb": {"mart": _cpb["mart"], "zr": dict(_cpb["zr"]), "warn": _cpb.get("warn", ""), "max_lot": MAX_LOT},
+    return {"ok": True, "cfg": c, "msg": C().st["msg"], "check": C().st["check"], "lot": C().st["lot"],
+            "sig": C().st["sig"], "pos": pos, "log": [e for e in _log if e.get("b", "main") == C().sid][:30], "camp": dict(C().dca),
+            "bot": {"id": C().sid, "name": C().name, "magic": C().magic, "copy": C().copy},
+            "cpb": {"mart": C().cpb["mart"], "zr": dict(C().cpb["zr"]), "warn": C().cpb.get("warn", ""), "max_lot": MAX_LOT},
             "tg": bool(_env("TELEGRAM_BOT_TOKEN")), "tg_chat": bool(_env("TELEGRAM_CHAT_ID"))}
 
 
 @router.post("/auto")
-def auto_set(x: AutoIn):
+def auto_set(x: AutoIn, slot: str = "main"):
+    ctx = _ctx_of(slot)
+    if not ctx:
+        return {"ok": False, "loi": "Không có bot này."}
+    with _lock, _use(ctx):
+        return _auto_set(x)
+
+
+def _auto_set(x: AutoIn):
     c = _cfg()
     was = c["on"]
     if x.tf is not None:
@@ -1136,6 +1269,17 @@ def auto_set(x: AutoIn):
         c["lot"] = round(x.lot, 2)
     if x.on is not None:
         c["on"] = x.on
+    if c["on"] and not was:
+        others = [o.name for o in _all_ctx() if o is not C() and _on_of(o)]
+        if others:
+            try:
+                with mt5_service.session():
+                    hed = _hedging(mt5.account_info())
+            except Exception as e:
+                return {"ok": False, "loi": f"Không đọc được MT5: {e}"}
+            if not hed:
+                return {"ok": False, "loi": f"Đang chạy {', '.join(others)}. Chạy nhiều bot cùng lúc cần tài khoản HEDGING "
+                                            "(tài khoản này là Netting: các lệnh cùng mã gộp làm một, bot sẽ giẫm lên nhau)."}
     if c["on"] and c["strategy"] == "cpb":
         d = c["cpb"]
         try:
@@ -1155,7 +1299,7 @@ def auto_set(x: AutoIn):
                                             f"(PINYIN_MAX_LOT trong .env). Giảm lot / số lệnh tối đa, hoặc tăng PINYIN_MAX_LOT."}
     _save(c)
     with _lock:
-        _state["last_bar"] = 0                  # đổi cài đặt / bật lại: chỉ vào theo tín hiệu MỚI
+        C().st["last_bar"] = 0                  # đổi cài đặt / bật lại: chỉ vào theo tín hiệu MỚI
     nm = STRATS.get(c["strategy"], c["strategy"])
     if c["strategy"] == "cpb":
         d = c["cpb"]
@@ -1211,7 +1355,13 @@ def _bt_sweep_keys():
 
 
 @router.post("/auto/backtest")
-def auto_backtest(x: BtIn):
+def auto_backtest(x: BtIn, slot: str = "main"):
+    ctx = _ctx_of(slot) or _MAIN
+    with _use(ctx):                              # không giữ khóa: backtest chạy lâu, bot vẫn chạy song song
+        return _auto_backtest(x)
+
+
+def _auto_backtest(x: BtIn):
     from app.services.backtest import run as bt_run
     c = _cfg()
     over = dict(x.cfg or {})
@@ -1296,6 +1446,89 @@ def auto_backtest(x: BtIn):
         return {"ok": True, "range": rng, "meta": meta, "cfg": c, "sweep": {"key": key, "rows": rows}}
     except Exception as e:
         return {"ok": False, "loi": f"Lỗi backtest: {e}"}
+
+
+# ---------- Danh sách bot (nhiều bot chạy song song) ----------
+
+class SlotIn(BaseModel):
+    act: str                            # add | name | del
+    id: str = ""
+    name: str = ""
+
+
+@router.get("/auto/slots")
+def auto_slots():
+    ctxs = _all_ctx()
+    bym = {}
+    try:
+        with mt5_service.session():
+            for p in mt5.positions_get(symbol=SYM) or []:
+                g = bym.setdefault(p.magic, [0, 0.0])
+                g[0] += 1
+                g[1] += p.profit + p.swap
+    except Exception:
+        pass
+    out = []
+    for ctx in ctxs:
+        with _use(ctx):
+            c = _cfg()
+        n, pnl = bym.get(ctx.magic, [0, 0.0])
+        out.append({"id": ctx.sid, "name": ctx.name, "magic": ctx.magic, "copy": ctx.copy, "on": bool(c.get("on")),
+                    "strategy": c.get("strategy"), "sname": STRATS.get(c.get("strategy"), ""), "tf": c.get("tf"),
+                    "lot": c.get("lot"), "npos": n, "pnl": round(pnl, 2), "msg": ctx.st.get("msg", "")})
+    return {"ok": True, "bots": out, "max": MAX_BOTS}
+
+
+@router.post("/auto/slots")
+def auto_slots_set(x: SlotIn):
+    with _lock:
+        sl = _slots()
+        name = (x.name or "").strip()[:30]
+        if x.act == "add":
+            if 1 + len(sl["bots"]) >= MAX_BOTS:
+                return {"ok": False, "loi": f"Tối đa {MAX_BOTS} bot."}
+            used_id = {b["id"] for b in sl["bots"]}
+            used_m = {int(b["magic"]) for b in sl["bots"]}
+            k = next(i for i in range(2, 100) if f"b{i}" not in used_id)
+            m = next(SLOT_MAGIC0 + i for i in range(100) if SLOT_MAGIC0 + i not in used_m)
+            sl["bots"].append({"id": f"b{k}", "name": name or f"Bot {k}", "magic": m})
+            _slots_save(sl)
+            _all_ctx()
+            log(f"Thêm bot [{name or f'Bot {k}'}] (magic {m}).", "info", tele=False)
+            return {"ok": True, "id": f"b{k}"}
+        if x.act == "name":
+            if not name:
+                return {"ok": False, "loi": "Nhập tên bot."}
+            if x.id == "main":
+                sl["main"] = name
+            else:
+                b = next((b for b in sl["bots"] if b["id"] == x.id), None)
+                if not b:
+                    return {"ok": False, "loi": "Không có bot này."}
+                b["name"] = name
+            _slots_save(sl)
+            _all_ctx()
+            return {"ok": True}
+        if x.act == "del":
+            if x.id == "main":
+                return {"ok": False, "loi": "Không xóa được Bot 1."}
+            ctx = _ctx_of(x.id)
+            if not ctx:
+                return {"ok": False, "loi": "Không có bot này."}
+            if _on_of(ctx):
+                return {"ok": False, "loi": "Tắt bot trước khi xóa."}
+            try:
+                with _use(ctx), mt5_service.session():
+                    n = len(_bot_positions())
+            except Exception:
+                n = 0
+            if n:
+                return {"ok": False, "loi": f"Bot còn {n} lệnh mở. Đóng hết rồi mới xóa."}
+            sl["bots"] = [b for b in sl["bots"] if b["id"] != x.id]
+            _slots_save(sl)
+            _all_ctx()
+            return {"ok": True}
+        return {"ok": False, "loi": "Thao tác không hợp lệ."}
 
 
 # ---------- Tài khoản vào lệnh (copy qua EA PinYinBridge) ----------

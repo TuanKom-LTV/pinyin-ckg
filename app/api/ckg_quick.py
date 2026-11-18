@@ -577,11 +577,7 @@ def q_login(x: LoginIn):
         # đổi tài khoản: tắt bot để không vào lệnh nhầm, xóa theo dõi lệnh của tài khoản cũ
         try:
             from app.api import ckg_auto
-            c = ckg_auto._cfg()
-            if c.get("on"):
-                ckg_auto._save({**c, "on": False})
-            ckg_auto._state["known"].clear()
-            ckg_auto._state["last_bar"] = 0
+            ckg_auto.stop_all("đổi tài khoản MT5")
         except Exception:
             pass
         _half_done.clear()
