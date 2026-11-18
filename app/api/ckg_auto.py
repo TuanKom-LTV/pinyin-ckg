@@ -137,8 +137,8 @@ def _now_vn():
 def log(msg, kind="info", tele=True):
     try:
         cx = C()
-        if cx is not _MAIN or _ctxs:
-            msg = f"[{cx.name}] {msg}"
+        if cx is not _MAIN or _ctxs or cx.tf_force:
+            msg = f"[{_label(cx)}] {msg}"
         sid = cx.sid
     except NameError:
         sid = "main"
@@ -209,7 +209,7 @@ def _sig(text):
     try:
         if not chat or not _cfg().get("tg_sig"):
             return
-        name = C().name
+        name = _label(C())
     except Exception:
         return
     msg = f"{text[:1]} [{name}] {text[1:].strip()}" if text[:1] in "🟢🔵🛡✋⚠" else f"[{name}] {text}"
@@ -1016,6 +1016,60 @@ class _Ctx:
         self.cfg_file, self.dca_file, self.cpb_file = cfg_file, dca_file, cpb_file
         self.dca, self.cpb, self.st = dca, cpb, st
         self.err_at = 0
+        self.tf_force = None             # bot chạy nhiều khung: khung riêng của ngữ cảnh này
+        self.parent = None               # ngữ cảnh con (khung thêm) → bot cha
+
+
+TF_COMBOS = ("M1+M5",)                   # chạy nhiều khung ĐỘC LẬP trong 1 bot
+KID_MAGIC_OFF = 500                      # magic khung thêm = magic bot + 500 × thứ tự
+_kids = {}                               # (id bot, khung) → ngữ cảnh con
+
+
+def _tfs_of(c):
+    t = [x for x in str(c.get("tf") or "M1").split("+") if x in TFS]
+    return t or ["M1"]
+
+
+def _kid(ctx, tf, i):
+    k = (ctx.sid, tf)
+    x = _kids.get(k)
+    if not x:
+        d = ROOT / "data"
+        sfx = f"{ctx.sid}_{tf}"
+        x = _Ctx(f"{ctx.sid}.{tf}", ctx.name, ctx.magic + KID_MAGIC_OFF * i, ctx.cfg_file, d / f"auto_dca_{sfx}.json",
+                 d / f"auto_cpb_{sfx}.json", dict(DCA_EMPTY), json.loads(json.dumps(CPB_EMPTY)),
+                 {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}, True)
+        x.parent = ctx
+        with _use(x):
+            _dca_load()
+            _cpb_load()
+        _kids[k] = x
+    x.name, x.tf_force, x.magic = ctx.name, tf, ctx.magic + KID_MAGIC_OFF * i
+    return x
+
+
+def _kids_of(ctx, tfs=None):
+    """Ngữ cảnh con của bot (các khung thêm đang chọn)."""
+    if tfs is None:
+        with _use(ctx):
+            tfs = _tfs_of(_cfg())
+    return [_kid(ctx, tf, i) for i, tf in enumerate(tfs[1:], 1)]
+
+
+def _run_ctxs():
+    """Mọi ngữ cảnh phải chạy: bot + khung thêm (bot chạy M1 + M5 → 2 chiến dịch độc lập)."""
+    out = []
+    for ctx in _all_ctx():
+        with _use(ctx):
+            tfs = _tfs_of(_cfg())
+        ctx.tf_force = tfs[0] if len(tfs) > 1 else None
+        out.append(ctx)
+        out += _kids_of(ctx, tfs)
+    return out
+
+
+def _label(cx):
+    return cx.name + (f" · {cx.tf_force}" if cx.tf_force else "")
 
 
 _MAIN = _Ctx("main", "Bot 1", 260117, CFG_FILE, DCA_FILE, CPB_FILE, _dca, _cpb, _state, True)   # mọi bot đều là nguồn copy
@@ -1127,6 +1181,14 @@ def _all_ctx():
 
 
 def _ctx_of(slot):
+    if slot and "." in slot:                     # khung thêm của bot: "main.M5", "b2.M5"
+        base, tf = slot.split(".", 1)
+        ctx = _ctx_of(base)
+        if not ctx:
+            return None
+        with _use(ctx):
+            tfs = _tfs_of(_cfg())
+        return _kid(ctx, tf, tfs.index(tf)) if tf in tfs[1:] else _kids.get((base, tf))
     if not slot or slot == "main":
         return _MAIN
     _all_ctx()
@@ -1140,7 +1202,7 @@ def _on_of(ctx):
 
 def stop_all(why):
     """Tắt mọi bot (đổi tài khoản MT5...)."""
-    for ctx in _all_ctx():
+    for ctx in _run_ctxs():
         with _use(ctx):
             c = _cfg()
             if c.get("on"):
@@ -1151,6 +1213,8 @@ def stop_all(why):
 
 def _step():
     c = _cfg()
+    if C().tf_force:                             # bot nhiều khung: mỗi ngữ cảnh chạy khung riêng
+        c["tf"] = C().tf_force
     tf_code, tf_sec = TFS.get(c["tf"], TFS["M1"])
     with mt5_service.session():
         off, _ = server_offset()
@@ -1198,7 +1262,7 @@ def _hb(name):
 def _loop():
     _load_log()
     while True:
-        for ctx in _all_ctx():
+        for ctx in _run_ctxs():
             with _use(ctx):
                 try:
                     if _cfg()["on"]:
@@ -1232,7 +1296,7 @@ def start():
         threading.Thread(target=_loop, daemon=True, name="pinyin-auto").start()
         try:                                    # nhớ lại các lệnh bot đang mở để báo khi chúng đóng
             with mt5_service.session():
-                for ctx in _all_ctx():
+                for ctx in _run_ctxs():
                     with _use(ctx):
                         for p in _bot_positions():
                             C().st["known"][p.ticket] = "BUY" if p.type == mt5.POSITION_TYPE_BUY else "SELL"
@@ -1291,12 +1355,22 @@ def _auto_status():
             if a and C().st["lot"] is None:
                 b = _tier(a)[1]
                 C().st["lot"] = b[2] if b else None
-            pos = [{"ticket": p.ticket, "t": "BUY" if p.type == mt5.POSITION_TYPE_BUY else "SELL", "lot": p.volume,
-                    "e": p.price_open, "sl": p.sl, "tp": p.tp, "profit": p.profit + p.swap} for p in _bot_positions()]
+            tfs = _tfs_of(c)
+            me = C()
+            for cx in [me] + _kids_of(me, tfs):
+                with _use(cx):
+                    pos += [{"ticket": p.ticket, "t": "BUY" if p.type == mt5.POSITION_TYPE_BUY else "SELL", "lot": p.volume,
+                             "e": p.price_open, "sl": p.sl, "tp": p.tp, "profit": p.profit + p.swap,
+                             "tf": (tfs[0] if cx is me else cx.tf_force) if len(tfs) > 1 else None} for p in _bot_positions()]
     except Exception:
         pass
+    camps = None
+    if len(_tfs_of(c)) > 1:
+        me = C()
+        camps = [{"tf": _tfs_of(c)[0], "camp": dict(me.dca), "msg": me.st.get("msg", "")}] + \
+                [{"tf": k.tf_force, "camp": dict(k.dca), "msg": k.st.get("msg", "")} for k in _kids_of(me)]
     return {"ok": True, "cfg": c, "msg": C().st["msg"], "check": C().st["check"], "lot": C().st["lot"],
-            "sig": C().st["sig"], "pos": pos, "log": [e for e in _log if e.get("b", "main") == C().sid][:30], "camp": dict(C().dca),
+            "sig": C().st["sig"], "pos": pos, "log": [e for e in _log if e.get("b", "main").split(".")[0] == C().sid][:30], "camp": dict(C().dca), "camps": camps,
             "bot": {"id": C().sid, "name": C().name, "magic": C().magic, "copy": C().copy},
             "cpb": {"mart": C().cpb["mart"], "zr": dict(C().cpb["zr"]), "warn": C().cpb.get("warn", ""), "max_lot": MAX_LOT},
             "tg": bool(_env("TELEGRAM_BOT_TOKEN")), "tg_chat": bool(_env("TELEGRAM_CHAT_ID")),
@@ -1316,8 +1390,18 @@ def _auto_set(x: AutoIn):
     c = _cfg()
     was = c["on"]
     if x.tf is not None:
-        if x.tf not in TFS:
-            return {"ok": False, "loi": "Khung chỉ M1, M5 hoặc M15."}
+        if x.tf not in TFS and x.tf not in TF_COMBOS:
+            return {"ok": False, "loi": "Khung chỉ M1, M5, M15 hoặc M1 + M5."}
+        drop = [t for t in _tfs_of(c)[1:] if t not in _tfs_of({"tf": x.tf})]
+        for t in drop:                          # bỏ khung thêm đang còn lệnh: không cho (lệnh sẽ không ai quản)
+            k = _ctx_of(f"{C().sid}.{t}")
+            try:
+                with _use(k), mt5_service.session():
+                    n = len(_bot_positions())
+            except Exception:
+                n = 0
+            if n:
+                return {"ok": False, "loi": f"Khung {t} của bot còn {n} lệnh mở. Đóng hết (hoặc chờ đóng) rồi mới bỏ khung {t}."}
         c["tf"] = x.tf
     if x.step is not None:
         if not (0.2 <= x.step <= 100):
@@ -1352,8 +1436,12 @@ def _auto_set(x: AutoIn):
             return {"ok": False, "loi": "Chiến lược không hợp lệ."}
         if x.strategy != c["strategy"]:
             try:
+                me = C()
+                n_open = 0
                 with mt5_service.session():
-                    n_open = len(_bot_positions())
+                    for cx in [me] + _kids_of(me):
+                        with _use(cx):
+                            n_open += len(_bot_positions())
             except Exception:
                 n_open = 0
             if n_open:
@@ -1416,6 +1504,8 @@ def _auto_set(x: AutoIn):
         c["on"] = x.on
     if c["on"] and not was:
         others = [o.name for o in _all_ctx() if o is not C() and _on_of(o)]
+        if len(_tfs_of(c)) > 1:
+            others.append(f"{C().name} chạy {c['tf']} (các khung độc lập)")
         if others:
             try:
                 with mt5_service.session():
@@ -1549,6 +1639,8 @@ def auto_backtest(x: BtIn, slot: str = "main"):
 
 
 def _auto_backtest(x: BtIn):
+    if "+" in str((x.cfg or {}).get("tf") or ""):
+        return {"ok": False, "loi": "Bot chạy M1 + M5 là 2 chiến dịch độc lập: backtest từng khung (chọn M1, rồi M5), lãi/lỗ cộng lại."}
     from app.services.backtest import run as bt_run
     c = _cfg()
     over = dict(x.cfg or {})
@@ -1659,7 +1751,10 @@ def auto_slots():
     for ctx in ctxs:
         with _use(ctx):
             c = _cfg()
-        n, pnl = bym.get(ctx.magic, [0, 0.0])
+        n, pnl = 0, 0.0
+        for cx in [ctx] + _kids_of(ctx):
+            g = bym.get(cx.magic, [0, 0.0])
+            n, pnl = n + g[0], pnl + g[1]
         nf = sum(1 for f in copytrade.load() if ctx.sid in copytrade.srcs_of(f))
         out.append({"id": ctx.sid, "name": ctx.name, "magic": ctx.magic, "copy": ctx.copy, "nfollow": nf, "on": bool(c.get("on")),
                     "zr": c.get("strategy") == "cpb" and (c.get("cpb") or {}).get("mg") == "zr",
@@ -1707,8 +1802,11 @@ def auto_slots_set(x: SlotIn):
             if _on_of(ctx):
                 return {"ok": False, "loi": "Tắt bot trước khi xóa."}
             try:
-                with _use(ctx), mt5_service.session():
-                    n = len(_bot_positions())
+                n = 0
+                with mt5_service.session():
+                    for cx in [ctx] + _kids_of(ctx):
+                        with _use(cx):
+                            n += len(_bot_positions())
             except Exception:
                 n = 0
             if n:

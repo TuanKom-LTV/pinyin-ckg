@@ -60,6 +60,16 @@ def src_of(f):
     return x[0] if x else "main"
 
 
+def _base(src):
+    return str(src).split(".")[0]
+
+
+def follows(f, src):
+    """Tài khoản theo bot src (kể cả khung thêm của bot đó, vd "main.M5")."""
+    s = srcs_of(f)
+    return src in s or _base(src) in s
+
+
 def tag_of(src):
     """Nhãn lệnh trên EA: Bot 1 không nhãn (tương thích EA cũ), bot khác "#<id>"."""
     return "" if src == "main" else src
@@ -260,7 +270,7 @@ def _enqueue(f, line, what, extra=None):
 def _each(make_line, what, extra=None, src="main", dca=False):
     """Gửi cho mọi tài khoản đang theo bot src (dca=True: chỉ tài khoản lấy bot này làm bot DCA)."""
     for f in load():
-        if not f.get("on") or src not in srcs_of(f) or (dca and dca_src_of(f) != src):
+        if not f.get("on") or not follows(f, src) or (dca and dca_src_of(f) != src):
             continue
         extra = {**(extra or {}), "tag": tag_of(src)}
         line = make_line(f)
@@ -360,6 +370,8 @@ def _reconcile(f, s):
         follow = {tag_of(x): x for x in srcs_of(f)}
         for tg, ps in groups.items():
             src = follow.get(tg)
+            if src is None and tg and _base(tg) in srcs_of(f):
+                src = tg                            # lệnh của khung thêm (vd "main.M5") của bot đang theo
             if src is None:
                 dirs, why = set(), "tài khoản không còn copy bot này"
             else:
@@ -466,9 +478,10 @@ def copy_open(direction, master_lot, sl_dist, pct=0, entry_px=None, src="main"):
     side = "BUY" if direction > 0 else "SELL"
     d = max(0.0, float(sl_dist))
     for f in load():
-        if f.get("on") and dca_src_of(f) == src:
+        if f.get("on") and follows(f, src):
             lot = _lot(f, master_lot)
-            _enqueue(f, f"DORD|{side}|{lot:.2f}|{d:.2f}|{float(pct or 0):.0f}", f"vào {side}",
+            pc = float(pct or 0) if dca_src_of(f) == src else 0.0      # TP1 đặt sẵn chỉ cho 1 chiến dịch DCA / tài khoản
+            _enqueue(f, f"DORD|{side}|{lot:.2f}|{d:.2f}|{pc:.0f}", f"vào {side}",
                      {"old_line": f"ORDER|{side}|{lot:.2f}|now|{d:.2f}|0|0|M1", "side": side, "px": entry_px, "tag": tag_of(src)})
 
 
@@ -477,6 +490,9 @@ def copy_part(frac, why, src="main"):
         return
     if why == "TP1":       # EA 1.5: đóng phần "PinYin TP1" (sàn có thể đã tự chốt trước) — EA cũ: chốt theo tỉ lệ
         _each(lambda f: f"TP1PART|{frac:.4f}", "chốt TP1", {"old_line": f"PART|{frac:.4f}"}, src=src, dca=True)
+        for f in load():                         # khung thêm / bot DCA thứ 2: không có TP1 đặt sẵn → chốt theo tỉ lệ
+            if f.get("on") and follows(f, src) and dca_src_of(f) != src:
+                _enqueue(f, f"PART|{frac:.4f}", "chốt TP1", {"tag": tag_of(src)})
     else:
         _each(lambda f: f"PART|{frac:.4f}", f"chốt {why}", src=src)
 
@@ -487,7 +503,7 @@ def copy_beavg(off, src="main"):
 
 def copy_slsync(src="main"):
     """Lệnh DCA mới có SL mới: EA dời SL mọi lệnh (cùng nhãn bot) theo lệnh mới nhất. Cần EA 1.9 (bản cũ: bỏ qua)."""
-    _each(lambda f: "SLSYNC", "dời SL theo lệnh DCA mới", {"need": [1, 9]}, src=src, dca=True)
+    _each(lambda f: "SLSYNC", "dời SL theo lệnh DCA mới", {"need": [1, 9]}, src=src)
 
 
 def copy_close(why, src="main"):
@@ -499,7 +515,7 @@ def copy_order(direction, master_lot, sl_dist, tp_dist, entry_px=None, src="main
     side = "BUY" if direction > 0 else "SELL"
     s, t = max(0.0, float(sl_dist or 0)), max(0.0, float(tp_dist or 0))
     for f in load():
-        if f.get("on") and src in srcs_of(f):
+        if f.get("on") and follows(f, src):
             lot = _lot(f, master_lot)
             _enqueue(f, f"ORDER|{side}|{lot:.2f}|now|{s:.2f}|{t:.2f}|0|M1", f"vào {side}", {"side": side, "px": entry_px, "tag": tag_of(src)})
 
