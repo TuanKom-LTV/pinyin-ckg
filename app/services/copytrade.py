@@ -20,7 +20,8 @@ FILE = ROOT / "data" / "copy_accounts.json"
 _lock = threading.RLock()
 _log = None                      # hàm ghi nhật ký của bot (ckg_auto.log)
 LOT_MODES = ("same", "fixed", "mult")
-PLAN = {"dist": 0.0, "be": True, "off": 0.0}
+PLAN = {"dist": 0.0, "be": True, "off": 0.0}      # kế hoạch TP1 của Bot 1 (giữ tên cũ)
+PLAN_SRC = {"main": PLAN}                           # bot nguồn → kế hoạch TP1 của chiến dịch DCA đang chạy
 MASTER = {"login": None, "server": None}         # tài khoản tín hiệu (MT5 của máy chủ), bot cập nhật mỗi vòng
 
 
@@ -32,16 +33,22 @@ def _same(acc):
     return bool(acc) and MASTER["login"] is not None and str(acc.get("login")) == MASTER["login"]     # khoảng TP1 hiện tại của chiến dịch (gửi cho EA mỗi giây)
 
 
-def set_plan(dist, be=None, off=None):
-    PLAN["dist"] = round(max(0.0, float(dist or 0)), 2)
+def set_plan(dist, be=None, off=None, src="main"):
+    P = PLAN_SRC.setdefault(src, {"dist": 0.0, "be": True, "off": 0.0})
+    P["dist"] = round(max(0.0, float(dist or 0)), 2)
     if be is not None:
-        PLAN["be"] = bool(be)
+        P["be"] = bool(be)
     if off is not None:
-        PLAN["off"] = float(off)
+        P["off"] = float(off)
 
 
-def plan_line():
-    return "Q|%.2f|%d|%.2f" % (PLAN["dist"], PLAN["be"], PLAN["off"])
+def plan_line(src="main"):
+    P = PLAN_SRC.get(src) or {"dist": 0.0, "be": True, "off": 0.0}
+    return "Q|%.2f|%d|%.2f" % (P["dist"], P["be"], P["off"])
+
+
+def src_of(f):
+    return f.get("src") or "main"
 
 
 # ---- đích gửi lệnh ngoài danh sách copy: bot riêng của từng khách (app/services/cbot.py) ----
@@ -63,7 +70,8 @@ def plan_for(u):
         d, be, off = PLANS[u]
         return "Q|%.2f|%d|%.2f" % (d, be, off)
     if u.startswith("copy:"):
-        return plan_line()
+        f = next((x for x in load() if uid(x) == u), None)
+        return plan_line(src_of(f) if f else "main")
     return None
 
 
@@ -147,7 +155,7 @@ def update(fid, **kw):
         else:
             if kw.get("new_key"):
                 f["key"] = "PC-" + secrets.token_hex(8).upper()
-            for k in ("name", "on", "lot_mode", "lot", "ttl", "slip", "real"):
+            for k in ("name", "on", "lot_mode", "lot", "ttl", "slip", "real", "src"):
                 if kw.get(k) is not None:
                     f[k] = kw[k]
         save(lst)
@@ -216,9 +224,9 @@ def _enqueue(f, line, what, extra=None):
     _kick(f["id"])
 
 
-def _each(make_line, what, extra=None):
+def _each(make_line, what, extra=None, src="main"):
     for f in load():
-        if not f.get("on"):
+        if not f.get("on") or src_of(f) != src:
             continue
         line = make_line(f)
         if line:
@@ -302,8 +310,15 @@ def _reconcile(f, s):
         pos = [p for p in pos if p.get("bot")]           # chỉ lệnh bot, không đụng lệnh khách vào tay
     if not pos or _q.get(f["id"]):
         return
-    d = f["dir_fn"]() if f.get("dir_fn") else ckg_auto._dca.get("dir", 0)
-    bad = d == 0 or any((1 if p["t"] == "BUY" else -1) != d for p in pos)
+    if f.get("dir_fn"):
+        d = f["dir_fn"]()
+        dirs = {d} if d else set()
+    else:
+        dirs = ckg_auto.copy_dirs(src_of(f))         # chiều các lệnh đang mở của bot nguồn (None = chưa rõ: không đụng)
+        if dirs is None:
+            return
+        d = 1 if dirs else 0
+    bad = not dirs or any((1 if p["t"] == "BUY" else -1) not in dirs for p in pos)
     fl = _flag.setdefault(f["id"], {})
     if bad and time.time() - fl.get("rec", 0) > 30 and time.time() - fl.setdefault("seen", time.time()) > 10:
         fl["rec"] = time.time()
@@ -372,31 +387,41 @@ def _start():
             _worker.start()
 
 
-def copy_open(direction, master_lot, sl_dist, pct=0, entry_px=None):
+def copy_open(direction, master_lot, sl_dist, pct=0, entry_px=None, src="main"):
     side = "BUY" if direction > 0 else "SELL"
     d = max(0.0, float(sl_dist))
     for f in load():
-        if f.get("on"):
+        if f.get("on") and src_of(f) == src:
             lot = _lot(f, master_lot)
             _enqueue(f, f"DORD|{side}|{lot:.2f}|{d:.2f}|{float(pct or 0):.0f}", f"vào {side}",
                      {"old_line": f"ORDER|{side}|{lot:.2f}|now|{d:.2f}|0|0|M1", "side": side, "px": entry_px})
 
 
-def copy_part(frac, why):
+def copy_part(frac, why, src="main"):
     if not (0 < frac <= 1):
         return
     if why == "TP1":       # EA 1.5: đóng phần "PinYin TP1" (sàn có thể đã tự chốt trước) — EA cũ: chốt theo tỉ lệ
-        _each(lambda f: f"TP1PART|{frac:.4f}", "chốt TP1", {"old_line": f"PART|{frac:.4f}"})
+        _each(lambda f: f"TP1PART|{frac:.4f}", "chốt TP1", {"old_line": f"PART|{frac:.4f}"}, src=src)
     else:
-        _each(lambda f: f"PART|{frac:.4f}", f"chốt {why}")
+        _each(lambda f: f"PART|{frac:.4f}", f"chốt {why}", src=src)
 
 
-def copy_beavg(off):
-    _each(lambda f: f"BEAVG|{float(off):.2f}", "dời SL hòa vốn")
+def copy_beavg(off, src="main"):
+    _each(lambda f: f"BEAVG|{float(off):.2f}", "dời SL hòa vốn", src=src)
 
 
-def copy_close(why):
-    _each(lambda f: "CLOSE|0", f"đóng lệnh ({why})")
+def copy_close(why, src="main"):
+    _each(lambda f: "CLOSE|0", f"đóng lệnh ({why})", src=src)
+
+
+def copy_order(direction, master_lot, sl_dist, tp_dist, entry_px=None, src="main"):
+    """Lệnh thị trường kèm SL/TP theo khoảng cách $ từ giá khớp (0 = không đặt) — dùng cho Cloud PB."""
+    side = "BUY" if direction > 0 else "SELL"
+    s, t = max(0.0, float(sl_dist or 0)), max(0.0, float(tp_dist or 0))
+    for f in load():
+        if f.get("on") and src_of(f) == src:
+            lot = _lot(f, master_lot)
+            _enqueue(f, f"ORDER|{side}|{lot:.2f}|now|{s:.2f}|{t:.2f}|0|M1", f"vào {side}", {"side": side, "px": entry_px})
 
 
 def status():
@@ -405,7 +430,7 @@ def status():
     for f in load():
         s = ea._st.get(uid(f)) or {}
         a = s.get("acc")
-        out.append({**f, "online": bool(a) and ea._online(s), "ver": s.get("ver"), "old": ea._old(s.get("ver")) if s.get("ver") else None,
+        out.append({**f, "src": src_of(f), "online": bool(a) and ea._online(s), "ver": s.get("ver"), "old": ea._old(s.get("ver")) if s.get("ver") else None,
                     "acc": {k: a.get(k) for k in ("login", "server", "currency", "equity", "balance", "demo", "algo")} if a else None,
                     "same": _same(a), "npos": len(s.get("pos") or []), "queue": len(_q.get(f["id"]) or []), "pnl": round(sum(p["profit"] for p in (s.get("pos") or [])), 2)})
     return out

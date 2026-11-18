@@ -686,6 +686,9 @@ def _cpb_open(go, lot, sl, tp, why, R=0.0):
     C().cpb["pos"][str(res.order)] = {"R": R, "lot0": float(res.volume), "half": False, "be": False}
     C().cpb["warn"] = ""
     _cpb_save()
+    C().st["dirs"] = sorted(set(C().st.get("dirs") or []) | {go})
+    px = float(res.price)
+    _copy().copy_order(go, float(res.volume), abs(px - sl) if sl else 0, abs(tp - px) if tp else 0, px)
     lv = (f" · SL {sl:.{info.digits}f} · TP {tp:.{info.digits}f}" if sl else " · KHÔNG SL")
     log(f"Cloud PB {'BUY' if buy else 'SELL'} {res.volume} lot @ {res.price:.{info.digits}f}{lv}" + (f" ({why})" if why else ""), "open")
     return res
@@ -713,6 +716,7 @@ def _cpb_live(c):
     """Mỗi 2 giây: chốt một phần (half), quản lý cụm Không SL (zr)."""
     d = c["cpb"]
     ps = _cpb_positions()
+    C().st["dirs"] = sorted({1 if p.type == mt5.POSITION_TYPE_BUY else -1 for p in ps})
     _cpb_gone(ps)
     if not ps:
         if C().cpb["zr"]["dir"]:
@@ -729,7 +733,7 @@ def _cpb_live(c):
             p = max(ps, key=lambda x: x.time_msc)
             z.update(dir=1 if p.type == mt5.POSITION_TYPE_BUY else -1, lot=p.volume)
         a = mt5.account_info()
-        if d["so_pct"] > 0 and a and z.get("eq0") and a.equity <= z["eq0"] * d["so_pct"] / 100:
+        if d["so_pct"] > 0 and a and z.get("eq0") and a.equity <= z["eq0"] * d["so_pct"] / 100:          # _close_all gửi copy đóng
             _close_all(f"CẮT CẢ CỤM: vốn {a.equity:.2f} ≤ {d['so_pct']}% vốn lúc mở cụm {z['eq0']:.2f}")
             return
         if len(ps) == 1:
@@ -737,10 +741,12 @@ def _cpb_live(c):
             buy = p.type == mt5.POSITION_TYPE_BUY
             gain = (tick.bid - p.price_open) if buy else (p.price_open - tick.ask)
             if gain >= d["zr_tp"]:
+                _copy().copy_close("chốt lời")
                 _close_pos(p, f"chốt lời +{gain:.2f}$ giá")
         else:
             tot = sum(p.profit + p.swap for p in ps)
             if tot >= d["zr_be"]:
+                _copy().copy_close(f"hòa vốn cả cụm {len(ps)} lệnh")
                 for p in ps:
                     try:
                         _close_pos(p, f"hòa vốn cả cụm {len(ps)} lệnh (tổng {tot:.2f})")
@@ -764,10 +770,13 @@ def _cpb_live(c):
             vol = round(math.floor(m["lot0"] * d["half_pct"] / 100 / step + 1e-9) * step, 2)
             try:
                 if vmin - 1e-9 <= vol < p.volume - 1e-9:
+                    tot = sum(x.volume for x in ps)
+                    _copy().copy_part(min(1.0, vol / tot), f"{d['half_pct']}% ở {d['half_r']}R")
                     _close_pos(p, f"chốt {d['half_pct']}% ở {d['half_r']}R", vol)
                 be = p.price_open + g * d["be_off"]
                 if g * (be - p.sl) > info.point / 2 and g * (px - be) >= mind:
                     _set_sl(p, be)
+                    _copy().copy_beavg(d["be_off"])
                     log(f"Cloud PB #{p.ticket}: dời SL hòa vốn {be:.{info.digits}f}", "info", tele=False)
             except Exception as e:
                 log(f"Cloud PB: chốt một phần #{p.ticket} lỗi: {e}", "err")
@@ -856,6 +865,7 @@ def _cpb_bar(c, bars, b, fixed):
         if d["be_on"] and not m["be"] and gain >= d["be_at"] * m["R"]:
             m["be"] = True
             new = p.price_open + g * d["be_off"]
+            _copy().copy_beavg(d["be_off"])
         if d["tr_on"] and gain >= d["tr_at"] * m["R"]:
             ns = px - g * d["tr_dist"] * m["R"]
             if new is None or g * (ns - new) > 0:
@@ -880,6 +890,7 @@ def _cpb_bar(c, bars, b, fixed):
         if opp:
             if not d["rev"]:
                 continue
+            _copy().copy_close("tín hiệu ngược: đảo chiều")
             for p in opp:
                 try:
                     _close_pos(p, "tín hiệu ngược: đảo chiều")
@@ -915,7 +926,7 @@ class _Ctx:
         self.err_at = 0
 
 
-_MAIN = _Ctx("main", "Bot 1", 260117, CFG_FILE, DCA_FILE, CPB_FILE, _dca, _cpb, _state, True)
+_MAIN = _Ctx("main", "Bot 1", 260117, CFG_FILE, DCA_FILE, CPB_FILE, _dca, _cpb, _state, True)   # mọi bot đều là nguồn copy
 _tl = threading.local()
 SLOTS_FILE = ROOT / "data" / "auto_slots.json"
 MAX_BOTS = 6
@@ -945,8 +956,33 @@ class _NoCopy:
 _NOCOPY = _NoCopy()
 
 
+class _CopySrc:
+    """copytrade gắn sẵn bot nguồn: chỉ tài khoản copy chọn bot này mới nhận lệnh."""
+    def __init__(self, src):
+        self.src = src
+
+    def __getattr__(self, k):
+        fn = getattr(copytrade, k)
+        if k in ("copy_open", "copy_part", "copy_beavg", "copy_close", "copy_order", "set_plan"):
+            return lambda *a, **kw: fn(*a, **{**kw, "src": self.src})
+        return fn
+
+
 def _copy():
-    return copytrade if C().copy else _NOCOPY
+    return _CopySrc(C().sid) if C().copy else _NOCOPY
+
+
+def copy_dirs(src):
+    """Chiều các lệnh đang mở của bot nguồn (cho copy lệnh đối chiếu). None = chưa rõ / bot không còn."""
+    ctx = _ctx_of(src)
+    if not ctx:
+        return None
+    with _use(ctx):
+        strat = _cfg().get("strategy")
+    if strat == "cpb":
+        d = ctx.st.get("dirs")
+        return None if d is None else set(d)
+    return {ctx.dca["dir"]} if ctx.dca.get("dir") else set()
 
 
 def _slots():
@@ -974,7 +1010,7 @@ def _all_ctx():
             d = ROOT / "data"
             ctx = _Ctx(b["id"], b["name"], int(b["magic"]), d / f"auto_bot_{b['id']}.json", d / f"auto_dca_{b['id']}.json",
                        d / f"auto_cpb_{b['id']}.json", dict(DCA_EMPTY), json.loads(json.dumps(CPB_EMPTY)),
-                       {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}, False)
+                       {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}, True)
             with _use(ctx):
                 _dca_load()
                 _cpb_load()
@@ -1473,7 +1509,9 @@ def auto_slots():
         with _use(ctx):
             c = _cfg()
         n, pnl = bym.get(ctx.magic, [0, 0.0])
-        out.append({"id": ctx.sid, "name": ctx.name, "magic": ctx.magic, "copy": ctx.copy, "on": bool(c.get("on")),
+        nf = sum(1 for f in copytrade.load() if copytrade.src_of(f) == ctx.sid)
+        out.append({"id": ctx.sid, "name": ctx.name, "magic": ctx.magic, "copy": ctx.copy, "nfollow": nf, "on": bool(c.get("on")),
+                    "zr": c.get("strategy") == "cpb" and (c.get("cpb") or {}).get("mg") == "zr",
                     "strategy": c.get("strategy"), "sname": STRATS.get(c.get("strategy"), ""), "tf": c.get("tf"),
                     "lot": c.get("lot"), "npos": n, "pnl": round(pnl, 2), "msg": ctx.st.get("msg", "")})
     return {"ok": True, "bots": out, "max": MAX_BOTS}
@@ -1524,6 +1562,9 @@ def auto_slots_set(x: SlotIn):
                 n = 0
             if n:
                 return {"ok": False, "loi": f"Bot còn {n} lệnh mở. Đóng hết rồi mới xóa."}
+            nf = sum(1 for f in copytrade.load() if copytrade.src_of(f) == x.id)
+            if nf:
+                return {"ok": False, "loi": f"Có {nf} tài khoản copy đang theo bot này. Đổi chúng sang bot khác rồi mới xóa."}
             sl["bots"] = [b for b in sl["bots"] if b["id"] != x.id]
             _slots_save(sl)
             _all_ctx()
@@ -1546,6 +1587,7 @@ class CopyIn(BaseModel):
     ttl: int | None = None              # lệnh vào chờ EA tối đa (giây)
     slip: float | None = None           # bỏ lệnh vào nếu giá đã chạy ngược quá X$ (0 = không xét)
     real: bool | None = None            # cho phép copy sang tài khoản THẬT này (bật cần mật khẩu chủ)
+    src: str | None = None              # copy theo bot nào (id bot: main, b2, ...)
     pw: str = ""
 
 
@@ -1578,13 +1620,17 @@ def copy_set(x: CopyIn):
                 return {"ok": False, "loi": "Thời hạn lệnh vào từ 5 đến 600 giây."}
             if x.slip is not None and not (0 <= x.slip <= 100):
                 return {"ok": False, "loi": "Trượt giá tối đa từ 0 đến 100$."}
+            if x.src is not None and not _ctx_of(x.src):
+                return {"ok": False, "loi": "Không có bot này."}
             if x.real:
                 import hmac
                 pw = os.getenv("PINYIN_PASSWORD", "")
                 if not pw or not hmac.compare_digest(x.pw.encode(), pw.encode()):
                     return {"ok": False, "loi": "Sai mật khẩu chủ."}
             f = copytrade.update(x.id, name=(x.name or "").strip()[:40] or None, on=x.on, lot_mode=x.lot_mode, lot=x.lot,
-                                 ttl=x.ttl, slip=x.slip, real=x.real)
+                                 ttl=x.ttl, slip=x.slip, real=x.real, src=x.src)
+            if x.src is not None:
+                log(f"[{f['name']}] chuyển sang copy theo [{_ctx_of(x.src).name}].", "info")
             if x.real is not None:
                 log(f"{'🔓 CHO PHÉP' if x.real else '🔒 CHẶN'} copy lệnh sang tài khoản THẬT [{f['name']}].", "info")
             if x.on is not None:
