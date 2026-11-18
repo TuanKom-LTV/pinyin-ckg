@@ -389,7 +389,7 @@ def compute(bars, p=None):
         w = slice(max(0, i - sw + 1), i + 1)
         out[i] = {"ctr": bool(isRev and ((goB and below) or (goS and above))), "trade": trade,"t": bars[i][0], "c": c[i], "go": 1 if goB else -1 if goS else 0, "rev": isRev,
                   "ext": (extBv if goB else extSv) if isRev else None,
-                  "vwap": vw, "sd": sdi, "ready": ready, "up": up[i], "lo": lo[i], "upx": upx, "lox": lox,
+                  "vwap": vw, "sd": sdi, "ready": ready, "up": up[i], "lo": lo[i], "mid": mid[i], "upx": upx, "lox": lox,
                   "ema21": e21[i], "atr": atrS[i], "swl": min(l[w]), "swh": max(h[w])}
     return out
 

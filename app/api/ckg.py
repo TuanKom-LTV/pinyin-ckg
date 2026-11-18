@@ -289,7 +289,12 @@ def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
         bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                  float(x["tick_volume"]), int(x["time"]) // 86400) for x in r]
         out = []
-        for b, s in zip(bars, dca_signals(bars, d)):
+        sigs = dca_signals(bars, d)
+        r2 = lambda v: round(v, 2) if v is not None else None
+        # đường bot đang dùng: VWAP, VWAP ± k·σ (giới hạn giãn / vùng đảo chiều), dải TMA trên / giữa / dưới (tín hiệu)
+        bands = [[b[0], r2(s["vwap"]), r2(s["upx"]), r2(s["lox"]), r2(s["up"]), r2(s.get("mid")), r2(s["lo"])]
+                 for b, s in zip(bars, sigs) if s][-600:]
+        for b, s in zip(bars, sigs):
             if not s or not s["go"]:
                 continue
             go = s["go"]
@@ -306,7 +311,7 @@ def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
             tp = [e + go * d["tp1r"] * R, e + go * d["tp2r"] * R] if R > 0 else [e, e]
             out.append({"t": s["t"], "side": "BUY" if go > 0 else "SELL", "rev": bool(s["rev"]), "ctr": bool(s.get("ctr")), "e": round(e, 2),
                         "sl": round(sl, 2), "tp": [round(v, 2) for v in tp], "rr": [d["tp1r"], d["tp2r"]]})
-        return {"ok": True, "sym": sym, "tf": tf, "candles": d.get("candles", "std"), "sig": out}
+        return {"ok": True, "sym": sym, "tf": tf, "candles": d.get("candles", "std"), "sig": out, "bands": bands}
     except Exception as e:
         return {"ok": False, "loi": str(e)}
 
