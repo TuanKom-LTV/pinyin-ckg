@@ -286,7 +286,7 @@ def _check_closed(off):
 # ---------- Chiến lược DCA: trạng thái chiến dịch ----------
 
 DCA_EMPTY = {"dir": 0, "rev": False, "sl": None, "legs": 0, "lot": None, "last_px": None, "last_t": 0, "start_t": 0,
-             "tp1": False, "tp2": False, "tp1px": None, "tp2px": None, "vol_tp": 0.0, "sl_be": None, "wait_msg": False}
+             "tp1": False, "tp2": False, "tp1px": None, "tp2px": None, "vol_tp": 0.0, "sl_be": None, "wait_msg": False, "sl_how": ""}
 _dca = dict(DCA_EMPTY)
 
 
@@ -525,12 +525,25 @@ def _dca_bar(c, bars, b, fixed):
         if not stretch_ok:
             log(f"DCA: bỏ {'BUY' if go > 0 else 'SELL'}, giá cách VWAP quá {d['stretch']}σ.", "info", tele=False)
             return
+        pm = "−" if go > 0 else "+"
         if sg["rev"]:
             sl = sg["ext"] - go * d["sl_buf"]
+            how = f"râu nến đảo chiều {sg['ext']:.2f} {pm} {d['sl_buf']}$"
         else:
             slv = vw - go * d["sl_k"] * atr
-            slw = (sg["swl"] - d["sl_buf"]) if go > 0 else (sg["swh"] + d["sl_buf"])
-            sl = slv if d["sl_mode"] == "vwap" else slw if d["sl_mode"] == "swing" else (min(slv, slw) if go > 0 else max(slv, slw))
+            sw = sg["swl"] if go > 0 else sg["swh"]
+            slw = sw - go * d["sl_buf"]
+            hw = f"{'đáy' if go > 0 else 'đỉnh'} 20 nến {c['tf']} {sw:.2f} {pm} {d['sl_buf']}$"
+            hv = f"VWAP {vw:.2f} {pm} {d['sl_k']}×ATR {atr:.2f}"
+            if d["sl_mode"] == "vwap":
+                sl, how = slv, hv
+            elif d["sl_mode"] == "swing":
+                sl, how = slw, hw
+            else:
+                far = (slv < slw) if go > 0 else (slv > slw)
+                sl, how = (slv, hv) if far else (slw, hw)
+                how += " (xa hơn giữa VWAP và swing)"
+        sg = {**sg, "sl_how": how}
         if block:
             log(f"Không vào lệnh DCA: {block}", "err")
             return
@@ -607,14 +620,14 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
     C().st["known"][res.order] = "BUY" if buy else "SELL"
     if first:
         C().dca.update({**DCA_EMPTY, "dir": dr, "rev": bool(sg["rev"]), "sl": sl, "legs": 1, "lot": lot,
-                     "last_px": sg["c"], "last_t": sg["t"], "start_t": sg["t"]})
+                     "last_px": sg["c"], "last_t": sg["t"], "start_t": sg["t"], "sl_how": sg.get("sl_how", "")})
     else:
         C().dca.update({"legs": n, "last_px": sg["c"], "last_t": sg["t"]})
     _dca_levels(d, sg)
     _dca_save()
     kind = ("BUY" if buy else "SELL") + (" ĐC*" if C().dca["rev"] else "")
     lbl = (f"Mở chiến dịch {kind}" + (f" ({why})" if why else "")) if first else f"Thêm lệnh DCA {n}/{_dca_cap(d, b, fixed)} {kind}"
-    log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · SL chung {sl:.2f} · TP1 {(C().dca['tp1px'] or 0):.2f} · TP2 {(C().dca['tp2px'] or 0):.2f}", "open")
+    log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · SL chung {sl:.2f}{(' = ' + C().dca['sl_how']) if first and C().dca.get('sl_how') else ''} · TP1 {(C().dca['tp1px'] or 0):.2f} · TP2 {(C().dca['tp2px'] or 0):.2f}", "open")
     _copy().copy_open(dr, float(res.volume), abs(float(res.price) - sl), d["tp1p"] if not C().dca["tp1"] else 0, float(res.price))
 
 
