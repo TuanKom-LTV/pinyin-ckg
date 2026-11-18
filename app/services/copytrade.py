@@ -86,6 +86,15 @@ def _sayf(f, msg, kind="info", tele=True):
         except Exception:
             pass
     else:
+        try:                                         # ghi đúng tên bot mà tài khoản này copy theo (Telegram + nhật ký bot đó)
+            from app.api import ckg_auto
+            ctx = ckg_auto._ctx_of(src_of(f))
+            if ctx:
+                with ckg_auto._use(ctx):
+                    _say(msg, kind, tele)
+                return
+        except Exception:
+            pass
         _say(msg, kind, tele)
 
 
@@ -267,10 +276,10 @@ def _deliver(f, c):
         return False
     own = f.get("own")                                  # bot của khách: tài khoản của chính khách
     if not own and _same(s["acc"]):
-        _say(f"{name} là CHÍNH tài khoản tín hiệu #{s['acc']['login']} — không copy sang chính nó (sẽ gấp đôi lệnh). Gắn EA vào tài khoản khác.", "err")
+        _sayf(f, f"{name} là CHÍNH tài khoản tín hiệu #{s['acc']['login']} — không copy sang chính nó (sẽ gấp đôi lệnh). Gắn EA vào tài khoản khác.", "err")
         return True
     if not own and not s["acc"]["demo"] and not (f.get("real") or allow_real()):
-        _say(f"{name} là tài khoản THẬT nhưng chưa cho phép lệnh thật (bấm 🔒 Cho phép lệnh THẬT trên thẻ tài khoản này ở mục Tài khoản vào lệnh), không {c['what']}.", "err")
+        _sayf(f, f"{name} là tài khoản THẬT nhưng chưa cho phép lệnh thật (bấm 🔒 Cho phép lệnh THẬT trên thẻ tài khoản này ở mục Tài khoản vào lệnh), không {c['what']}.", "err")
         return True
     ttl = int(f.get("ttl") or ORDER_TTL)
     if order and age > ttl:
