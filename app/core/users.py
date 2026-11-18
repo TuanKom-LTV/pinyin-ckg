@@ -124,7 +124,7 @@ def acc_act(uid, act, n=0, name=""):
             try:
                 from app.api.ckg_auto import tg_send
                 tg_send(f"📩 Khách {u.get('ten') or email} ({email}, Zalo {u.get('sdt') or '-'}) xin THÊM tài khoản MT5 "
-                        f"(đang {1 + len(keys)}/{lim}). Duyệt ở /quan-ly → nút ＋ MT5.")
+                        f"(đang {1 + len(keys)}/{lim}). Nếu khách nhắn Telegram thì mở thêm tại https://pinyin.id.vn/quan-ly (nút ＋ MT5).")
             except Exception:
                 pass
             return True, "Đã báo chủ PinYin. Nhắn Telegram @TuanKom để được báo phí và mở thêm tài khoản.", 0
