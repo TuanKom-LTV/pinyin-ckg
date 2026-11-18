@@ -54,7 +54,7 @@ def load():
         return _cache["data"]
 
 
-DEF_ACC = 2            # mặc định mỗi khách 2 tài khoản MT5 (mỗi tài khoản 1 mã kết nối + 1 bot riêng)
+DEF_ACC = 1            # mặc định mỗi khách 1 tài khoản MT5, muốn thêm phải xin (chủ duyệt, có phí) (mỗi tài khoản 1 mã kết nối + 1 bot riêng)
 HARD_ACC = 10          # chủ mở thêm (có phí) tối đa tới mức này
 
 
