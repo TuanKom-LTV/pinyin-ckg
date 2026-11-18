@@ -70,12 +70,11 @@ async def sync(request: Request):
     if cf:                                    # tài khoản vào lệnh của chủ (copy lệnh bot): lá chắn EA tắt, bot tự quản
         uid, u = copytrade.uid(cf), {"ea_guard": {"be_on": False, "tr_on": False, "manual": False, "auto_sltp": False}}
     else:
-        email, u = users.by_key(key.strip())
+        email, u, uid = users.key_uid(key.strip())
         if not u:
             return PlainTextResponse("X|Mã kết nối không đúng. Lấy lại mã trên trang pinyin.id.vn.\n")
         if users.status_of(u) != "ok" or not u.get("gd"):
             return PlainTextResponse("X|Tài khoản PinYin hết hạn hoặc chưa được cấp quyền giao dịch. Liên hệ Telegram @TuanKom.\n")
-        uid = u["id"]
     with _lock:
         s = _s(uid)
         al = next((l for l in lines if l[0] == "A" and len(l) >= 3), None)
@@ -136,10 +135,14 @@ def download():
 # ---------- Buồng lái của khách ----------
 
 def _me(request: Request):
+    """Khách + tài khoản MT5 đang chọn trên trang (header X-Acc: 1/2/3)."""
     uid = getattr(request.state, "user", None)
     if not uid or not users.can_trade(uid):
         return None
-    return uid
+    n = (request.headers.get("x-acc") or "1").strip()
+    if n == "1":
+        return uid
+    return next((a["uid"] for a in users.accounts(uid) if str(a["n"]) == n), None)   # tài khoản đã xóa: từ chối
 
 
 def _deny():
@@ -178,7 +181,45 @@ def info(request: Request):
     if not uid:
         return _deny()
     email, u = users.by_id(uid)
-    return {"ok": True, "key": u.get("ea_key"), "url": "https://pinyin.id.vn", "ea": status_of(uid), "ver": _s(uid)["ver"]}
+    from app.services import cbot
+    cur = users.split_uid(uid)[1]
+    accs = []
+    for a in users.accounts(uid):
+        st = status_of(a["uid"])
+        accs.append({"n": a["n"], "name": a["name"], "ea": st, "online": bool(st and st["on"]),
+                     "bot": bool(users.can_bot(a["uid"]) and cbot.get(a["uid"])["cfg"].get("on"))})
+    key = next((a["key"] for a in users.accounts(uid) if a["n"] == cur), None)
+    return {"ok": True, "key": key, "url": "https://pinyin.id.vn", "ea": status_of(uid), "ver": _s(uid)["ver"],
+            "cur": cur, "accs": accs, "max": users.MAX_ACC}
+
+
+class AccIn(BaseModel):
+    act: str
+    n: int = 0
+    name: str = ""
+
+
+@router.post("/ckg/api/ea/acc")
+def acc_set(x: AccIn, request: Request):
+    """Khách thêm / đổi tên / đổi mã / xóa tài khoản MT5 (tối đa users.MAX_ACC)."""
+    uid = getattr(request.state, "user", None)
+    if not uid or not users.can_trade(uid):
+        return _deny()
+    ok, msg, n = users.acc_act(uid, x.act, x.n, x.name)
+    if ok and x.act in ("del", "key") and n:
+        sub = uid if n == 1 else f"{uid}~{n}"
+        from app.services import cbot, copytrade
+        if x.act == "del":
+            try:
+                c = cbot.get(sub)
+                c["cfg"]["on"] = False
+                cbot.save(sub)
+            except Exception:
+                pass
+            copytrade.EXTRA.pop("cb-" + sub, None)
+        with _lock:
+            _st.pop(sub, None)                      # EA cũ (mã cũ) phải kết nối lại
+    return {"ok": ok, "msg": msg, "n": n} if ok else {"ok": False, "loi": msg}
 
 
 @router.get("/ckg/api/ea/q/tick")

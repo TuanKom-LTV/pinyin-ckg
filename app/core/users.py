@@ -54,8 +54,96 @@ def load():
         return _cache["data"]
 
 
+MAX_ACC = 3            # mỗi khách tối đa 3 tài khoản MT5 (mỗi tài khoản 1 mã kết nối + 1 bot riêng)
+
+
+def split_uid(uid):
+    """'abc~2' → ('abc', 2) (tài khoản MT5 thứ 2 của khách abc); 'abc' → ('abc', 1)."""
+    if isinstance(uid, str) and "~" in uid:
+        b, n = uid.rsplit("~", 1)
+        if n.isdigit():
+            return b, int(n)
+    return uid, 1
+
+
+def _accs(u):
+    out = [{"n": 1, "uid": u["id"], "key": u.get("ea_key"), "name": (u.get("acc_names") or {}).get("1") or "Tài khoản 1"}]
+    for n, x in sorted((u.get("ea_keys") or {}).items(), key=lambda kv: int(kv[0])):
+        out.append({"n": int(n), "uid": f"{u['id']}~{n}", "key": x["key"], "name": x.get("name") or f"Tài khoản {n}"})
+    return out
+
+
+def accounts(uid):
+    """Các tài khoản MT5 của khách: [{n, uid, key, name}]."""
+    u = by_id(uid)[1]
+    return _accs(u) if u else []
+
+
+def key_uid(key):
+    """Mã kết nối EA → (email, bản ghi, uid của đúng tài khoản MT5 đó)."""
+    if not key or len(key) < 16:
+        return None, None, None
+    for k, u in load().items():
+        if u.get("ea_key") and hmac.compare_digest(u["ea_key"], key):
+            return k, u, u["id"]
+        for n, x in (u.get("ea_keys") or {}).items():
+            if x.get("key") and hmac.compare_digest(x["key"], key):
+                return k, u, f"{u['id']}~{n}"
+    return None, None, None
+
+
+def acc_act(uid, act, n=0, name=""):
+    """Khách tự thêm / đổi tên / đổi mã / xóa tài khoản MT5 của mình. Trả (ok, thông báo, n)."""
+    base = split_uid(uid)[0]
+    with _lock:
+        data = dict(load())
+        email = next((k for k, x in data.items() if x.get("id") == base), None)
+        if not email:
+            return False, "Không có tài khoản.", 0
+        u = dict(data[email])
+        keys = {k: dict(v) for k, v in (u.get("ea_keys") or {}).items()}
+        names = dict(u.get("acc_names") or {})
+        name = (name or "").strip()[:30]
+        if act == "add":
+            if 1 + len(keys) >= MAX_ACC:
+                return False, f"Tối đa {MAX_ACC} tài khoản MT5.", 0
+            n = next(i for i in range(2, MAX_ACC + 1) if str(i) not in keys)
+            keys[str(n)] = {"key": "PY-" + secrets.token_urlsafe(18), "name": name or f"Tài khoản {n}"}
+            msg = f"Đã thêm {keys[str(n)]['name']}. Gắn EA vào MT5 đó với mã kết nối mới."
+        elif act == "name":
+            if not name:
+                return False, "Nhập tên.", 0
+            if n == 1:
+                names["1"] = name
+            elif str(n) in keys:
+                keys[str(n)]["name"] = name
+            else:
+                return False, "Không có tài khoản này.", 0
+            msg = "Đã đổi tên."
+        elif act == "key":
+            if n == 1:
+                u["ea_key"] = "PY-" + secrets.token_urlsafe(18)
+            elif str(n) in keys:
+                keys[str(n)]["key"] = "PY-" + secrets.token_urlsafe(18)
+            else:
+                return False, "Không có tài khoản này.", 0
+            msg = "Đã đổi mã kết nối. EA đang gắn phải dán mã mới."
+        elif act == "del":
+            if n == 1 or str(n) not in keys:
+                return False, "Không xóa được tài khoản chính.", 0
+            keys.pop(str(n))
+            msg = "Đã xóa tài khoản. Lệnh đang mở trên MT5 đó giữ nguyên (SL/TP vẫn chạy)."
+        else:
+            return False, "Thao tác không hợp lệ.", 0
+        u["ea_keys"], u["acc_names"] = keys, names
+        data[email] = u
+        save(data)
+        return True, msg, n
+
+
 def by_id(uid):
-    """Mã khách → (email, bản ghi) hoặc (None, None)."""
+    """Mã khách → (email, bản ghi) hoặc (None, None). Nhận cả mã tài khoản MT5 phụ (abc~2)."""
+    uid = split_uid(uid)[0]
     for k, u in load().items():
         if u.get("id") == uid:
             return k, u

@@ -98,7 +98,9 @@ def _target(u):
              "log": lambda m, k="info", _u=u: log(_u, m, k),
              "dir_fn": lambda _u=u: get(_u)["E"].get("dir", 0)}
         copytrade.EXTRA[f["id"]] = f
-    f["name"] = (d or {}).get("ten") or email or u
+    n = users.split_uid(u)[1]
+    acc = next((a["name"] for a in users._accs(d) if a["n"] == n), "") if d else ""
+    f["name"] = ((d or {}).get("ten") or email or u) + (f" · {acc}" if n > 1 or (d or {}).get("ea_keys") else "")
     f["on"] = bool(get(u)["cfg"].get("on"))
     return f
 
@@ -348,9 +350,9 @@ def _customers():
     for email, d in users.load().items():
         uid = d.get("id")
         if uid and d.get("bot") and users.can_trade(uid):
-            c = get(uid)
-            if c["cfg"].get("on"):
-                out.append(uid)
+            for a in users._accs(d):                     # mỗi tài khoản MT5 của khách 1 bot riêng
+                if get(a["uid"])["cfg"].get("on"):
+                    out.append(a["uid"])
     return out
 
 
