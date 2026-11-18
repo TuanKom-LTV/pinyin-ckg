@@ -31,6 +31,11 @@ async def reg_submit(request: Request):
     return HTMLResponse(users.register_page(LOGO_K, msg, ok, None if ok else f), headers=NOSTORE)
 
 
+@router.get("/mien-tru-trach-nhiem", include_in_schema=False)
+def disclaimer():
+    return HTMLResponse(users.disclaimer_page(LOGO_K))
+
+
 @router.get("/xac-minh", include_in_schema=False)
 def verify(t: str = ""):
     ok, msg = users.verify_token(t)

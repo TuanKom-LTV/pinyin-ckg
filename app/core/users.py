@@ -369,6 +369,7 @@ def register_page(logo, msg="", ok=False, f=None):
 <label>Telegram (không bắt buộc)</label><input name="tg" value="{v('tg')}" placeholder="@tennguoidung" maxlength="41">
 <label>Mật khẩu</label><input type="password" name="pw" required minlength="6" autocomplete="new-password">
 <label>Nhập lại mật khẩu</label><input type="password" name="pw2" required minlength="6" autocomplete="new-password">
+<div style="font-size:12px;color:var(--mut);margin-top:10px">Bấm Đăng ký là bạn đã đọc và chấp nhận <a href="/mien-tru-trach-nhiem" target="_blank" style="color:#22d3ee">Tuyên bố miễn trừ trách nhiệm về rủi ro</a>.</div>
 <button class="full">Đăng ký</button>{f'<div class="e">{html.escape(msg)}</div>' if msg else ''}</form>
 <div class="alt">Đã có tài khoản? <a href="/login">Đăng nhập</a></div>"""
     return page("PinYin · Đăng ký", f'<div class="box">{inner}</div>')
@@ -440,3 +441,35 @@ def admin_page(logo):
 @media(max-width:700px){{thead{{display:none}}tr{{display:block;border-top:1px solid var(--bd);padding:8px 0}}td{{display:block;border:0;padding:3px 0}}}}</style>
 <script>{ADMIN_JS}</script>"""
     return page("PinYin · Quản lý khách hàng", body, wide=True)
+
+DISCLAIMER_URL = "/mien-tru-trach-nhiem"
+DISCLAIMER = [
+    (None, "Giao dịch ngoại hối và CFD ký quỹ tiềm ẩn rủi ro cao và có thể không phù hợp với tất cả các nhà đầu tư. "
+           "Đòn bẩy có thể gây bất lợi cũng như có lợi cho bạn, và bạn có thể mất nhiều hơn số tiền gửi ban đầu với một số nhà cung cấp. "
+           "Nội dung trên PinYin CKG chỉ dành cho mục đích giáo dục, tham khảo và hỗ trợ, không phải là lời khuyên đầu tư."),
+    ("Nguy cơ mất mát cao", "Giao dịch ngoại hối và hợp đồng chênh lệch (CFD) là những công cụ phức tạp được giao dịch ký quỹ. "
+           "Một tỷ lệ lớn các tài khoản nhà đầu tư cá nhân thua lỗ khi giao dịch CFD. Bạn nên cân nhắc xem mình có hiểu cách thức hoạt động "
+           "của các sản phẩm này hay không và liệu mình có đủ khả năng chấp nhận rủi ro cao khi mất tiền hay không."),
+    ("Đây không phải là lời khuyên đầu tư", "Tất cả nội dung trên PinYin CKG — bao gồm các bài viết, công cụ tính toán, dữ liệu thị trường "
+           "và đánh giá về các nhà môi giới — chỉ được cung cấp cho mục đích giáo dục và thông tin chung. Nội dung này không xem xét mục tiêu, "
+           "tình hình tài chính hoặc nhu cầu của bạn, và không phải là lời khuyên mua hoặc bán bất kỳ công cụ tài chính nào. "
+           "Hãy cân nhắc tìm kiếm lời khuyên từ một cố vấn tài chính độc lập, có giấy phép phù hợp."),
+    ("Độ chính xác của thông tin", "Chúng tôi nỗ lực hết sức để giữ cho nội dung của mình chính xác và cập nhật, nhưng chúng tôi không đảm bảo "
+           "rằng nội dung đó đầy đủ, chính xác hoặc hiện hành. Kết quả tính toán chỉ là ước tính, không bao gồm các chi phí như chênh lệch giá, "
+           "hoa hồng, phí hoán đổi và trượt giá. Dữ liệu thị trường được cung cấp bởi bên thứ ba và có thể bị chậm trễ."),
+    ("Thành tích trong quá khứ", "Kết quả trong quá khứ không phải là chỉ báo đáng tin cậy về kết quả trong tương lai. Mọi ví dụ chỉ mang tính minh họa."),
+    ("Các nhà môi giới bên thứ ba", "Các nhà môi giới được đề cập trên trang web này là các công ty độc lập. Hãy kiểm tra xem bất kỳ nhà môi giới nào "
+           "có được cơ quan quản lý tại quốc gia của bạn cấp phép hay không, và đọc kỹ các điều khoản và điều kiện rủi ro của họ trước khi mở tài khoản. "
+           "Các sản phẩm và đòn bẩy dành cho bạn phụ thuộc vào quốc gia cư trú của bạn."),
+]
+
+
+def disclaimer_page(logo):
+    parts = "".join((f'<h2 style="font-size:16px;color:var(--h2);margin:18px 0 6px">{html.escape(t)}</h2>' if t else "")
+                    + f'<p style="margin:0 0 8px;color:var(--tx)">{html.escape(p)}</p>' for t, p in DISCLAIMER)
+    inner = f"""<h1>{logo}<span>PinYin CKG</span></h1>
+<div style="font-size:20px;font-weight:800;margin:10px 0 2px">⚠️ Tuyên bố miễn trừ trách nhiệm về rủi ro</div>
+<div style="font-size:12px;color:var(--mut);margin-bottom:12px">Cập nhật lần cuối ngày 2 tháng 10 năm 2026</div>
+{parts}<p style="margin-top:18px;font-weight:700">PinYin CKG</p>
+<div class="alt"><a href="/">Về trang chính</a> · <a href="/login">Đăng nhập</a> · <a href="/dang-ky">Đăng ký</a></div>"""
+    return page("PinYin · Miễn trừ trách nhiệm", f'<div class="box" style="max-width:760px">{inner}</div>')
