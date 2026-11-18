@@ -451,7 +451,7 @@ def status(u):
             "lot": c.get("tierlot"), "sig": c.get("sig"), "pos": pos, "log": list(c["log"])[:30],
             "camp": {k: E.get(k) for k in ("dir", "rev", "legs", "lot", "sl", "sl_be", "tp1", "tp2", "tp1px", "tp2px")},
             "tg": False, "tg_chat": False, "cust": True,
-            "ea": {"online": online, "v16": v16, "ver": s.get("ver")}}
+            "ea": {"online": online, "v16": v16, "ver": s.get("ver"), "demo": (s.get("acc") or {}).get("demo")}}
 
 
 def set_cfg(u, x):

@@ -793,6 +793,11 @@ async function botPost(b){if(ABUSY)return null;ABUSY=true;try{const r=await jpos
 function botVals(){return{...(ABLA?{lot_auto:true}:{lot:+$('ablot').value}),strategy:'dca',tf:$('abtf').value,dca:dcaVals()}}
 async function botSave(){if(await botPost(botVals()))alert('Đã lưu. Bot dùng cài đặt mới từ tín hiệu tiếp theo.')}
 async function botToggle(){if(!AB)return;const on=!AB.cfg.on,v=botVals();
+ if(on&&AB.cust&&AB.ea&&AB.ea.demo===false&&!confirm('⚠️ MT5 của bạn là TÀI KHOẢN THẬT (tiền thật).
+
+Bot sẽ tự vào lệnh bằng tiền thật. Giao dịch vàng/CFD ký quỹ rủi ro cao, có thể mất toàn bộ vốn. Kết quả trong quá khứ không đảm bảo tương lai; bot và tín hiệu chỉ là công cụ hỗ trợ, không phải lời khuyên đầu tư.
+
+Bạn tự chịu trách nhiệm với lệnh trên tài khoản của mình. Tiếp tục?'))return;
  if(on&&!confirm(`BẬT bot tự động vào lệnh XAUUSD trên MT5${TR&&TR.demo?' (DEMO)':''}?\n\nKhung ${v.tf} · DCA tối đa ${v.dca.legs} lệnh${v.dca.risk>0?' · rủi ro '+v.dca.risk+'%':''} · lot ${v.lot_auto?(AB.lot??'-')+' theo vốn':v.lot+' cố định'}.\nBot chỉ vào lệnh ở tín hiệu MỚI kể từ lúc bật, chạy cả khi đóng trang.`))return;
  if(!on&&!confirm('TẮT bot? Lệnh bot đang mở vẫn giữ nguyên trên MT5 (SL/TP vẫn chạy).'))return;
  await botPost({...v,on})}
