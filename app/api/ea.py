@@ -78,6 +78,13 @@ async def sync(request: Request):
         uid = u["id"]
     with _lock:
         s = _s(uid)
+        al = next((l for l in lines if l[0] == "A" and len(l) >= 3), None)
+        cur = s.get("acc")
+        if al and cur and (al[1], al[2]) != (cur["login"], cur["server"]) and time.time() - s["last"] < ONLINE_SEC:
+            # 1 mã = 1 MT5: MT5 khác đang dùng mã này → từ chối, không để lệnh vào nhầm tài khoản
+            s["clash"] = {"login": al[1], "server": al[2], "t": time.time()}
+            return PlainTextResponse(f"X|Mã kết nối này đang dùng cho MT5 #{cur['login']} ({cur['server']}). "
+                                     "Mỗi mã chỉ gắn 1 tài khoản MT5. Tắt EA bên kia (chờ 15 giây) hoặc dùng mã khác.\n")
         s["last"], pos, pend, ind = time.time(), [], [], {}
         for l in lines:
             t = l[0]
