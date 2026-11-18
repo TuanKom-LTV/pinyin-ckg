@@ -15,7 +15,7 @@ Giả định mô phỏng (thận trọng):
 import math
 from datetime import datetime, timedelta, timezone
 
-from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_units
+from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_units, dca_sl
 
 VN = timezone(timedelta(hours=7))
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
@@ -251,15 +251,10 @@ def run_dca(sim, c, lot_fixed, warm):
             go = 0
         if not dr and not closed and go:
             if not ((go > 0 and d["dir"] == "sell") or (go < 0 and d["dir"] == "buy")):
-                cl, vw, sd, atr = sg["c"], sg["vwap"], sg["sd"], sg["atr"]
+                cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
                 stretch_ok = sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
                 if stretch_ok:
-                    if sg["rev"]:
-                        sl = sg["ext"] - go * d["sl_buf"]
-                    else:
-                        slv = vw - go * d["sl_k"] * atr
-                        slw = (sg["swl"] - d["sl_buf"]) if go > 0 else (sg["swh"] + d["sl_buf"])
-                        sl = slv if d["sl_mode"] == "vwap" else slw if d["sl_mode"] == "swing" else (min(slv, slw) if go > 0 else max(slv, slw))
+                    sl, _how = dca_sl(d, sg, go)
                     open_leg(k, go, sl, sg, True)
         elif dr and go == dr and not E["tp1"] and E["legs"] < cap_legs():
             gp = dca_gap(d, sg["atr"])
@@ -267,7 +262,17 @@ def run_dca(sim, c, lot_fixed, warm):
                 and k - E["last_k"] >= d["min_bars"]
             struct_ok = (sg["c"] > E["sl"] if dr > 0 else sg["c"] < E["sl"]) and (E["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
             if gap_ok and struct_ok:
-                open_leg(k, dr, E["sl"], sg, False)
+                sl_add, fol = E["sl"], False
+                if d.get("sl_follow", True):
+                    ns, _how = dca_sl(d, sg, dr)
+                    if dr * (sg["c"] - ns) > 0:
+                        sl_add, fol = ns, True
+                n0 = E["legs"]
+                open_leg(k, dr, sl_add, sg, False)
+                if fol and E["legs"] > n0:
+                    E["sl"] = sl_add
+                    for p in sim.pos:                     # SL dời có hiệu lực từ nến sau (vòng sau xét chạm SL)
+                        p["sl"] = sl_add
         if E["dir"]:
             levels(sg)
         sim.mark(k)

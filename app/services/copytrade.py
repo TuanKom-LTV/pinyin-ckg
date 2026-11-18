@@ -300,6 +300,9 @@ def _deliver(f, c):
             _sayf(f, f"{name} EA offline quá {int(age)} giây, bỏ lệnh: {c['what']}.", "err")
             return True
         return False
+    if c.get("need") and not _ver_ok(s, tuple(c["need"])):     # lệnh mới, EA cũ không hiểu: bỏ qua, không báo
+        _say(f"{name} EA {s.get('ver') or 'cũ'} chưa hỗ trợ: {c['what']} (cần EA {'.'.join(map(str, c['need']))}).", "info", tele=False)
+        return True
     own = f.get("own")                                  # bot của khách: tài khoản của chính khách
     if not own and _same(s["acc"]):
         _sayf(f, f"{name} là CHÍNH tài khoản tín hiệu #{s['acc']['login']} — không copy sang chính nó (sẽ gấp đôi lệnh). Gắn EA vào tài khoản khác.", "err")
@@ -480,6 +483,11 @@ def copy_part(frac, why, src="main"):
 
 def copy_beavg(off, src="main"):
     _each(lambda f: f"BEAVG|{float(off):.2f}", "dời SL hòa vốn", src=src)
+
+
+def copy_slsync(src="main"):
+    """Lệnh DCA mới có SL mới: EA dời SL mọi lệnh (cùng nhãn bot) theo lệnh mới nhất. Cần EA 1.9 (bản cũ: bỏ qua)."""
+    _each(lambda f: "SLSYNC", "dời SL theo lệnh DCA mới", {"need": [1, 9]}, src=src, dca=True)
 
 
 def copy_close(why, src="main"):

@@ -20,7 +20,7 @@ from pathlib import Path
 import MetaTrader5 as mt5
 
 from app.services import copytrade
-from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot
+from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_sl
 from app.services.mt5_service import mt5_service
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -318,17 +318,12 @@ def _bar(u, c, bars, sigs, b, bid, ask):
         if (go > 0 and d["dir"] == "sell") or (go < 0 and d["dir"] == "buy"):
             pass
         else:
-            cl, vw, sd, atr = sg["c"], sg["vwap"], sg["sd"], sg["atr"]
+            cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
             ok = sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
             if not ok:
                 log(u, f"Bỏ {'BUY' if go > 0 else 'SELL'}: giá cách VWAP quá {d['stretch']}σ.", "info")
             else:
-                if sg["rev"]:
-                    sl = sg["ext"] - go * d["sl_buf"]
-                else:
-                    slv = vw - go * d["sl_k"] * atr
-                    slw = (sg["swl"] - d["sl_buf"]) if go > 0 else (sg["swh"] + d["sl_buf"])
-                    sl = slv if d["sl_mode"] == "vwap" else slw if d["sl_mode"] == "swing" else (min(slv, slw) if go > 0 else max(slv, slw))
+                sl, _how = dca_sl(d, sg, go, c["cfg"].get("tf", ""))
                 _open(u, c, go, sl, sg, b, bid, ask, True, "đảo chiều" if want_rev else "")
     elif dr and go == dr and not E["tp1"] and E["legs"] < _cap(d, b):
         gp = dca_gap(d, sg["atr"])
@@ -336,7 +331,23 @@ def _bar(u, c, bars, sigs, b, bid, ask):
             and since(E["last_t"]) >= d["min_bars"]
         struct_ok = (sg["c"] > E["sl"] if dr > 0 else sg["c"] < E["sl"]) and (E["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
         if gap_ok and struct_ok:
-            _open(u, c, dr, E["sl"], sg, b, bid, ask, False)
+            sl_add, how2 = E["sl"], None
+            if d.get("sl_follow", True):
+                ns, how2 = dca_sl(d, sg, dr, c["cfg"].get("tf", ""))
+                if dr * (sg["c"] - ns) > 0:
+                    sl_add = ns
+                else:
+                    how2 = None
+            n0 = E["legs"]
+            _open(u, c, dr, sl_add, sg, b, bid, ask, False)
+            E = c["E"]
+            if how2 and E["legs"] > n0:
+                old = E["sl"]
+                E["sl"] = sl_add
+                for p in c["P"]:
+                    p["sl"] = sl_add
+                _act(u, "SLSYNC", "dời SL theo lệnh DCA mới", {"need": [1, 9]})
+                log(u, f"SL chung dời theo lệnh DCA {E['legs']}: {old:.2f} → {sl_add:.2f} ({how2}).", "info")
     if c["E"]["dir"]:
         _levels(u, c, sg)
     save(u)

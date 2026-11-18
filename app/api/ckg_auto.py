@@ -36,7 +36,7 @@ from pydantic import BaseModel
 from app.api.ckg import server_offset
 from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIATION, MAX_LOT
 from app.services.mt5_service import mt5_service
-from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_units
+from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_units, dca_sl
 from app.services import copytrade
 from app.services import cloud_pb
 
@@ -75,14 +75,15 @@ DCA_DEF = {"legs": 3, "gap": 0.5, "min_bars": 5, "risk": 0.0, "dir": "both", "st
            "sess_on": False, "sess": "1400-2300",   # chỉ MỞ/THÊM lệnh trong khung giờ VN (như useSession của Pine)
            "sl_lock": True,
            "gap_usd": 0.0,       # lệnh DCA thêm khi giá tốt hơn ≥ ... $ (0 = dùng gap × ATR)
-           "lot_mult": 1.0}      # lot lệnh DCA thứ n = lot đầu × lot_mult^(n-1) (1 = bằng lệnh đầu)      # True: SL bị sửa từ bên ngoài thì bot trả lại; False: nhận SL sửa tay làm SL chung
+           "lot_mult": 1.0,      # lot lệnh DCA thứ n = lot đầu × lot_mult^(n-1) (1 = bằng lệnh đầu)
+           "sl_follow": True}    # thêm lệnh DCA: SL chung tính lại theo lệnh mới, mọi lệnh trước dời SL theo      # True: SL bị sửa từ bên ngoài thì bot trả lại; False: nhận SL sửa tay làm SL chung
 DCA_NUM = {"legs": (1, 5, int), "gap": (0, 10, float), "min_bars": (1, 200, int), "risk": (0, 10, float),
            "stretch": (0.5, 10, float), "sl_k": (0, 10, float), "sl_buf": (0, 100, float), "soft_sig": (0.1, 5, float),
            "tp1r": (0.1, 10, float), "tp1p": (1, 100, int), "tp2r": (0.2, 20, float), "tp2p": (0, 100, int),
            "be_off": (0, 100, float), "trail_after": (1, 2, int), "time": (0, 2000, int),
            "gap_usd": (0, 100, float), "lot_mult": (1, 5, float)}
 DCA_ENUM = {"dir": ("both", "buy", "sell"), "sl_mode": ("min", "vwap", "swing"), "candles": ("ha", "std"), "sig": ("v5", "dca")}
-DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_lock")
+DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_lock", "sl_follow")
 
 
 def _sess_ok(s):
@@ -575,29 +576,12 @@ def _dca_bar(c, bars, b, fixed):
     if not dr and not closed and go:
         if (go > 0 and d["dir"] == "sell") or (go < 0 and d["dir"] == "buy"):
             return
-        cl, vw, sd, atr = sg["c"], sg["vwap"], sg["sd"], sg["atr"]
+        cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
         stretch_ok = sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
         if not stretch_ok:
             log(f"DCA: bỏ {'BUY' if go > 0 else 'SELL'}, giá cách VWAP quá {d['stretch']}σ.", "info", tele=False)
             return
-        pm = "−" if go > 0 else "+"
-        if sg["rev"]:
-            sl = sg["ext"] - go * d["sl_buf"]
-            how = f"râu nến đảo chiều {sg['ext']:.2f} {pm} {d['sl_buf']}$"
-        else:
-            slv = vw - go * d["sl_k"] * atr
-            sw = sg["swl"] if go > 0 else sg["swh"]
-            slw = sw - go * d["sl_buf"]
-            hw = f"{'đáy' if go > 0 else 'đỉnh'} 20 nến {c['tf']} {sw:.2f} {pm} {d['sl_buf']}$"
-            hv = f"VWAP {vw:.2f} {pm} {d['sl_k']}×ATR {atr:.2f}"
-            if d["sl_mode"] == "vwap":
-                sl, how = slv, hv
-            elif d["sl_mode"] == "swing":
-                sl, how = slw, hw
-            else:
-                far = (slv < slw) if go > 0 else (slv > slw)
-                sl, how = (slv, hv) if far else (slw, hw)
-                how += " (xa hơn giữa VWAP và swing)"
+        sl, how = dca_sl(d, sg, go, c["tf"])
         sg = {**sg, "sl_how": how}
         if block:
             log(f"Không vào lệnh DCA: {block}", "err")
@@ -612,12 +596,49 @@ def _dca_bar(c, bars, b, fixed):
             if block:
                 log(f"Không thêm lệnh DCA: {block}", "err")
             else:
-                _dca_open(c, dr, C().dca.get("sl_man") or C().dca["sl"], sg, b, fixed, first=False)
+                sl_add, how2 = C().dca.get("sl_man") or C().dca["sl"], None
+                if d.get("sl_follow", True):
+                    ns, how2 = dca_sl(d, sg, dr, c["tf"])
+                    if dr * (sg["c"] - ns) > 0:                 # SL mới phải nằm đúng phía giá
+                        sl_add = ns
+                    else:
+                        how2 = None
+                n0 = C().dca["legs"]
+                _dca_open(c, dr, sl_add, sg, b, fixed, first=False)
+                if how2 and C().dca["legs"] > n0:
+                    _dca_follow_sl(sl_add, how2)
 
     # 5. Cập nhật TP theo giá trung bình (dải TMA/VWAP thay đổi theo nến)
     if C().dca["dir"]:
         _dca_levels(d, sg)
         _dca_save()
+
+
+def _dca_follow_sl(new, how):
+    """Thêm lệnh DCA: SL chung = SL của lệnh mới, dời SL mọi lệnh trước theo (TP1/TP2 tính lại theo SL mới)."""
+    info = mt5.symbol_info(SYM)
+    tick = mt5.symbol_info_tick(SYM)
+    dr = C().dca["dir"]
+    old = C().dca.get("sl_man") or C().dca["sl"]
+    C().dca.update(sl=new, sl_how=f"{how} (theo lệnh DCA {C().dca['legs']})", sl_man=None)
+    _dca_save()
+    mind = (info.trade_stops_level + 1) * info.point
+    px = (tick.bid if dr > 0 else tick.ask) if tick else None
+    moved = 0
+    for p in _bot_positions():
+        if abs((p.sl or 0) - new) <= info.point * 1.5:
+            continue
+        if px is not None and dr * (px - new) < mind:
+            continue
+        try:
+            _set_sl(p, new)
+            _sl_seen[p.ticket] = (p.ticket, round(new, info.digits))
+            moved += 1
+        except Exception as e:
+            log(f"Không dời SL #{p.ticket} theo lệnh DCA mới: {e}", "err")
+    _copy().copy_slsync()
+    log(f"DCA: SL chung dời theo lệnh DCA {C().dca['legs']}: {old:.2f} → {new:.2f} ({how}), dời {moved} lệnh trước.", "info")
+    _sig(f"🛡 SL chung dời theo lệnh DCA {C().dca['legs']}: {new:.2f}")
 
 
 def _dca_cap(d, b, fixed):
@@ -1034,7 +1055,7 @@ class _CopySrc:
 
     def __getattr__(self, k):
         fn = getattr(copytrade, k)
-        if k in ("copy_open", "copy_part", "copy_beavg", "copy_close", "copy_order", "set_plan"):
+        if k in ("copy_open", "copy_part", "copy_beavg", "copy_close", "copy_order", "copy_slsync", "set_plan"):
             return lambda *a, **kw: fn(*a, **{**kw, "src": self.src})
         return fn
 

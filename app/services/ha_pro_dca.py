@@ -427,6 +427,26 @@ def dca_units(d, legs):
     return sum(m ** i for i in range(int(legs)))
 
 
+def dca_sl(d, sg, go, tf=""):
+    """SL chung cho lệnh theo tín hiệu sg (lệnh đầu, hoặc lệnh DCA khi bật 'SL dời theo lệnh DCA mới').
+    Trả (giá SL, giải thích)."""
+    pm = "−" if go > 0 else "+"
+    if sg.get("rev"):
+        return sg["ext"] - go * d["sl_buf"], f"râu nến đảo chiều {sg['ext']:.2f} {pm} {d['sl_buf']}$"
+    vw, atr = sg["vwap"], sg["atr"]
+    slv = vw - go * d["sl_k"] * atr
+    sw = sg["swl"] if go > 0 else sg["swh"]
+    slw = sw - go * d["sl_buf"]
+    hw = f"{'đáy' if go > 0 else 'đỉnh'} 20 nến {tf} {sw:.2f} {pm} {d['sl_buf']}$".replace("  ", " ")
+    hv = f"VWAP {vw:.2f} {pm} {d['sl_k']}×ATR {atr:.2f}"
+    if d["sl_mode"] == "vwap":
+        return slv, hv
+    if d["sl_mode"] == "swing":
+        return slw, hw
+    far = (slv < slw) if go > 0 else (slv > slw)
+    return (slv, hv + " (xa hơn giữa VWAP và swing)") if far else (slw, hw + " (xa hơn giữa VWAP và swing)")
+
+
 def dca_signals(bars, d):
     """Tín hiệu cho chiến lược DCA: d["sig"] = "v5" (đúng nhãn chỉ báo v5 trên TradingView) hoặc "dca" (bản Pine chiến lược DCA)."""
     extra = V5 if d.get("sig", "v5") == "v5" else {}

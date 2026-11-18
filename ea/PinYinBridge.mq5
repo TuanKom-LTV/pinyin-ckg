@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "PinYin CKG"
 #property link      "https://pinyin.id.vn"
-#property version   "1.80"
+#property version   "1.90"
 #property description "Cầu nối buồng lái PinYin CKG. Dán Mã kết nối lấy trên trang pinyin.id.vn."
 #property description "Cần cho phép WebRequest tới https://pinyin.id.vn (Tools > Options > Expert Advisors)."
 
@@ -15,7 +15,7 @@ input string InpKey    = "";                      // Mã kết nối PinYin (l�
 input string InpUrl    = "https://pinyin.id.vn";  // Địa chỉ PinYin
 input string InpSymbol = "";                      // Tên vàng trên sàn (để trống: tự tìm XAUUSD)
 
-#define EA_VER   "1.8"
+#define EA_VER   "1.9"
 #define EA_MAGIC 260118
 
 CTrade  trade;
@@ -409,6 +409,31 @@ string DoDOrd(string side, double lot, double sl, double pct)
    return "1|Đã vào " + side + " " + msg + " @ " + D(trade.ResultPrice(), dg) + (s > 0 ? " · SL " + D(s, dg) : "");
 }
 
+// 1.9: thêm lệnh DCA có SL mới → dời SL mọi lệnh (cùng phạm vi + nhãn bot) theo SL của lệnh mới nhất
+string DoSlSync()
+{
+   ulong last = 0; long tm = -1; int dg = Dg(); double pt = SymbolInfoDouble(Sym, SYMBOL_POINT);
+   for(int i = 0; i < PositionsTotal(); i++)
+   {
+      ulong k = PositionGetTicket(i);
+      if(!Mine(k)) continue;
+      long t = PositionGetInteger(POSITION_TIME_MSC);
+      if(t > tm) { tm = t; last = k; }
+   }
+   if(last == 0 || !PositionSelectByTicket(last)) return "0|Không có lệnh mở.";
+   double s = PositionGetDouble(POSITION_SL);
+   if(s <= 0) return "0|Lệnh mới nhất chưa có SL.";
+   int n = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong k = PositionGetTicket(i);
+      if(k == last || !Mine(k)) continue;
+      if(MathAbs(PositionGetDouble(POSITION_SL) - s) <= pt * 1.5) continue;
+      if(trade.PositionModify(k, s, PositionGetDouble(POSITION_TP)) && OkRet()) n++; else return "0|" + Rej();
+   }
+   return "1|Đã dời SL " + IntegerToString(n) + " lệnh theo lệnh DCA mới: " + D(s, dg) + ".";
+}
+
 // Máy chủ báo chốt TP1: đóng phần "PinYin TP1" (nếu sàn chưa chốt), không tách được thì chốt theo tỉ lệ
 string DoTp1Part(double frac)
 {
@@ -456,6 +481,7 @@ void Exec(string &f[])
    else if(c == "BEAVG")  r = DoBeAvg(n > 3 ? StringToDouble(f[3]) : 0);
    else if(c == "DORD" && n >= 7) r = DoDOrd(f[3], StringToDouble(f[4]), StringToDouble(f[5]), StringToDouble(f[6]));
    else if(c == "TP1PART" && n > 3) r = DoTp1Part(StringToDouble(f[3]));
+   else if(c == "SLSYNC") r = DoSlSync();
    else r = "0|Lệnh không hỗ trợ: " + c;
    gScope = false; gTag = "";
    results += "R|" + id + "|" + StringSubstr(r, 0, 1) + "|" + Clean(StringSubstr(r, 2)) + "\n";   // r = "1|thông báo"
