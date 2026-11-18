@@ -367,7 +367,8 @@ def run_zr(sim, d, lot, warm, cap0):
     from app.services import cloud_pb
     bars, vpu = sim.bars, sim.vpu
     res = cloud_pb.compute(bars, d)
-    st, E2 = res["st"], res["e2"]
+    E2 = res["e2"]
+    ent = cloud_pb.entries(bars, d, res)                # tín hiệu theo "Kiểu vào lệnh" (hồi chạm mây / mây đổi màu / cứ xanh-đỏ)
     camp, last, trig_used, dead = 0, None, False, False
     info = {"steps": {}, "max_lot": 0.0, "min_eq": cap0, "dead_at": None}
     floor_eq = cap0 * d["so_pct"] / 100
@@ -409,17 +410,17 @@ def run_zr(sim, d, lot, warm, cap0):
                     close_all(max(P, o), k, "chốt lời" if len(sim.pos) == 1 else "hòa vốn cả cụm")
                 elif N < 0 and l <= P:
                     close_all(min(P, o), k, "chốt lời" if len(sim.pos) == 1 else "hòa vốn cả cụm")
-        flip = st[k] != 0 and k > 0 and st[k] != st[k - 1]
+        sg = ent[k][0]["go"] if k in ent else 0
         if not sim.pos:
             last, trig_used = None, False
-            if flip and _in_sess(d, t):
+            if sg and _in_sess(d, t):
                 camp += 1
-                g = st[k]
+                g = sg
                 p = sim.open(g, lot, c + sim.spr[k] if g > 0 else c, 0, 0, k, camp=camp)
                 last = p
         elif last is not None and len(sim.pos) < d["zr_max"]:
             g = -last["d"]
-            hit = flip and st[k] == g
+            hit = sg == g
             if not hit and d["zr_trig"] == "ema" and not trig_used and E2[k] is not None:
                 hit = (c < E2[k]) if last["d"] > 0 else (c > E2[k])
             if hit:
@@ -479,7 +480,7 @@ def stats(sim, cap0, by_camp):
     return {
         "net": round(net, 2), "net_pct": round(net / cap0 * 100, 2) if cap0 else 0, "end": round(sim.bal, 2),
         "n": len(gs), "n_orders": len({t["id"] for t in tr}), "win": len(wins), "winrate": round(len(wins) / len(gs) * 100, 1) if gs else 0,
-        "pf": round(gw / gl, 2) if gl > 0 else (None if not gw else 999), "avg_win": round(gw / len(wins), 2) if wins else 0,
+        "pf": round(gw / gl, 2) if gl >= 0.01 else (None if not gw else 999), "avg_win": round(gw / len(wins), 2) if wins else 0,
         "avg_loss": round(-gl / len(loss), 2) if loss else 0, "best": round(max(wins), 2) if wins else 0,
         "worst": round(min(loss), 2) if loss else 0, "mdd": round(mdd, 2), "mdd_pct": round(mddp, 1), "streak": streak,
         "open_left": len(sim.pos),
