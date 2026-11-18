@@ -422,6 +422,20 @@ def _loop():
                 if on and fl.get("off"):
                     fl["off"] = False
                     _sayf(f, f"[{f['name']}] EA đã kết nối lại.", "info")
+                # EA online nhưng MT5 tắt quyền giao dịch tự động (nút Algo Trading / ô Allow Algo Trading của EA)
+                algo = bool((s.get("acc") or {}).get("algo"))
+                if on and f.get("on") and not algo:
+                    fl.setdefault("noalgo_t", time.time())
+                    if not fl.get("noalgo") and time.time() - fl["noalgo_t"] > 10:
+                        fl["noalgo"] = True
+                        _sayf(f, f"⚠️ [{f['name']}] MT5 đang TẮT giao dịch tự động: EA vẫn kết nối nhưng KHÔNG vào / đóng lệnh được"
+                                 + (f" (đang có {len(s.get('pos') or [])} lệnh)" if s.get("pos") else "")
+                                 + ". Bật nút Algo Trading trên thanh công cụ MT5 và tích ô Allow Algo Trading trong cài đặt EA (F7).", "err")
+                else:
+                    fl.pop("noalgo_t", None)
+                    if on and fl.get("noalgo"):
+                        fl["noalgo"] = False
+                        _sayf(f, f"✅ [{f['name']}] MT5 đã BẬT lại giao dịch tự động.", "info")
                 _kick(fid)                                  # hàng đợi còn lệnh mà chưa có luồng gửi: chạy lại
                 if on and f.get("on") and (f.get("own") or not _same(s.get("acc"))):
                     _reconcile(f, s)
