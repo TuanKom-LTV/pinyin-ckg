@@ -54,7 +54,17 @@ def load():
         return _cache["data"]
 
 
-MAX_ACC = 3            # mỗi khách tối đa 3 tài khoản MT5 (mỗi tài khoản 1 mã kết nối + 1 bot riêng)
+DEF_ACC = 2            # mặc định mỗi khách 2 tài khoản MT5 (mỗi tài khoản 1 mã kết nối + 1 bot riêng)
+HARD_ACC = 10          # chủ mở thêm (có phí) tối đa tới mức này
+
+
+def acc_limit_of(u):
+    return max(1, min(HARD_ACC, int(u.get("max_acc") or DEF_ACC)))
+
+
+def acc_limit(uid):
+    u = by_id(uid)[1]
+    return acc_limit_of(u) if u else DEF_ACC
 
 
 def split_uid(uid):
@@ -104,10 +114,25 @@ def acc_act(uid, act, n=0, name=""):
         keys = {k: dict(v) for k, v in (u.get("ea_keys") or {}).items()}
         names = dict(u.get("acc_names") or {})
         name = (name or "").strip()[:30]
+        lim = acc_limit_of(u)
+        if act == "req":
+            if time.time() - (u.get("acc_req") or 0) < 3600:
+                return True, "Đã gửi yêu cầu rồi, chủ PinYin sẽ liên hệ bạn. Cần gấp: Telegram @TuanKom.", 0
+            u["acc_req"] = int(time.time())
+            data[email] = u
+            save(data)
+            try:
+                from app.api.ckg_auto import tg_send
+                tg_send(f"📩 Khách {u.get('ten') or email} ({email}, Zalo {u.get('sdt') or '-'}) xin THÊM tài khoản MT5 "
+                        f"(đang {1 + len(keys)}/{lim}). Duyệt ở /quan-ly → nút ＋ MT5.")
+            except Exception:
+                pass
+            return True, "Đã gửi yêu cầu thêm tài khoản. Chủ PinYin sẽ liên hệ báo phí và mở thêm cho bạn.", 0
         if act == "add":
-            if 1 + len(keys) >= MAX_ACC:
-                return False, f"Tối đa {MAX_ACC} tài khoản MT5.", 0
-            n = next(i for i in range(2, MAX_ACC + 1) if str(i) not in keys)
+            if 1 + len(keys) >= lim:
+                return False, (f"Gói của bạn dùng tối đa {lim} tài khoản MT5. Muốn thêm tài khoản (có phí): "
+                               "bấm Xin thêm tài khoản hoặc liên hệ Telegram @TuanKom."), 0
+            n = next(i for i in range(2, HARD_ACC + 1) if str(i) not in keys)
             keys[str(n)] = {"key": "PY-" + secrets.token_urlsafe(18), "name": name or f"Tài khoản {n}"}
             msg = f"Đã thêm {keys[str(n)]['name']}. Gắn EA vào MT5 đó với mã kết nối mới."
         elif act == "name":
@@ -357,6 +382,8 @@ def admin_list():
                     "con": (max(0, int((u["het_han"] - time.time()) // 86400)) if u.get("het_han") else None),
                     "dang_nhap": datetime.fromtimestamp(u["dang_nhap"], VN).strftime("%d/%m %H:%M") if u.get("dang_nhap") else "-",
                     "gd": bool(u.get("gd")), "bot": bool(u.get("bot")), "id": u.get("id"),
+                    "nacc": 1 + len(u.get("ea_keys") or {}), "max_acc": acc_limit_of(u),
+                    "acc_req": bool(u.get("acc_req")) and (u.get("acc_req") or 0) > (u.get("acc_ok") or 0),
                     "_tao": u["tao"]})
     order = {"cho": 0, "xac_minh": 1, "ok": 2, "het": 3, "khoa": 4}
     out.sort(key=lambda x: (order.get(x["tt"], 9), -x["_tao"]))
@@ -399,6 +426,17 @@ def admin_act(user, act, days=30):
                 return False, "Cần cho giao dịch trước khi cho dùng bot."
             u["bot"] = True
             msg = f"Đã cho {user} dùng bot tự động."
+        elif act in ("acc_up", "acc_down"):
+            lim, n = acc_limit_of(u), 1 + len(u.get("ea_keys") or {})
+            if act == "acc_up":
+                if lim >= HARD_ACC:
+                    return False, f"Tối đa {HARD_ACC} tài khoản MT5."
+                u["max_acc"], u["acc_ok"] = lim + 1, int(now)
+            else:
+                if lim - 1 < max(1, n):
+                    return False, f"Khách đang dùng {n} tài khoản MT5, phải xóa bớt trước khi giảm."
+                u["max_acc"] = lim - 1
+            msg = f"{user}: được dùng {u['max_acc']} tài khoản MT5."
         elif act == "bot_off":
             u["bot"] = False
             msg = f"Đã tắt bot tự động của {user} (bot dừng, lệnh đang mở giữ SL trên MT5)."
@@ -489,7 +527,7 @@ async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'}
    u.tt=='khoa'?`${d}<button onclick="act('${u.user}','mo')">Mở khóa</button><button class="red" onclick="act('${u.user}','xoa')">Xóa</button>`:
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
   return `<tr><td><b>${e(u.ten)}</b><br><a class="m" href="mailto:${e(u.user)}">${e(u.user)}</a></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
-   <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${u.gd?`<b class="ok">✅ Được giao dịch</b><br><span class="m">${u.ea?(u.ea.on?'🟢 EA online · #'+e(u.ea.login)+' · '+e(u.ea.server)+(u.ea.demo?' (demo)':' (THẬT)')+' · EA '+e(u.ea.ver||'?')+(u.ea.old?' <b class="wn">(cũ)</b>':''):'⚪ EA offline'+(u.ea.login?' · #'+e(u.ea.login):'')):'⚪ chưa nối EA'}</span><br>${u.bot?`<b class="ok">🤖 Được dùng bot</b> <span class="m">${u.cbot?(u.cbot.on?'· đang BẬT '+e(u.cbot.tf)+(u.cbot.camp?' · '+e(u.cbot.camp):''):'· đang tắt'):''}</span><br><button class="red" onclick="act('${u.user}','bot_off')">Tắt bot</button> `:`<button onclick="act('${u.user}','bot_on')">🤖 Cho dùng bot</button> `}<button class="red" onclick="act('${u.user}','gd_off')">Tắt giao dịch</button>`:(u.tt=='ok'?`<button onclick="act('${u.user}','gd_on')">Cho giao dịch</button>`:'<span class="m">-</span>')}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
+   <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${u.gd?`<b class="ok">✅ Được giao dịch</b><br><span class="m">${u.ea?(u.ea.on?'🟢 EA online · #'+e(u.ea.login)+' · '+e(u.ea.server)+(u.ea.demo?' (demo)':' (THẬT)')+' · EA '+e(u.ea.ver||'?')+(u.ea.old?' <b class="wn">(cũ)</b>':''):'⚪ EA offline'+(u.ea.login?' · #'+e(u.ea.login):'')):'⚪ chưa nối EA'}</span><br>${u.bot?`<b class="ok">🤖 Được dùng bot</b> <span class="m">${u.cbot?(u.cbot.on?'· đang BẬT '+e(u.cbot.tf)+(u.cbot.camp?' · '+e(u.cbot.camp):''):'· đang tắt'):''}</span><br><button class="red" onclick="act('${u.user}','bot_off')">Tắt bot</button> `:`<button onclick="act('${u.user}','bot_on')">🤖 Cho dùng bot</button> `}<br><span class="m">🖥 MT5: <b>${u.nacc}/${u.max_acc}</b> tài khoản</span> <button onclick="act('${u.user}','acc_up')" title="Mở thêm 1 tài khoản MT5 (có phí)">＋ MT5</button><button class="red" onclick="act('${u.user}','acc_down')" title="Giảm 1 tài khoản">－</button>${u.acc_req?' <b class="wn">📩 khách xin thêm</b>':''}<br><button class="red" onclick="act('${u.user}','gd_off')">Tắt giao dịch</button>`:(u.tt=='ok'?`<button onclick="act('${u.user}','gd_on')">Cho giao dịch</button>`:'<span class="m">-</span>')}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
 async function act(user,a){const days=+($('d_'+user)||{}).value||30;
  if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;
  const r=await fetch('/quan-ly/api/act',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,act:a,days})});const j=await r.json();

@@ -878,16 +878,18 @@ function slotGo(n){ACC=String(n);try{localStorage.setItem('ckg-acc',ACC)}catch(e
 function slotDraw(){const j=SLOTS;if(!j)return;const e=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const h=`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="mut" style="font-size:12px">Tài khoản MT5:</span>`+j.accs.map(a=>{const on=a.n==j.cur;
   return `<button class="qx" style="${on?'border-color:var(--h2);color:var(--h2);font-weight:700;border-width:2px':''}" onclick="${on?'':'slotGo('+a.n+')'}" title="${a.ea?'#'+e(a.ea.login)+' · '+e(a.ea.server):'Chưa gắn EA'}">${a.online?'🟢':'⚪'} ${e(a.name)}${a.ea?' #•••'+e(String(a.ea.login).slice(-3)):''}${a.bot?' 🤖':''}</button>`}).join('')
-  +(j.accs.length<j.max?`<button class="qx" onclick="slotAct('add')">＋ Thêm tài khoản (${j.accs.length}/${j.max})</button>`:'')
+  +(j.accs.length<j.max?`<button class="qx" onclick="slotAct('add')">＋ Thêm tài khoản (${j.accs.length}/${j.max})</button>`:`<button class="qx" onclick="slotAct('req')" title="Gói của bạn đã dùng hết ${j.max} tài khoản MT5">＋ Xin thêm tài khoản (có phí)</button>`)
   +`<button class="qx" onclick="slotAct('name')" title="Đổi tên tài khoản đang chọn">✏️</button>`+(j.cur>1?`<button class="qx" style="border-color:var(--no);color:var(--no)" onclick="slotAct('del')" title="Xóa tài khoản đang chọn">🗑</button>`:'')+`</div>`
   +(j.accs.length>1?`<div class="mut" style="font-size:12px;margin-top:4px">Đang xem và điều khiển <b>${e((j.accs.find(a=>a.n==j.cur)||{}).name)}</b>. Mỗi tài khoản có mã kết nối EA riêng (🔑 Mã EA) và bot cài đặt riêng (🟢 EA online · 🤖 bot đang bật).</div>`:'');
  ['qslot','abslot'].forEach(i=>{const d=$(i);if(d){d.innerHTML=h;d.style.display=''}})}
 async function slotAct(act){const j=SLOTS;if(!j)return;let name='';const cur=(j.accs.find(a=>a.n==j.cur)||{}).name;
  if(act=='add'){name=prompt('Tên tài khoản MT5 mới (vd: Exness chiến lược M5):','');if(name==null)return}
  if(act=='name'){name=prompt('Tên mới cho '+cur+':',cur||'');if(!name)return}
+ if(act=='req'&&!confirm('Gói của bạn dùng tối đa '+j.max+' tài khoản MT5. Gửi yêu cầu mở thêm tài khoản (có phí) cho chủ PinYin?'))return;
  if(act=='del'&&!confirm('Xóa '+cur+' khỏi PinYin?\nBot của tài khoản này sẽ TẮT. Lệnh đang mở trên MT5 đó giữ nguyên (SL/TP vẫn chạy). Gỡ EA khỏi MT5 đó.'))return;
  let r;try{r=await jpost('api/ea/acc',{act,n:act=='add'?0:j.cur,name})}catch(e){alert('Lỗi: '+e.message);return}
  if(!r||!r.ok){alert('Lỗi: '+(r&&r.loi||''));return}
+ if(act=='req'){alert(r.msg);return}
  if(act=='add'){alert(r.msg);slotGo(r.n)}else if(act=='del'){slotGo('1')}else{QEAI=null;slotLoad()}}
 async function meInit(){let m;try{m=await jget('/api/me')}catch(e){return}if(!m||!m.ok)return;const b=$('meb');
  if(m.user&&m.gd){EAMODE=true;QAPI='api/ea/q/';slotLoad();setInterval(slotLoad,15000)}if(m.role=='chu'||(m.user&&m.gd)){$('cktab').style.display=''}if(m.role=='chu')$('bottab').style.display='';if(m.user&&m.bot){CBOT=true;BAPI='api/ea/bot';$('bottab').style.display='';['cpc','btc'].forEach(i=>{const e=$(i);if(e)e.style.display='none'})}if(EAMODE)$('histc').style.display='none';try{const lv=localStorage.getItem('ckg-view');if((lv=='ck'||lv=='bot')&&VIEWMODE!=lv)setView(lv)}catch(e){}if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}

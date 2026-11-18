@@ -190,7 +190,7 @@ def info(request: Request):
                      "bot": bool(users.can_bot(a["uid"]) and cbot.get(a["uid"])["cfg"].get("on"))})
     key = next((a["key"] for a in users.accounts(uid) if a["n"] == cur), None)
     return {"ok": True, "key": key, "url": "https://pinyin.id.vn", "ea": status_of(uid), "ver": _s(uid)["ver"],
-            "cur": cur, "accs": accs, "max": users.MAX_ACC}
+            "cur": cur, "accs": accs, "max": users.acc_limit(uid)}
 
 
 class AccIn(BaseModel):
@@ -201,7 +201,7 @@ class AccIn(BaseModel):
 
 @router.post("/ckg/api/ea/acc")
 def acc_set(x: AccIn, request: Request):
-    """Khách thêm / đổi tên / đổi mã / xóa tài khoản MT5 (tối đa users.MAX_ACC)."""
+    """Khách thêm / đổi tên / đổi mã / xóa tài khoản MT5 (giới hạn theo gói, mặc định users.DEF_ACC), xin thêm (req)."""
     uid = getattr(request.state, "user", None)
     if not uid or not users.can_trade(uid):
         return _deny()
