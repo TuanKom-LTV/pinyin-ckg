@@ -510,16 +510,6 @@ def copy_close(why, src="main"):
     _each(lambda f: "CLOSE|0", f"đóng lệnh ({why})", src=src)
 
 
-def copy_order(direction, master_lot, sl_dist, tp_dist, entry_px=None, src="main"):
-    """Lệnh thị trường kèm SL/TP theo khoảng cách $ từ giá khớp (0 = không đặt) — dùng cho Cloud PB."""
-    side = "BUY" if direction > 0 else "SELL"
-    s, t = max(0.0, float(sl_dist or 0)), max(0.0, float(tp_dist or 0))
-    for f in load():
-        if f.get("on") and follows(f, src):
-            lot = _lot(f, master_lot)
-            _enqueue(f, f"ORDER|{side}|{lot:.2f}|now|{s:.2f}|{t:.2f}|0|M1", f"vào {side}", {"side": side, "px": entry_px, "tag": tag_of(src)})
-
-
 def status():
     from app.api import ea
     out = []

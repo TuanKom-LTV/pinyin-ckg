@@ -38,14 +38,13 @@ from app.api.ckg_trade import _account_guard, _filling, _norm_lot, _send, DEVIAT
 from app.services.mt5_service import mt5_service
 from app.services.ha_pro_dca import dca_signals, dca_gap, dca_leg_lot, dca_units, dca_sl
 from app.services import copytrade
-from app.services import cloud_pb
 
 
 SYM = "XAUUSD"
 MAGIC = 260117
 COMMENT = "PinYin AUTO"
 TFS = {"M1": (mt5.TIMEFRAME_M1, 60), "M5": (mt5.TIMEFRAME_M5, 300), "M15": (mt5.TIMEFRAME_M15, 900)}
-STRATS = {"dca": "PinYin HA Pro DCA", "cpb": "PinYin EMA Cloud Pullback"}
+STRATS = {"dca": "PinYin HA Pro DCA"}
 TIERS = [(100, 3, .01), (300, 5, .01), (600, 3, .02), (900, 5, .02), (1000, 3, .03), (1200, 5, .03)]
 VN = timezone(timedelta(hours=7))
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -65,8 +64,7 @@ DEFAULT = {"on": False, "tf": "M1", "step": 2.0, "tp": 1,
            "strategy": "dca", "ha_sl_buffer": 2.0, "ha_sl_lookback": 20,   # chiến lược tín hiệu
            "ha_candles": "ha",   # HA Pro tính trên nến Heikin Ashi (như TradingView) hoặc nến Nhật
            "ha_be_tp1": True,    # v5: giá chạm TP1 thì dời SL về giá vào (như chỉ báo)
-           "dca": {},            # cài đặt chiến lược DCA (gộp với DCA_DEF)
-           "cpb": {}}            # cài đặt Cloud PB (gộp với cloud_pb.BOT_DEF)
+           "dca": {}}            # cài đặt chiến lược DCA (gộp với DCA_DEF)
 # Cài đặt DCA mặc định = input mặc định của Pine Script. Khóa: (min, max, kiểu) để kiểm tra khi lưu.
 DCA_DEF = {"legs": 3, "gap": 0.5, "min_bars": 5, "risk": 0.0, "dir": "both", "stretch": 2.0,
            "sl_mode": "min", "sl_k": 0.5, "sl_buf": 1.0, "soft": True, "soft_sig": 1.0,
@@ -118,8 +116,8 @@ def _cfg():
     except Exception:
         c = dict(DEFAULT)
     c["dca"] = {**DCA_DEF, **(c.get("dca") or {})}
-    c["cpb"] = {**cloud_pb.BOT_DEF, **{k: v for k, v in (c.get("cpb") or {}).items() if k in cloud_pb.BOT_DEF}}
-    if c.get("strategy") not in STRATS:          # các chiến lược cũ (EMA9×EMA21, HA Pro) đã bỏ
+    c.pop("cpb", None)                           # chiến lược EMA Cloud Pullback đã gỡ (19/11/2026)
+    if c.get("strategy") not in STRATS:          # các chiến lược cũ (EMA9×EMA21, HA Pro, EMA Cloud Pullback) đã bỏ
         c["strategy"] = "dca"
     return c
 
@@ -697,301 +695,8 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
     _copy().copy_open(dr, float(res.volume), abs(float(res.price) - sl), d["tp1p"] if not C().dca["tp1"] else 0, float(res.price))
 
 
-# ---------- Chiến lược PinYin EMA Cloud Pullback (strategy = "cpb") ----------
-# Mỗi lệnh có ghi chú "PinYin AUTO CPB". Cài đặt ở c["cpb"] (cloud_pb.BOT_DEF). Trạng thái ở data/auto_cpb_state.json.
-#   pine / half: SL + TP đặt sẵn trên sàn; half: chốt một phần ở half_r R rồi dời hòa vốn; lá chắn hòa vốn / trailing
-#                xét ở nến đóng (giống backtest); cùng chiều vào thêm tới legs lệnh; ngược chiều đóng + đảo chiều.
-#   zr (Không SL, nhân lot đảo chiều): KHÔNG đặt SL/TP. 1 lệnh lãi zr_tp $ giá → đóng; tín hiệu ngược → lệnh ngược
-#                lot × zr_mult; tổng lãi các lệnh ≥ zr_be → đóng cả cụm; vốn ≤ so_pct% vốn lúc mở cụm → cắt cả cụm.
-
-CPB_COMMENT = "PinYin AUTO CPB"
-CPB_FILE = ROOT / "data" / "auto_cpb_state.json"
-CPB_EMPTY = {"pos": {}, "mart": 0, "zr": {"camp": 0, "dir": 0, "lot": 0.0, "trig": False, "eq0": None}, "warn": ""}
-_cpb = json.loads(json.dumps(CPB_EMPTY))
-
-
-def _cpb_load():
-    try:
-        x = json.loads(C().cpb_file.read_text(encoding="utf-8"))
-        C().cpb.update({**json.loads(json.dumps(CPB_EMPTY)), **x})
-    except Exception:
-        pass
-
-
-def _cpb_save():
-    try:
-        C().cpb_file.parent.mkdir(parents=True, exist_ok=True)
-        C().cpb_file.write_text(json.dumps(C().cpb, ensure_ascii=False), encoding="utf-8")
-    except Exception:
-        pass
-
-
-def _cpb_positions():
-    return [p for p in _bot_positions() if (p.comment or "").startswith(CPB_COMMENT)]
-
-
 def _hedging(a):
     return bool(a) and a.margin_mode == mt5.ACCOUNT_MARGIN_MODE_RETAIL_HEDGING
-
-
-def cpb_max_lot(d, base):
-    """Lot lớn nhất chiến lược có thể đặt (để kiểm tra trước với giới hạn lot)."""
-    from app.services import cloud_pb
-    if d["mg"] == "zr":
-        return base * d["zr_mult"] ** max(0, d["zr_max"] - 1)
-    return cloud_pb.mart_lot(base, d, d["mart_max"] if d["mart"] != "off" else 0)
-
-
-def _cpb_warn(msg):
-    """Báo 1 lần cho cùng một lỗi (không spam Telegram mỗi nến)."""
-    if C().cpb.get("warn") != msg:
-        C().cpb["warn"] = msg
-        log(msg, "err")
-        _cpb_save()
-
-
-def _cpb_open(go, lot, sl, tp, why, R=0.0):
-    info = mt5.symbol_info(SYM)
-    tick = mt5.symbol_info_tick(SYM)
-    buy = go > 0
-    price = tick.ask if buy else tick.bid
-    lot = _norm_lot(info, lot)
-    req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYM, "volume": lot,
-           "type": mt5.ORDER_TYPE_BUY if buy else mt5.ORDER_TYPE_SELL, "price": price, "deviation": DEVIATION,
-           "magic": C().magic, "comment": CPB_COMMENT, "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
-           "sl": round(sl, info.digits) if sl else 0.0, "tp": round(tp, info.digits) if tp else 0.0}
-    res = _send(req)
-    C().st["known"][res.order] = "BUY" if buy else "SELL"
-    C().cpb["pos"][str(res.order)] = {"R": R, "lot0": float(res.volume), "half": False, "be": False}
-    C().cpb["warn"] = ""
-    _cpb_save()
-    C().st["dirs"] = sorted(set(C().st.get("dirs") or []) | {go})
-    px = float(res.price)
-    _copy().copy_order(go, float(res.volume), abs(px - sl) if sl else 0, abs(tp - px) if tp else 0, px)
-    lv = (f" · SL {sl:.{info.digits}f} · TP {tp:.{info.digits}f}" if sl else " · KHÔNG SL")
-    _sig(f"🟢 {'BUY' if buy else 'SELL'} XAUUSD @ {res.price:.{info.digits}f}" + lv)
-    log(f"Cloud PB {'BUY' if buy else 'SELL'} {res.volume} lot @ {res.price:.{info.digits}f}{lv}" + (f" ({why})" if why else ""), "open")
-    return res
-
-
-def _cpb_gone(ps):
-    """Lệnh Cloud PB đã đóng (SL/TP/đóng tay): cập nhật đếm tăng lot sau SL."""
-    live = {str(p.ticket) for p in ps}
-    for t in [t for t in C().cpb["pos"] if t not in live]:
-        C().cpb["pos"].pop(t, None)
-        try:
-            deals = mt5.history_deals_get(position=int(t)) or []
-        except Exception:
-            deals = []
-        pnl = sum(x.profit + x.swap + x.commission for x in deals)
-        out = [x for x in deals if x.entry == mt5.DEAL_ENTRY_OUT]
-        if pnl > 0:
-            C().cpb["mart"] = 0
-        elif out and out[-1].reason == mt5.DEAL_REASON_SL and pnl < 0:
-            C().cpb["mart"] += 1
-        _cpb_save()
-
-
-def _cpb_live(c):
-    """Mỗi 2 giây: chốt một phần (half), quản lý cụm Không SL (zr)."""
-    d = c["cpb"]
-    ps = _cpb_positions()
-    C().st["dirs"] = sorted({1 if p.type == mt5.POSITION_TYPE_BUY else -1 for p in ps})
-    _cpb_gone(ps)
-    if not ps:
-        if C().cpb["zr"]["dir"]:
-            C().cpb["zr"].update(dir=0, lot=0.0, trig=False, eq0=None)
-            _cpb_save()
-        return
-    info = mt5.symbol_info(SYM)
-    tick = mt5.symbol_info_tick(SYM)
-    if not info or not tick or tick.bid <= 0:
-        return
-    if d["mg"] == "zr":
-        z = C().cpb["zr"]
-        if not z["dir"]:                                        # khởi động lại giữa cụm: lấy lại từ lệnh mới nhất
-            p = max(ps, key=lambda x: x.time_msc)
-            z.update(dir=1 if p.type == mt5.POSITION_TYPE_BUY else -1, lot=p.volume)
-        a = mt5.account_info()
-        if d["so_pct"] > 0 and a and z.get("eq0") and a.equity <= z["eq0"] * d["so_pct"] / 100:          # _close_all gửi copy đóng
-            _close_all(f"CẮT CẢ CỤM: vốn {a.equity:.2f} ≤ {d['so_pct']}% vốn lúc mở cụm {z['eq0']:.2f}")
-            return
-        if len(ps) == 1:
-            p = ps[0]
-            buy = p.type == mt5.POSITION_TYPE_BUY
-            gain = (tick.bid - p.price_open) if buy else (p.price_open - tick.ask)
-            if gain >= d["zr_tp"]:
-                _copy().copy_close("chốt lời")
-                _close_pos(p, f"chốt lời +{gain:.2f}$ giá")
-        else:
-            tot = sum(p.profit + p.swap for p in ps)
-            if tot >= d["zr_be"]:
-                _copy().copy_close(f"hòa vốn cả cụm {len(ps)} lệnh")
-                for p in ps:
-                    try:
-                        _close_pos(p, f"hòa vốn cả cụm {len(ps)} lệnh (tổng {tot:.2f})")
-                    except Exception as e:
-                        log(f"Không đóng được #{p.ticket}: {e}", "err")
-        return
-    if d["mg"] == "half":
-        step, vmin = info.volume_step or 0.01, info.volume_min
-        mind = (info.trade_stops_level + 1) * info.point
-        for p in ps:
-            m = C().cpb["pos"].get(str(p.ticket))
-            if not m or m["half"] or not m["R"]:
-                continue
-            buy = p.type == mt5.POSITION_TYPE_BUY
-            g = 1 if buy else -1
-            px = tick.bid if buy else tick.ask
-            if g * (px - p.price_open) < d["half_r"] * m["R"]:
-                continue
-            m["half"] = True
-            _cpb_save()
-            vol = round(math.floor(m["lot0"] * d["half_pct"] / 100 / step + 1e-9) * step, 2)
-            try:
-                if vmin - 1e-9 <= vol < p.volume - 1e-9:
-                    tot = sum(x.volume for x in ps)
-                    _copy().copy_part(min(1.0, vol / tot), f"{d['half_pct']}% ở {d['half_r']}R")
-                    _close_pos(p, f"chốt {d['half_pct']}% ở {d['half_r']}R", vol)
-                be = p.price_open + g * d["be_off"]
-                if g * (be - p.sl) > info.point / 2 and g * (px - be) >= mind:
-                    _set_sl(p, be)
-                    _copy().copy_beavg(d["be_off"])
-                    log(f"Cloud PB #{p.ticket}: dời SL hòa vốn {be:.{info.digits}f}", "info", tele=False)
-            except Exception as e:
-                log(f"Cloud PB: chốt một phần #{p.ticket} lỗi: {e}", "err")
-
-
-def _cpb_bar(c, bars, b, fixed):
-    """Nến mới đóng: lá chắn hòa vốn / trailing (pine, half), vào lệnh theo tín hiệu."""
-    from app.services import cloud_pb
-    d = c["cpb"]
-    res = cloud_pb.compute(bars, d)
-    ent = cloud_pb.entries(bars, d, res)
-    i = len(bars) - 1
-    sig = ent.get(i, [])
-    ps = _cpb_positions()
-    info = mt5.symbol_info(SYM)
-    tick = mt5.symbol_info_tick(SYM)
-    if not info or not tick or tick.bid <= 0:
-        return
-    mind = (info.trade_stops_level + 1) * info.point
-    t_bar = bars[i][0]
-    if sig and d["entry"] != "hold":
-        s = sig[0]
-        C().st["sig"] = {"t": s["go"], "side": "BUY" if s["go"] > 0 else "SELL", "e": bars[i][4], "sl": s["sl"],
-                         "bar": int(t_bar), "kind": "", "at": _now_vn()}
-        log(f"Tín hiệu Cloud PB {'BUY' if s['go'] > 0 else 'SELL'} {c['tf']} @ {bars[i][4]:.2f}", "info", tele=False)
-    base = fixed or (b[2] if b else None)
-    a, block = _account_guard()
-    if not base:
-        if sig:
-            _cpb_warn("Cloud PB: chưa có lot (vốn dưới bảng vốn) — nhập lot cố định ở ô khối lượng.")
-        return
-    biggest = cpb_max_lot(d, base)
-    if biggest > min(info.volume_max, MAX_LOT) + 1e-9:
-        _cpb_warn(f"Cloud PB không vào lệnh: lot lớn nhất có thể cần {biggest:.2f} > giới hạn {min(info.volume_max, MAX_LOT)} "
-                  f"(PINYIN_MAX_LOT trong .env). Giảm lot / số lệnh tối đa, hoặc tăng giới hạn.")
-        return
-
-    if d["mg"] == "zr":
-        z = C().cpb["zr"]
-        if not _hedging(a):
-            if sig or ps:
-                _cpb_warn("Cloud PB Không SL cần tài khoản HEDGING (giữ BUY và SELL cùng lúc). Tài khoản này là Netting.")
-            return
-        if not ps:
-            if sig and _in_sess(d, t_bar) and not block:
-                g = sig[0]["go"]
-                r = _cpb_open(g, base, 0, 0, "mở cụm")
-                z.update(camp=z["camp"] + 1, dir=g, lot=float(r.volume), trig=False, eq0=a.equity if a else None)
-                _cpb_save()
-            elif sig and block:
-                _cpb_warn(f"Cloud PB không vào lệnh: {block}")
-            return
-        if len(ps) >= d["zr_max"]:
-            return
-        g = -z["dir"]
-        hit = any(s["go"] == g for s in sig)
-        e2, cl = res["e2"][i], bars[i][4]
-        beyond = e2 is not None and ((cl < e2) if z["dir"] > 0 else (cl > e2))
-        if not hit and d["zr_trig"] == "ema" and not z["trig"] and beyond:
-            hit = True
-        if hit:
-            if block:
-                _cpb_warn(f"Cloud PB không vào lệnh ngược: {block}")
-                return
-            lot = round(round(z["lot"] * d["zr_mult"] / (info.volume_step or 0.01)) * (info.volume_step or 0.01), 2)
-            try:
-                r = _cpb_open(g, lot, 0, 0, f"lệnh ngược {len(ps) + 1}/{d['zr_max']} × {d['zr_mult']}")
-                z.update(dir=g, lot=float(r.volume), trig=False)
-            except Exception as e:
-                log(f"Cloud PB: không vào được lệnh ngược: {e}", "err")
-        elif d["zr_trig"] == "ema" and beyond:
-            z["trig"] = True
-        _cpb_save()
-        return
-
-    # ---- pine / half: lá chắn ở nến đóng (giống backtest) ----
-    for p in ps:
-        m = C().cpb["pos"].get(str(p.ticket))
-        if not m or not m["R"]:
-            continue
-        buy = p.type == mt5.POSITION_TYPE_BUY
-        g = 1 if buy else -1
-        px = tick.bid if buy else tick.ask
-        gain = g * (px - p.price_open)
-        new = None
-        if d["be_on"] and not m["be"] and gain >= d["be_at"] * m["R"]:
-            m["be"] = True
-            new = p.price_open + g * d["be_off"]
-            _copy().copy_beavg(d["be_off"])
-        if d["tr_on"] and gain >= d["tr_at"] * m["R"]:
-            ns = px - g * d["tr_dist"] * m["R"]
-            if new is None or g * (ns - new) > 0:
-                new = ns
-        if new is not None and g * (new - p.sl) > info.point * 5 and g * (px - new) >= mind:
-            try:
-                _set_sl(p, new)
-            except Exception as e:
-                log(f"Cloud PB: dời SL #{p.ticket} lỗi: {e}", "err")
-    _cpb_save()
-    for s in sig:
-        go = s["go"]
-        if not _in_sess(d, t_bar):
-            continue
-        if d["max_spr"] and tick.ask - tick.bid > d["max_spr"]:
-            log(f"Cloud PB: bỏ tín hiệu, spread {tick.ask - tick.bid:.2f} > {d['max_spr']}", "info", tele=False)
-            continue
-        if (d["min_sl"] and s["R"] < d["min_sl"]) or (d["max_sl"] and s["R"] > d["max_sl"]):
-            log(f"Cloud PB: bỏ tín hiệu, SL cách {s['R']:.2f}$ ngoài khoảng cài đặt", "info", tele=False)
-            continue
-        opp = [p for p in ps if (1 if p.type == mt5.POSITION_TYPE_BUY else -1) != go]
-        if opp:
-            if not d["rev"]:
-                continue
-            _copy().copy_close("tín hiệu ngược: đảo chiều")
-            for p in opp:
-                try:
-                    _close_pos(p, "tín hiệu ngược: đảo chiều")
-                except Exception as e:
-                    log(f"Không đóng được #{p.ticket}: {e}", "err")
-            ps = _cpb_positions()
-        if sum(1 for p in ps if (1 if p.type == mt5.POSITION_TYPE_BUY else -1) == go) >= d["legs"]:
-            continue
-        if block:
-            _cpb_warn(f"Cloud PB không vào lệnh: {block}")
-            continue
-        price = tick.ask if go > 0 else tick.bid
-        R = go * (price - s["sl"])
-        if R < mind:
-            log(f"Cloud PB: giá {price} đã quá gần/vượt SL {s['sl']:.2f}, bỏ tín hiệu.", "err")
-            continue
-        lot = cloud_pb.mart_lot(base, d, C().cpb["mart"], info.volume_step or 0.01)
-        try:
-            _cpb_open(go, lot, s["sl"], price + go * d["rr"] * R, f"lot ×{C().cpb['mart']} lần sau SL" if C().cpb["mart"] and d["mart"] != "off" else "", R)
-        except Exception as e:
-            log(f"Cloud PB: bỏ lệnh {'BUY' if go > 0 else 'SELL'}: {e}", "err")
 
 
 # ---------- Nhiều bot chạy song song ----------
@@ -999,10 +704,10 @@ def _cpb_bar(c, bars, b, fixed):
 # Ngữ cảnh theo luồng: luồng không chọn bot (copy lệnh, lá chắn, theo dõi máy chủ) luôn thấy Bot 1.
 
 class _Ctx:
-    def __init__(self, sid, name, magic, cfg_file, dca_file, cpb_file, dca, cpb, st, copy):
+    def __init__(self, sid, name, magic, cfg_file, dca_file, dca, st, copy):
         self.sid, self.name, self.magic, self.copy = sid, name, magic, copy
-        self.cfg_file, self.dca_file, self.cpb_file = cfg_file, dca_file, cpb_file
-        self.dca, self.cpb, self.st = dca, cpb, st
+        self.cfg_file, self.dca_file = cfg_file, dca_file
+        self.dca, self.st = dca, st
         self.err_at = 0
         self.tf_force = None             # bot chạy nhiều khung: khung riêng của ngữ cảnh này
         self.parent = None               # ngữ cảnh con (khung thêm) → bot cha
@@ -1025,12 +730,11 @@ def _kid(ctx, tf, i):
         d = ROOT / "data"
         sfx = f"{ctx.sid}_{tf}"
         x = _Ctx(f"{ctx.sid}.{tf}", ctx.name, ctx.magic + KID_MAGIC_OFF * i, ctx.cfg_file, d / f"auto_dca_{sfx}.json",
-                 d / f"auto_cpb_{sfx}.json", dict(DCA_EMPTY), json.loads(json.dumps(CPB_EMPTY)),
+                 dict(DCA_EMPTY),
                  {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}, True)
         x.parent = ctx
         with _use(x):
             _dca_load()
-            _cpb_load()
         _kids[k] = x
     x.name, x.tf_force, x.magic = ctx.name, tf, ctx.magic + KID_MAGIC_OFF * i
     return x
@@ -1060,7 +764,7 @@ def _label(cx):
     return cx.name + (f" · {cx.tf_force}" if cx.tf_force else "")
 
 
-_MAIN = _Ctx("main", "Bot 1", 260117, CFG_FILE, DCA_FILE, CPB_FILE, _dca, _cpb, _state, True)   # mọi bot đều là nguồn copy
+_MAIN = _Ctx("main", "Bot 1", 260117, CFG_FILE, DCA_FILE, _dca, _state, True)   # mọi bot đều là nguồn copy
 _tl = threading.local()
 SLOTS_FILE = ROOT / "data" / "auto_slots.json"
 MAX_BOTS = 6
@@ -1124,11 +828,6 @@ def copy_dirs(src):
     ctx = _ctx_of(src)
     if not ctx:
         return None
-    with _use(ctx):
-        strat = _cfg().get("strategy")
-    if strat == "cpb":
-        d = ctx.st.get("dirs")
-        return None if d is None else set(d)
     return {ctx.dca["dir"]} if ctx.dca.get("dir") else set()
 
 
@@ -1156,11 +855,10 @@ def _all_ctx():
         if not ctx:
             d = ROOT / "data"
             ctx = _Ctx(b["id"], b["name"], int(b["magic"]), d / f"auto_bot_{b['id']}.json", d / f"auto_dca_{b['id']}.json",
-                       d / f"auto_cpb_{b['id']}.json", dict(DCA_EMPTY), json.loads(json.dumps(CPB_EMPTY)),
+                       dict(DCA_EMPTY),
                        {"last_bar": 0, "check": 0, "msg": "Chưa chạy", "sig": None, "lot": None, "known": {}}, True)
             with _use(ctx):
                 _dca_load()
-                _cpb_load()
             _ctxs[b["id"]] = ctx
         ctx.name = b["name"]
     for k in [k for k in _ctxs if k not in ids]:
@@ -1210,11 +908,7 @@ def _step():
         if not mt5.symbol_select(SYM, True):
             C().st["msg"] = "Broker không có XAUUSD"
             return
-        cpb = c["strategy"] == "cpb"
-        if cpb:
-            _cpb_live(c)                         # Cloud PB: chốt một phần / cụm Không SL, mỗi 2 giây
-        else:
-            _dca_live(c)                         # chốt TP1/TP2 theo giá thực, mỗi 2 giây
+        _dca_live(c)                             # chốt TP1/TP2 theo giá thực, mỗi 2 giây
         r = mt5.copy_rates_from_pos(SYM, tf_code, 0, 1500)
         if r is None or len(r) < 30:
             C().st["msg"] = "Chưa đủ nến"
@@ -1233,10 +927,7 @@ def _step():
         C().st["last_bar"] = bar
         bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                  float(x["tick_volume"]), int(x["time"]) // 86400) for x in r[:-1]]
-        if cpb:
-            _cpb_bar(c, bars, b, c.get("lot"))
-        else:
-            _dca_bar(c, bars, b, c.get("lot"))
+        _dca_bar(c, bars, b, c.get("lot"))
 
 
 def _hb(name):
@@ -1280,7 +971,6 @@ def start():
     if not _started:
         _started = True
         _dca_load()
-        _cpb_load()
         threading.Thread(target=_loop, daemon=True, name="pinyin-auto").start()
         try:                                    # nhớ lại các lệnh bot đang mở để báo khi chúng đóng
             with mt5_service.session():
@@ -1317,7 +1007,6 @@ class AutoIn(BaseModel):
     ha_sl_lookback: int | None = None
     ha_candles: str | None = None
     dca: dict | None = None
-    cpb: dict | None = None
     tg_sig: bool | None = None          # gửi tin vào/đóng lệnh của bot này sang nhóm tín hiệu cho khách
 
 
@@ -1360,7 +1049,6 @@ def _auto_status():
     return {"ok": True, "cfg": c, "msg": C().st["msg"], "check": C().st["check"], "lot": C().st["lot"],
             "sig": C().st["sig"], "pos": pos, "log": [e for e in _log if e.get("b", "main").split(".")[0] == C().sid][:30], "camp": dict(C().dca), "camps": camps,
             "bot": {"id": C().sid, "name": C().name, "magic": C().magic, "copy": C().copy},
-            "cpb": {"mart": C().cpb["mart"], "zr": dict(C().cpb["zr"]), "warn": C().cpb.get("warn", ""), "max_lot": MAX_LOT},
             "tg": bool(_env("TELEGRAM_BOT_TOKEN")), "tg_chat": bool(_env("TELEGRAM_CHAT_ID")),
             "tg_group": _env("TELEGRAM_SIGNAL_TITLE") if _env("TELEGRAM_SIGNAL_CHAT") else ""}
 
@@ -1435,13 +1123,6 @@ def _auto_set(x: AutoIn):
             if n_open:
                 return {"ok": False, "loi": f"Đang còn {n_open} lệnh bot mở. Đóng hết (hoặc chờ đóng) rồi mới đổi chiến lược."}
         c["strategy"] = x.strategy
-    if x.cpb is not None:
-        d, err = cloud_pb.bot_params(x.cpb, c["cpb"])
-        if err:
-            return {"ok": False, "loi": err}
-        if d.get("sess_on") and not _sess_ok(d.get("sess", "")):
-            return {"ok": False, "loi": "Cloud PB: khung giờ dạng 1400-2300 (giờ VN)."}
-        c["cpb"] = d
     if x.ha_candles is not None:
         if x.ha_candles not in ("ha", "std"):
             return {"ok": False, "loi": "Loại nến không hợp lệ."}
@@ -1508,31 +1189,10 @@ def _auto_set(x: AutoIn):
         if big > MAX_LOT + 1e-9:
             return {"ok": False, "loi": f"Lot {c['lot']} × {c['dca']['lot_mult']} qua {c['dca']['legs']} lệnh DCA → lệnh cuối {big:.2f} lot, vượt giới hạn {MAX_LOT} "
                                         "(PINYIN_MAX_LOT trong .env). Giảm lot / hệ số / số lệnh, hoặc tăng giới hạn."}
-    if c["on"] and c["strategy"] == "cpb":
-        d = c["cpb"]
-        try:
-            with mt5_service.session():
-                a = mt5.account_info()
-                info = mt5.symbol_info(SYM) if mt5.symbol_select(SYM, True) else None
-                base = c.get("lot") or (_tier(a)[1] or (0, 0, None))[2] if a else c.get("lot")
-        except Exception as e:
-            return {"ok": False, "loi": f"Không đọc được MT5: {e}"}
-        if d["mg"] == "zr" and not _hedging(a):
-            return {"ok": False, "loi": "Kiểu Không SL cần tài khoản HEDGING (giữ BUY và SELL cùng lúc). Tài khoản MT5 này là Netting."}
-        if base and info:
-            big = cpb_max_lot(d, base)
-            lim = min(info.volume_max, MAX_LOT)
-            if big > lim + 1e-9:
-                return {"ok": False, "loi": f"Với lot {base} và cài đặt này, lệnh lớn nhất cần {big:.2f} lot, vượt giới hạn {lim} lot "
-                                            f"(PINYIN_MAX_LOT trong .env). Giảm lot / số lệnh tối đa, hoặc tăng PINYIN_MAX_LOT."}
     _save(c)
     with _lock:
         C().st["last_bar"] = 0                  # đổi cài đặt / bật lại: chỉ vào theo tín hiệu MỚI
     nm = STRATS.get(c["strategy"], c["strategy"])
-    if c["strategy"] == "cpb":
-        d = c["cpb"]
-        nm += " · " + ("⚠️ KHÔNG SL, nhân lot ×%s tối đa %s lệnh, chốt %s$" % (d["zr_mult"], d["zr_max"], d["zr_tp"]) if d["mg"] == "zr"
-                       else "TP %sR%s" % (d["rr"], ", chốt %s%% ở %sR" % (d["half_pct"], d["half_r"]) if d["mg"] == "half" else ""))
     if c["on"] != was:
         log(("BẬT" if c["on"] else "TẮT") + f" bot · {nm} · {c['tf']} · lot {c.get('lot') or 'theo vốn'}")
     elif c["on"]:
@@ -1606,8 +1266,7 @@ class BtIn(BaseModel):
     cap: float = 1000                   # vốn ban đầu (đơn vị tiền của tài khoản)
     comm: float = 0.0                   # phí mỗi lot (khứ hồi)
     sweep: dict | None = None           # {"key": "dca.gap", "values": [0.2, 0.5, 1]} → so sánh nhiều giá trị
-    strategy: str = "dca"               # dca | cpb (PinYin EMA Cloud Pullback)
-    cpb: dict = {}                      # cài đặt Cloud PB (thiếu thì lấy mặc định / cài đặt đang lưu)
+    strategy: str = "dca"               # chỉ còn dca (PinYin HA Pro DCA)
 
 
 BT_PER_DAY = {"M1": 1440, "M5": 288, "M15": 96}
@@ -1615,8 +1274,7 @@ BT_SWEEP = {"dca." + k for k in DCA_NUM}
 
 
 def _bt_sweep_keys():
-    from app.services import cloud_pb
-    return BT_SWEEP | {"cpb." + k for k in cloud_pb.NUM}
+    return BT_SWEEP
 
 
 @router.post("/auto/backtest")
@@ -1636,12 +1294,6 @@ def _auto_backtest(x: BtIn):
     c.update({k: v for k, v in over.items() if k in DEFAULT and k not in ("on", "dca")})
     c["dca"] = {**c["dca"], **{k: v for k, v in dca_over.items() if k in DCA_DEF}}
     c["strategy"] = "dca"
-    if x.strategy == "cpb":
-        from app.services import cloud_pb
-        d, err = cloud_pb.bot_params(x.cpb, c.get("cpb"))
-        if err:
-            return {"ok": False, "loi": err}
-        c = {"strategy": "cpb", "tf": (x.cfg or {}).get("tf") or "M5", "cpb": d}
     if c["tf"] not in TFS:
         return {"ok": False, "loi": "Khung chỉ M1, M5 hoặc M15."}
     if not (1 <= x.days <= 730):
@@ -1704,10 +1356,6 @@ def _auto_backtest(x: BtIn):
             if key.startswith("dca."):
                 k2 = key[4:]
                 cc["dca"][k2] = DCA_NUM[k2][2](v)
-            elif key.startswith("cpb."):
-                from app.services import cloud_pb
-                k2 = key[4:]
-                cc["cpb"][k2] = cloud_pb.NUM[k2][2](v)
             s = bt_run(bars, spr, cc, **common)
             rows.append({"v": v, **{k: s[k] for k in ("net", "net_pct", "n", "winrate", "pf", "mdd", "mdd_pct", "streak", "avg_win", "avg_loss")}})
         return {"ok": True, "range": rng, "meta": meta, "cfg": c, "sweep": {"key": key, "rows": rows}}
@@ -1745,7 +1393,6 @@ def auto_slots():
             n, pnl = n + g[0], pnl + g[1]
         nf = sum(1 for f in copytrade.load() if ctx.sid in copytrade.srcs_of(f))
         out.append({"id": ctx.sid, "name": ctx.name, "magic": ctx.magic, "copy": ctx.copy, "nfollow": nf, "on": bool(c.get("on")),
-                    "zr": c.get("strategy") == "cpb" and (c.get("cpb") or {}).get("mg") == "zr",
                     "strategy": c.get("strategy"), "sname": STRATS.get(c.get("strategy"), ""), "tf": c.get("tf"),
                     "lot": c.get("lot"), "npos": n, "pnl": round(pnl, 2), "msg": ctx.st.get("msg", "")})
     return {"ok": True, "bots": out, "max": MAX_BOTS}
@@ -1866,7 +1513,7 @@ def copy_set(x: CopyIn):
                     return {"ok": False, "loi": "Không có bot này."}
                 dca = [bot_name(v) for v in x.srcs if strategy_of(v) == "dca"]
                 if len(dca) > 1:
-                    return {"ok": False, "loi": f"Mỗi tài khoản chỉ copy được 1 bot DCA cùng lúc ({', '.join(dca)}). Bot Cloud PB thì bật bao nhiêu cũng được."}
+                    return {"ok": False, "loi": f"Mỗi tài khoản chỉ copy được 1 bot DCA cùng lúc ({', '.join(dca)}). Chọn 1 bot DCA cho tài khoản này."}
             if x.real:
                 import hmac
                 pw = os.getenv("PINYIN_PASSWORD", "")
