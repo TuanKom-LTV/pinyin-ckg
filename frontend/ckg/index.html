@@ -665,7 +665,8 @@ async function liveTick(sym){sym=sym||cs;try{const d=ST[sym],since=d.live&&d.las
   if(js&&js.ok&&applyData(sym,js)&&sym==cs)render()}catch(e){}srcBadge()}
 async function liveInit(){try{const s=await jget('api/status');if(!s||!s.ok)return;LV=true}catch(e){return}
  liveTick();chartTick();setInterval(()=>{liveTick();chartTick()},3000);setInterval(srcBadge,1000);
- await acctTick();await ratesTick();await histTick();render();setInterval(ratesTick,60000);setInterval(async()=>{await acctTick();render()},3000);setInterval(async()=>{await histTick();hist()},15000);botInit();setInterval(botTick,3000);qTick();setInterval(qTick,1000);setInterval(qBook,2000)}
+ botInit();botTick();setInterval(botTick,3000);
+ await Promise.all([acctTick(),ratesTick(),histTick()]);render();setInterval(ratesTick,60000);setInterval(async()=>{await acctTick();render()},3000);setInterval(async()=>{await histTick();hist()},15000);qTick();setInterval(qTick,1000);setInterval(qBook,2000)}
 // ===== Buồng lái nối MT5: gửi lệnh thật =====
 
 // ===== Tỷ giá thật: giá trị pip cặp JPY + quy đổi vốn tài khoản sang USD =====
@@ -819,8 +820,8 @@ function dcaVals(){return{candles:$('dcand').value,sig:$('dsig').value,dir:$('dd
 function dcaCamp(k){if(!k||!k.dir)return'<span class="mut">Chưa có chiến dịch DCA đang chạy.</span>';const f=v=>v==null?'-':(+v).toFixed(2);
  return `Chiến dịch <b class="${k.dir>0?'ok':'no'}">${k.dir>0?'BUY':'SELL'}${k.rev?' ĐC*':''}</b> · ${k.legs} lệnh · lot đầu ${k.lot} · SL chung <b class="no">${f(k.sl_be??k.sl)}</b>${k.sl_how&&k.sl_be==null?' <span class="mut">('+String(k.sl_how).replace(/</g,'&lt;')+')</span>':''} · TP1 <b>${k.tp1?'đã chốt':f(k.tp1px)}</b> · TP2 <b>${k.tp2?'đã chốt':f(k.tp2px)}</b>`}
 function botFill(){const c=AB.cfg;$('ablots').innerHTML=['auto',.01,.02,.05,.1].map(x=>`<button class="qopt" data-l="${x}" onclick="botLotUI(${x=='auto'?"'auto'":x})">${x=='auto'?'Theo vốn':x.toFixed(2)}</button>`).join('');if(c.lot){ABLA=false;$('ablot').value=c.lot}else{ABLA=true;$('ablot').value=''}botLotUI(ABLA?'auto':c.lot);if(AB.cust){const o=[...$('abtf').options].find(x=>x.value.includes('+'));if(o)o.remove()}$('abtf').value=c.tf;if(c.dca)dcaFill(c.dca);if($('abstr')){$('abstr').value=c.strategy||'dca';if(AB.cust){$('abstr').value='dca';$('abstr').closest('label').style.display='none'}}botStrUI()}
-async function botTick(){if(!LV||(VIEW&&!CBOT)||cs!='XAUUSD'||VIEWMODE!='bot'){$('gbot').style.display='none';return}bapiOwner();if(!BOTS)botsLoad();
- let a;try{a=await jget(BAPI)}catch(e){return}if(!a||!a.ok)return;const first=!AB;AB=a;$('gbot').style.display='';if(first)botFill();
+async function botTick(){if(!LV||(VIEW&&!CBOT)||cs!='XAUUSD'||VIEWMODE!='bot'){$('gbot').style.display='none';return}botInit();bapiOwner();if(!BOTS&&!CBOT)botsLoad();
+ let a;try{a=await jget(BAPI)}catch(e){return}if(!a||!a.ok)return;botInit();const first=!AB;AB=a;$('gbot').style.display='';if(first){try{botFill()}catch(e){AB=null;throw e}}
  const on=a.cfg.on;$('abst').className='bdg '+(on?'ok':'wn');$('abst').textContent=on?'ĐANG BẬT':'ĐANG TẮT';
  $('abon').textContent=on?'⏹ Tắt bot':'▶ Bật bot';$('abon').style.background=on?'var(--no)':'var(--ok)';$('abon').style.color='#fff';$('abx').style.borderColor=on?'var(--ok)':'var(--bd)';
  const sg=a.sig;$('abmsg').innerHTML=`${a.msg} · cài đặt đang chạy: <b>PinYin HA Pro DCA (${a.cfg.dca.sig=='dca'?'tín hiệu Pine DCA':'tín hiệu v5'}, ${a.cfg.dca.candles=='std'?'nến Nhật':'nến HA'}) · ${a.cfg.tf} · tối đa ${a.cfg.dca.legs} lệnh · ${a.cfg.dca.risk>0?'rủi ro '+a.cfg.dca.risk+'%':'lot theo ô khối lượng'}</b> · lot: <b>${a.cfg.lot?a.cfg.lot+' (cố định)':(a.lot??'-')+' (theo vốn)'}</b>`+(sg?` · tín hiệu gần nhất: <b class="${sg.t>0?'ok':'no'}">${sg.side} @ ${(+sg.e).toFixed(2)}</b> (${sg.at})`:'');
@@ -965,7 +966,7 @@ async function slotAct(act){const j=SLOTS;if(!j)return;let name='';const cur=(j.
  if(act=='req'){alert(r.msg);return}
  if(act=='add'){alert(r.msg);slotGo(r.n)}else if(act=='del'){slotGo('1')}else{QEAI=null;slotLoad()}}
 let ME=null;
-async function meInit(){let m;try{m=await jget('/api/me')}catch(e){return}if(!m||!m.ok)return;ME=m;const b=$('meb');
+async function meInit(){let m;try{m=await jget('/api/me',15000)}catch(e){return}if(!m||!m.ok)return;ME=m;const b=$('meb');
  if(m.user&&m.gd){EAMODE=true;QAPI='api/ea/q/';slotLoad();setInterval(slotLoad,15000)}if(m.role=='chu'||(m.user&&m.gd)){$('cktab').style.display=''}if(m.role=='chu')$('bottab').style.display='';if(m.user&&m.bot){CBOT=true;BAPI='api/ea/bot';$('bottab').style.display='';['cpc','btc'].forEach(i=>{const e=$(i);if(e)e.style.display='none'})}if(EAMODE)$('histc').style.display='none';try{const lv=localStorage.getItem('ckg-view');if((lv=='ck'||lv=='bot')&&VIEWMODE!=lv)setView(lv)}catch(e){}if(m.user){b.innerHTML=`<span class="mut" style="font-size:13px">👤 <b style="color:var(--tx)">${String(m.ten||m.user).replace(/</g,'&lt;')}</b> · hạn đến ${m.het_han}</span><a class="tg" style="background:#1c2a3d" href="/logout">Đăng xuất</a>`}
  else if(m.role=='chu'){b.innerHTML=`<a class="tg" style="background:#1c2a3d" href="/quan-ly">👥 Khách hàng${m.cho_duyet?` <b style="background:var(--no);border-radius:9px;padding:0 7px">${m.cho_duyet}</b>`:''}</a>`}}
 let TR=null,BUSY=false,VIEW=false;// VIEW: đăng nhập bằng mật khẩu chỉ xem
