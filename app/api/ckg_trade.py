@@ -275,16 +275,44 @@ def reverse(r: ReverseIn):
         return _err(str(e))
 
 
+def _src_of_magic():
+    """magic → tên nguồn lệnh: Buồng lái (vào tay) hoặc tên bot (+ khung thêm). Gồm cả magic bot cũ / khung đã bỏ."""
+    names = {MAGIC: "Buồng lái"}
+    try:
+        from app.api import ckg_auto as A
+        for cx in A._run_ctxs():
+            names[cx.magic] = A._label(cx)
+        bases = {A.MAGIC: names.get(A.MAGIC, "Bot 1")}
+        for b in A._slots()["bots"]:
+            bases[int(b["magic"])] = b["name"]
+        for m, nm in bases.items():
+            for k, tf in ((0, ""), (1, " · M5"), (2, " · khung 3")):
+                names.setdefault(m + A.KID_MAGIC_OFF * k, nm + tf)
+    except Exception:
+        names.setdefault(260117, "Bot 1")
+    return names
+
+
+def _is_pinyin(m):
+    """Magic của PinYin: buồng lái 260115, Bot 1 260117, bot phụ 260131+, và khung thêm (+500, +1000)."""
+    for k in (0, 1, 2):
+        b = m - 500 * k
+        if b in (260115, 260117) or 260131 <= b < 260231:
+            return True
+    return False
+
+
 @router.get("/history")
 @ttl(3)
 def history():
-    """Các lệnh PinYin đã đóng trong tuần (giống tab History của MT5)."""
+    """Các lệnh PinYin đã đóng trong tuần (giống tab History của MT5): lệnh vào tay ở buồng lái + lệnh của mọi bot."""
     try:
+        names = _src_of_magic()
         with mt5_service.session():
             off, _ = server_offset()
             frm = datetime.fromtimestamp(week_start_utc() + off - 86400, timezone.utc)
             to = datetime.fromtimestamp(time.time() + off + 86400, timezone.utc)
-            deals = [d for d in (mt5.history_deals_get(frm, to) or []) if d.magic == MAGIC]
+            deals = [d for d in (mt5.history_deals_get(frm, to) or []) if _is_pinyin(d.magic) or d.magic in names]
             ins = {d.position_id: d for d in deals if d.entry == mt5.DEAL_ENTRY_IN}
             rows = []
             for d in deals:
@@ -302,6 +330,7 @@ def history():
                     "oms": (int(i.time_msc) - off * 1000) if i else None,
                     "cms": int(d.time_msc) - off * 1000,
                     "pf": d.profit + d.swap + d.commission + (i.commission if i else 0),
+                    "by": names.get(d.magic, "Bot"),
                 })
             rows.sort(key=lambda r: r["cms"])
             return _ok(rows=rows)
