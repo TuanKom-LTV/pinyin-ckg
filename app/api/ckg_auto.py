@@ -73,14 +73,15 @@ DCA_DEF = {"legs": 3, "gap": 0.5, "min_bars": 5, "risk": 0.0, "dir": "both", "st
            "sess_on": False, "sess": "1400-2300",   # chỉ MỞ/THÊM lệnh trong khung giờ VN (như useSession của Pine)
            "gap_usd": 0.0,       # lệnh DCA thêm khi giá tốt hơn ≥ ... $ (0 = dùng gap × ATR)
            "lot_mult": 1.0,      # lot lệnh DCA thứ n = lot đầu × lot_mult^(n-1) (1 = bằng lệnh đầu)
-           "sl_follow": True}    # thêm lệnh DCA: SL chung tính lại theo lệnh mới, mọi lệnh trước dời SL theo
+           "sl_follow": True,    # thêm lệnh DCA: SL chung tính lại theo lệnh mới, mọi lệnh trước dời SL theo
+           "hold": False}        # giữ rổ tới tín hiệu đảo chiều: KHÔNG SL / TP, tín hiệu ngược → đóng cả rổ + vào chiều mới
 DCA_NUM = {"legs": (1, 5, int), "gap": (0, 10, float), "min_bars": (1, 200, int), "risk": (0, 10, float),
            "stretch": (0.5, 10, float), "sl_k": (0, 10, float), "sl_buf": (0, 100, float), "soft_sig": (0.1, 5, float),
            "tp1r": (0.1, 10, float), "tp1p": (1, 100, int), "tp2r": (0.2, 20, float), "tp2p": (0, 100, int),
            "be_off": (0, 100, float), "trail_after": (1, 2, int), "time": (0, 2000, int),
            "gap_usd": (0, 100, float), "lot_mult": (1, 5, float)}
 DCA_ENUM = {"dir": ("both", "buy", "sell"), "sl_mode": ("min", "vwap", "swing"), "candles": ("ha", "std"), "sig": ("v5", "dca")}
-DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_follow")
+DCA_BOOL = ("soft", "cap", "be", "trail", "rev", "sess_on", "sl_follow", "hold")
 
 
 def _sess_ok(s):
@@ -536,6 +537,7 @@ def _dca_bar(c, bars, b, fixed):
         log(f"Tín hiệu DCA {'BUY' if go > 0 else 'SELL'}{' ĐC*' if sg['rev'] else ''} {c['tf']} @ {sg['c']:.2f}", "info", tele=False)
 
     # 2. Thoát chủ động
+    hold = bool(d.get("hold"))
     closed = want_rev = False
     if dr:
         cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
@@ -545,12 +547,14 @@ def _dca_bar(c, bars, b, fixed):
         tr_on = C().dca["tp1"] if d["trail_after"] == 1 else C().dca["tp2"]
         trail = d["trail"] and tr_on and (cl < sg["ema21"] if dr > 0 else cl > sg["ema21"])
         why = "tín hiệu ngược" if opp else "SL mềm VWAP" if soft else "hết giờ" if tout else "trail EMA21" if trail else ""
+        if hold:                                 # giữ rổ: chỉ tín hiệu ngược mới đóng, rồi vào luôn chiều mới
+            why = "tín hiệu ngược" if opp else ""
         if why:
             _close_all(why)
             log(f"DCA: đóng chiến dịch ({why})", "close", tele=False)
             _dca_reset()
-            closed = not (opp and d["rev"])
-            want_rev = opp and d["rev"]
+            closed = not (opp and (d["rev"] or hold))
+            want_rev = opp and (d["rev"] or hold)
             dr = 0
 
     # 4. Mở chiến dịch / thêm lệnh (chỉ trong khung giờ nếu bật)
@@ -563,11 +567,11 @@ def _dca_bar(c, bars, b, fixed):
         if (go > 0 and d["dir"] == "sell") or (go < 0 and d["dir"] == "buy"):
             return
         cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
-        stretch_ok = sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
+        stretch_ok = hold or sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
         if not stretch_ok:
             log(f"DCA: bỏ {'BUY' if go > 0 else 'SELL'}, giá cách VWAP quá {d['stretch']}σ.", "info", tele=False)
             return
-        sl, how = dca_sl(d, sg, go, c["tf"])
+        sl, how = (None, "không SL (giữ tới tín hiệu đảo chiều)") if hold else dca_sl(d, sg, go, c["tf"])
         sg = {**sg, "sl_how": how}
         if block:
             log(f"Không vào lệnh DCA: {block}", "err")
@@ -576,11 +580,13 @@ def _dca_bar(c, bars, b, fixed):
     elif dr and go == dr and not C().dca["tp1"] and C().dca["legs"] < _dca_cap(d, b, fixed):
         gp = dca_gap(d, sg["atr"])
         gap_ok = (sg["c"] <= C().dca["last_px"] - gp if dr > 0 else sg["c"] >= C().dca["last_px"] + gp) \
-            and since(C().dca["last_t"]) >= d["min_bars"]
-        struct_ok = (sg["c"] > C().dca["sl"] if dr > 0 else sg["c"] < C().dca["sl"]) and (C().dca["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
+            and (hold or since(C().dca["last_t"]) >= d["min_bars"])
+        struct_ok = hold or ((sg["c"] > C().dca["sl"] if dr > 0 else sg["c"] < C().dca["sl"]) and (C().dca["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"])))
         if gap_ok and struct_ok:
             if block:
                 log(f"Không thêm lệnh DCA: {block}", "err")
+            elif hold:
+                _dca_open(c, dr, None, sg, b, fixed, first=False)
             else:
                 sl_add, how2 = C().dca.get("sl_man") or C().dca["sl"], None
                 if d.get("sl_follow", True):
@@ -644,11 +650,13 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
     buy = dr > 0
     price = tick.ask if buy else tick.bid
     mind = (info.trade_stops_level + 1) * info.point
-    if (price - sl if buy else sl - price) < mind:
+    if sl is not None and (price - sl if buy else sl - price) < mind:
         log(f"DCA: giá {price} đã quá gần/vượt SL {sl:.2f}, bỏ tín hiệu.", "err")
         return
     if first:
-        if d["risk"] > 0:
+        if d["risk"] > 0 and sl is None:
+            log("DCA giữ rổ tới đảo chiều (không SL): không tính được lot theo % rủi ro, dùng lot cố định / bảng vốn.", "info", tele=False)
+        if d["risk"] > 0 and sl is not None:
             a = mt5.account_info()
             loss1 = abs(mt5.order_calc_profit(mt5.ORDER_TYPE_BUY if buy else mt5.ORDER_TYPE_SELL, SYM, 1.0, price, sl) or 0)
             if not a or loss1 <= 0:
@@ -667,7 +675,7 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
             log("DCA: vốn dưới mức 100$ của bảng vốn.", "err")
             return
     else:
-        lot = dca_leg_lot(C().dca["lot"], d, C().dca["legs"] + 1)
+        lot = C().dca["lot"] if sl is None else dca_leg_lot(C().dca["lot"], d, C().dca["legs"] + 1)   # giữ rổ: lot bằng lệnh đầu
     try:
         lot = _norm_lot(info, lot)
         n = 1 if first else C().dca["legs"] + 1
@@ -675,7 +683,7 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
             "action": mt5.TRADE_ACTION_DEAL, "symbol": SYM, "volume": lot,
             "type": mt5.ORDER_TYPE_BUY if buy else mt5.ORDER_TYPE_SELL, "price": price, "deviation": DEVIATION,
             "magic": C().magic, "comment": f"{COMMENT} DCA{n}", "type_time": mt5.ORDER_TIME_GTC, "type_filling": _filling(info),
-            "sl": round(sl, info.digits), "tp": 0.0,
+            "sl": round(sl, info.digits) if sl is not None else 0.0, "tp": 0.0,
         })
     except Exception as e:
         log(f"Bỏ lệnh DCA {'BUY' if buy else 'SELL'}: {e}", "err")
@@ -690,6 +698,11 @@ def _dca_open(c, dr, sl, sg, b, fixed, first, why=""):
     _dca_save()
     kind = ("BUY" if buy else "SELL") + (" ĐC*" if C().dca["rev"] else "")
     lbl = (f"Mở chiến dịch {kind}" + (f" ({why})" if why else "")) if first else f"Thêm lệnh DCA {n}/{_dca_cap(d, b, fixed)} {kind}"
+    if sl is None:                                              # giữ rổ tới đảo chiều: không SL / TP
+        _sig(f"🟢 {lbl} XAUUSD @ {res.price:.{info.digits}f} · không SL, giữ tới tín hiệu đảo chiều")
+        log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · không SL / TP, đóng cả rổ khi có tín hiệu ngược", "open")
+        _copy().copy_open(dr, float(res.volume), 0.0, 0, float(res.price))
+        return
     _sig(f"🟢 {lbl} XAUUSD @ {res.price:.{info.digits}f} · SL {sl:.2f} · TP1 {(C().dca['tp1px'] or 0):.2f} · TP2 {(C().dca['tp2px'] or 0):.2f}")
     log(f"{lbl}: {res.volume} lot @ {res.price:.{info.digits}f} · SL chung {sl:.2f}{(' = ' + C().dca['sl_how']) if first and C().dca.get('sl_how') else ''} · TP1 {(C().dca['tp1px'] or 0):.2f} · TP2 {(C().dca['tp2px'] or 0):.2f}", "open")
     _copy().copy_open(dr, float(res.volume), abs(float(res.price) - sl), d["tp1p"] if not C().dca["tp1"] else 0, float(res.price))

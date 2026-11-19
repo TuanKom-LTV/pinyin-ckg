@@ -161,10 +161,10 @@ def run_dca(sim, c, lot_fixed, warm):
     def open_leg(k, dr, sl, sg, first):
         cl, s = bars[k][4], sim.spr[k]
         px = cl + s if dr > 0 else cl
-        if dr * (px - sl) <= 0:
+        if sl is not None and dr * (px - sl) <= 0:
             return
         if first:
-            if d["risk"] > 0:
+            if d["risk"] > 0 and sl is not None:
                 loss1 = abs(px - sl) * sim.vpu
                 lot = math.floor(sim.bal * d["risk"] / 100 / (dca_units(d, d["legs"]) * loss1) / sim.step + EPS) * sim.step
                 if lot < sim.vmin - EPS:
@@ -177,9 +177,9 @@ def run_dca(sim, c, lot_fixed, warm):
                     return
                 lot = b[2]
         else:
-            lot = round(round(dca_leg_lot(E["lot"], d, E["legs"] + 1) / sim.step) * sim.step, 2)
+            lot = E["lot"] if sl is None else round(round(dca_leg_lot(E["lot"], d, E["legs"] + 1) / sim.step) * sim.step, 2)
         nleg = 1 if first else E["legs"] + 1
-        sim.open(dr, lot, px, sl, 0.0, k, camp=E.get("cid", k) if not first else k, tag=f"DCA{nleg}")
+        sim.open(dr, lot, px, sl or 0.0, 0.0, k, camp=E.get("cid", k) if not first else k, tag=f"DCA{nleg}")
         if first:
             E.clear()
             E.update({"dir": dr, "rev": bool(sg["rev"]), "sl": sl, "legs": 1, "lot": round(lot, 2), "last_px": sg["c"],
@@ -190,6 +190,7 @@ def run_dca(sim, c, lot_fixed, warm):
         levels(sg)
 
     tp2p = max(0, min(d["tp2p"], 100 - d["tp1p"]))
+    hold = bool(d.get("hold"))           # giữ rổ tới tín hiệu đảo chiều: không SL / TP
     for k in range(warm, n):
         h, l = bars[k][2], bars[k][3]
         # ---- trong nến (bot: _dca_live mỗi 2 giây + SL của sàn) ----
@@ -241,27 +242,31 @@ def run_dca(sim, c, lot_fixed, warm):
             tr_on = E["tp1"] if d["trail_after"] == 1 else E["tp2"]
             trail = d["trail"] and tr_on and (cl < sg["ema21"] if dr > 0 else cl > sg["ema21"])
             why = "tín hiệu ngược" if opp else "SL mềm VWAP" if soft else "hết giờ" if tout else "trail EMA21" if trail else ""
+            if hold:
+                why = "tín hiệu ngược" if opp else ""
             if why:
                 close_all(k, why)
                 reset()
-                closed = not (opp and d["rev"])
-                want_rev = opp and d["rev"]
+                closed = not (opp and (d["rev"] or hold))
+                want_rev = opp and (d["rev"] or hold)
                 dr = 0
         if go and not _in_sess(d, sg["t"]):
             go = 0
         if not dr and not closed and go:
             if not ((go > 0 and d["dir"] == "sell") or (go < 0 and d["dir"] == "buy")):
                 cl, vw, sd = sg["c"], sg["vwap"], sg["sd"]
-                stretch_ok = sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
+                stretch_ok = hold or sg["rev"] or not sg["ready"] or (cl <= vw + d["stretch"] * sd if go > 0 else cl >= vw - d["stretch"] * sd)
                 if stretch_ok:
-                    sl, _how = dca_sl(d, sg, go)
+                    sl = None if hold else dca_sl(d, sg, go)[0]
                     open_leg(k, go, sl, sg, True)
         elif dr and go == dr and not E["tp1"] and E["legs"] < cap_legs():
             gp = dca_gap(d, sg["atr"])
             gap_ok = (sg["c"] <= E["last_px"] - gp if dr > 0 else sg["c"] >= E["last_px"] + gp) \
-                and k - E["last_k"] >= d["min_bars"]
-            struct_ok = (sg["c"] > E["sl"] if dr > 0 else sg["c"] < E["sl"]) and (E["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"]))
-            if gap_ok and struct_ok:
+                and (hold or k - E["last_k"] >= d["min_bars"])
+            struct_ok = hold or ((sg["c"] > E["sl"] if dr > 0 else sg["c"] < E["sl"]) and (E["rev"] or (sg["c"] > sg["vwap"] if dr > 0 else sg["c"] < sg["vwap"])))
+            if gap_ok and struct_ok and hold:
+                open_leg(k, dr, None, sg, False)
+            elif gap_ok and struct_ok:
                 sl_add, fol = E["sl"], False
                 if d.get("sl_follow", True):
                     ns, _how = dca_sl(d, sg, dr)
