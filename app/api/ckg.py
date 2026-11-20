@@ -234,26 +234,31 @@ def ckg_hapro(sym: str = "XAUUSD", tf: str = "M5", candles: str = "ha"):
 @ttl(10)
 def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
     """Nhãn tín hiệu của chiến lược PinYin HA Pro DCA (bot) theo CÀI ĐẶT DCA ĐANG LƯU của bot, để vẽ lên biểu đồ.
-    SL = SL chung bot sẽ đặt nếu mở chiến dịch ở nhãn đó; TP1/TP2 tính theo giá vào 1 lệnh (bot thật tính theo giá TB)."""
+    SL = SL chung bot sẽ đặt nếu mở chiến dịch ở nhãn đó; TP1/TP2 tính theo giá vào 1 lệnh (bot thật tính theo giá TB).
+    Cặp khác XAUUSD (chỉ để xem, bot không vào lệnh): cùng cài đặt, khoảng SL cộng thêm quy theo pip (2$ vàng = 20 pip)."""
     from app.services.ha_pro_dca import dca_signals
     from app.api.ckg_auto import _cfg
     sym, tf = sym.upper().strip(), tf.upper().strip()
-    if sym != "XAUUSD" or tf not in CHART_TF:
+    if sym not in CKG_SYMBOLS or tf not in CHART_TF:
         return {"ok": True, "sig": []}
-    d = _cfg()["dca"]
+    d = dict(_cfg()["dca"])
+    pip = 0.1 if sym == "XAUUSD" else 0.01 if sym.endswith("JPY") else 0.0001
+    d["sl_buf"] = d["sl_buf"] * pip / 0.1              # $ của vàng → cùng số pip ở cặp khác
     try:
         with mt5_service.session():
             if not mt5.symbol_select(sym, True):
                 return {"ok": False, "loi": f"Broker không có mã {sym}."}
             off, _ = server_offset()
             r = mt5.copy_rates_from_pos(sym, CHART_TF[tf][0], 1, 1500)
+            info = mt5.symbol_info(sym)
+        dg = int(getattr(info, "digits", 2) or 2)
         if r is None or len(r) < 200:
             return {"ok": True, "sig": []}
         bars = [(int(x["time"]) - off, float(x["open"]), float(x["high"]), float(x["low"]), float(x["close"]),
                  float(x["tick_volume"]), int(x["time"]) // 86400) for x in r]
         out = []
         sigs = dca_signals(bars, d)
-        r2 = lambda v: round(v, 2) if v is not None else None
+        r2 = lambda v: round(v, dg) if v is not None else None
         # đường bot đang dùng: VWAP, VWAP ± k·σ (giới hạn giãn / vùng đảo chiều), dải TMA trên / giữa / dưới (tín hiệu)
         bands = [[b[0], r2(s["vwap"]), r2(s["upx"]), r2(s["lox"]), r2(s["up"]), r2(s.get("mid")), r2(s["lo"])]
                  for b, s in zip(bars, sigs) if s][-600:]
@@ -272,8 +277,8 @@ def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
             e = b[4]
             R = go * (e - sl)
             tp = [e + go * d["tp1r"] * R, e + go * d["tp2r"] * R] if R > 0 else [e, e]
-            out.append({"t": s["t"], "side": "BUY" if go > 0 else "SELL", "rev": bool(s["rev"]), "ctr": bool(s.get("ctr")), "e": round(e, 2),
-                        "sl": round(sl, 2), "tp": [round(v, 2) for v in tp], "rr": [d["tp1r"], d["tp2r"]]})
+            out.append({"t": s["t"], "side": "BUY" if go > 0 else "SELL", "rev": bool(s["rev"]), "ctr": bool(s.get("ctr")), "e": round(e, dg),
+                        "sl": round(sl, dg), "tp": [round(v, dg) for v in tp], "rr": [d["tp1r"], d["tp2r"]]})
         return {"ok": True, "sym": sym, "tf": tf, "candles": d.get("candles", "std"), "sig": out, "bands": bands}
     except Exception as e:
         return {"ok": False, "loi": str(e)}

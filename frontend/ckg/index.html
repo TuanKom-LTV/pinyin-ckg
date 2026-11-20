@@ -158,7 +158,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button><button data-v="news" onclick="setView('news')">📰 Tin tức tuần</button><button data-v="chart" onclick="setView('chart')">📊 Biểu đồ</button><button data-v="ck" id="cktab" style="display:none" onclick="setView('ck')">🚀 Buồng lái</button><button data-v="bot" id="bottab" style="display:none" onclick="setView('bot')">🤖 Bot tự động</button></div>
 <div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
 <div id="fcp"><div class="fcbar"><select id="fcsym" onchange="fcSym(this.value)" aria-label="Cặp tiền"></select><span class="sp"></span><div class="fcg" id="fctf"></div><span class="sp"></span>
-<div class="fcg"><button id="fcha" onclick="fcTog('ha')" title="Nến Heikin Ashi">Heikin Ashi</button></div><span class="sp"></span><div class="fcg"><button id="fcdca" onclick="fcTog('dca')" title="Nhãn BUY / SELL của bot DCA (theo cài đặt DCA đang lưu) + ENTRY / SL chung / TP của tín hiệu gần nhất · chỉ XAUUSD">Tín hiệu DCA</button><button id="fcbvw" onclick="fcTog('bvw')" title="VWAP ±σ đúng như bot DCA đang dùng · chỉ XAUUSD">VWAP ±σ</button><button id="fctma" onclick="fcTog('tma')" title="Dải TMA trên / giữa / dưới của bot DCA · chỉ XAUUSD">TMA</button><button id="fce9" onclick="fcTog('e9')">EMA 9</button><button id="fce21" onclick="fcTog('e21')">EMA 21</button><button id="fcvol" onclick="fcTog('vol')" title="Khối lượng tick">Volume</button></div>
+<div class="fcg"><button id="fcha" onclick="fcTog('ha')" title="Nến Heikin Ashi">Heikin Ashi</button></div><span class="sp"></span><div class="fcg"><button id="fcdca" onclick="fcTog('dca')" title="Nhãn BUY / SELL theo cài đặt DCA đang lưu của bot + ENTRY / SL chung / TP của tín hiệu gần nhất (bot chỉ vào lệnh XAUUSD, cặp khác chỉ để xem)">Tín hiệu DCA</button><button id="fcbvw" onclick="fcTog('bvw')" title="VWAP ±σ đúng như bot DCA đang dùng">VWAP ±σ</button><button id="fctma" onclick="fcTog('tma')" title="Dải TMA trên / giữa / dưới của bot DCA">TMA</button><button id="fce9" onclick="fcTog('e9')">EMA 9</button><button id="fce21" onclick="fcTog('e21')">EMA 21</button><button id="fcvol" onclick="fcTog('vol')" title="Khối lượng tick">Volume</button></div>
 <div class="fcr"><button onclick="fcFit()" title="Về nến mới nhất">⟲ Về hiện tại</button><button onclick="fcFull()" title="Toàn màn hình (phím F)">⛶ Toàn màn hình</button></div></div>
 <div class="fcwrap"><div id="fcbox"></div><div id="fcleg"></div><div id="fcmsg" style="display:none"></div></div></div>
 
@@ -1099,10 +1099,10 @@ function fcSet(fit){if(!FC.cs)return;const bs=fcBars(),dg=(PR[FC.sym]||{}).dg||5
  FC.e1.setData(FC.e9?fcEma(bs,9):[]);FC.e2.setData(FC.e21?fcEma(bs,21):[]);fcSigDraw();
  if(fit&&bs.length)fcFit();fcLegend(null)}
 // Tín hiệu DCA + VWAP ±σ + TMA: cùng số liệu với Biểu đồ PinYin (máy chủ tính theo cài đặt DCA đang lưu của bot, chỉ XAUUSD)
-async function fcSig(force){const want=FC.dca||FC.bvw||FC.tma,key=FC.sym+'|'+FC.tf;if(!LV||!FC.chart||!want||FC.sym!='XAUUSD'||FC.sigBusy)return;
+async function fcSig(force){const want=FC.dca||FC.bvw||FC.tma,key=FC.sym+'|'+FC.tf;if(!LV||!FC.chart||!want||FC.sigBusy)return;
  if(!force&&FC.sigKey==key&&Date.now()-FC.sigAt<15000)return;FC.sigBusy=1;
  try{const j=await jget('api/dcasig?sym='+FC.sym+'&tf='+FC.tf,20000);if(j&&j.ok&&key==FC.sym+'|'+FC.tf){FC.sig={sig:j.sig||[],bands:j.bands||[]};FC.sigKey=key;FC.sigAt=Date.now();fcSigDraw();fcLegend(null)}}catch(e){}finally{FC.sigBusy=0}}
-function fcSigDraw(){if(!FC.cs)return;const ok=FC.sym=='XAUUSD'&&FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf,S=ok?FC.sig:{sig:[],bands:[]};
+function fcSigDraw(){if(!FC.cs)return;const ok=FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf,S=ok?FC.sig:{sig:[],bands:[]};
  const col=(k,on)=>on?S.bands.filter(r=>r[k]!=null).map(r=>({time:r[0]+FCVN,value:r[k]})):[];
  FC.bs.forEach((x,i)=>x.setData(col(i+1,i<3?FC.bvw:FC.tma)));
  const have=new Set(FC.rows.map(b=>b.t));
@@ -1116,9 +1116,8 @@ function fcLegend(t){const el=$('fcleg'),bs=fcBars();if(!bs.length){el.innerHTML
  const b=bs[i],dg=(PR[FC.sym]||{}).dg||5,p=i?bs[i-1].c:b.o,ch=b.c-p,pc=p?ch/p*100:0,col=ch>=0?'#26a69a':'#ef5350',f=x=>x.toFixed(dg),sg=ch>=0?'+':'';
  el.innerHTML=`<b class="fcs">${FC.sym}</b><span class="mut">· ${FC.tf=='D'?'D1':FC.tf=='W'?'W1':FC.tf}${FC.ha?' · Heikin Ashi':''} · MT5</span><span>O <b style="color:${col}">${f(b.o)}</b></span><span>H <b style="color:${col}">${f(b.h)}</b></span><span>L <b style="color:${col}">${f(b.l)}</b></span><span>C <b style="color:${col}">${f(b.c)}</b></span><b style="color:${col}">${sg}${f(ch)} (${sg}${pc.toFixed(2)}%)</b>`+
   (FC.e9?`<span class="fce"><i style="background:${fcVar('--e9','#ef4444')}"></i>EMA 9</span>`:'')+(FC.e21?`<span class="fce"><i style="background:${fcVar('--e21','#3b82f6')}"></i>EMA 21</span>`:'')+
-  (FC.bvw&&FC.sym=='XAUUSD'?`<span class="fce"><i style="background:${fcVar('--vw','#a855f7')}"></i>VWAP ±σ</span>`:'')+(FC.tma&&FC.sym=='XAUUSD'?`<span class="fce"><i style="background:${fcVar('--tma','#f97316')}"></i>TMA</span>`:'')+
-  (FC.dca&&FC.sym=='XAUUSD'?'<span class="fce"><i style="background:#facc15"></i>Tín hiệu DCA (bot)</span>':'')+
-  ((FC.dca||FC.bvw||FC.tma)&&FC.sym!='XAUUSD'?'<span class="mut">· Tín hiệu DCA / VWAP / TMA chỉ có cho XAUUSD</span>':'')}
+  (FC.bvw?`<span class="fce"><i style="background:${fcVar('--vw','#a855f7')}"></i>VWAP ±σ</span>`:'')+(FC.tma?`<span class="fce"><i style="background:${fcVar('--tma','#f97316')}"></i>TMA</span>`:'')+
+  (FC.dca?`<span class="fce"><i style="background:#facc15"></i>Tín hiệu DCA${FC.sym=='XAUUSD'?' (bot)':' (cài đặt bot, chỉ để xem)'}</span>`:'')}
 function fcBar(){const tfs=['M1','M3','M5','M15','M30','H1','H4','D','W'];
  $('fcsym').innerHTML=Object.keys(PR).map(s=>`<option${s==FC.sym?' selected':''}>${s}</option>`).join('');
  $('fctf').innerHTML=tfs.map(t=>`<button class="${t==FC.tf?'on':''}" onclick="fcTF('${t}')">${t=='D'?'D1':t=='W'?'W1':t}</button>`).join('');
