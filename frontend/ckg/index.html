@@ -160,7 +160,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div id="fcp"><div class="fcbar"><select id="fcsym" onchange="fcSym(this.value)" aria-label="Cặp tiền"></select><span class="sp"></span><div class="fcg" id="fctf"></div><span class="sp"></span>
 <div class="fcg"><button id="fcha" onclick="fcTog('ha')" title="Nến Heikin Ashi">Heikin Ashi</button></div><span class="sp"></span><div class="fcg"><button id="fcdca" onclick="fcTog('dca')" title="Nhãn BUY / SELL theo cài đặt DCA đang lưu của bot + ENTRY / SL chung / TP của tín hiệu gần nhất (bot chỉ vào lệnh XAUUSD, cặp khác chỉ để xem)">Tín hiệu DCA</button><button id="fcbvw" onclick="fcTog('bvw')" title="VWAP ±σ đúng như bot DCA đang dùng">VWAP ±σ</button><button id="fctma" onclick="fcTog('tma')" title="Dải TMA trên / giữa / dưới của bot DCA">TMA</button><button id="fce9" onclick="fcTog('e9')">EMA 9</button><button id="fce21" onclick="fcTog('e21')">EMA 21</button><button id="fcvol" onclick="fcTog('vol')" title="Khối lượng tick">Volume</button></div>
 <div class="fcr"><button onclick="fcFit()" title="Về nến mới nhất">⟲ Về hiện tại</button><button onclick="fcFull()" title="Toàn màn hình (phím F)">⛶ Toàn màn hình</button></div></div>
-<div class="fcwrap"><div id="fcbox"></div><div id="fcleg"></div><div id="fcmsg" style="display:none"></div></div></div>
+<div class="fcwrap"><div id="fcbox"></div><canvas id="fcov" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2"></canvas><div id="fcleg"></div><div id="fcmsg" style="display:none"></div></div></div>
 
 
 <div class="c" id="newsp"><div class="top" style="margin-bottom:8px"><h2 style="margin:0">📰 Lịch tin kinh tế trong tuần</h2><span id="nwupd" class="mut" style="font-size:12px"></span></div>
@@ -1105,12 +1105,32 @@ async function fcSig(force){const want=FC.dca||FC.bvw||FC.tma,key=FC.sym+'|'+FC.
 function fcSigDraw(){if(!FC.cs)return;const ok=FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf,S=ok?FC.sig:{sig:[],bands:[]};
  const col=(k,on)=>on?S.bands.filter(r=>r[k]!=null).map(r=>({time:r[0]+FCVN,value:r[k]})):[];
  FC.bs.forEach((x,i)=>x.setData(col(i+1,i<3?FC.bvw:FC.tma)));
- const have=new Set(FC.rows.map(b=>b.t));
- FC.cs.setMarkers(FC.dca?S.sig.filter(g=>have.has(g.t)).sort((a,b)=>a.t-b.t).map(g=>{const b=g.side=='BUY';return{time:g.t+FCVN,position:b?'belowBar':'aboveBar',color:b?'#16a34a':'#dc2626',shape:b?'arrowUp':'arrowDown',text:g.side+(g.rev?(g.ctr?' ĐC*':' ĐC'):'')}}):[]);
+ FC.cs.setMarkers([]);
  FC.pl.forEach(l=>FC.cs.removePriceLine(l));FC.pl=[];const L=FC.dca&&S.sig.length?S.sig[S.sig.length-1]:null;
  if(L){const dg=(PR[FC.sym]||{}).dg||2,pl=(price,color,title,st)=>FC.pl.push(FC.cs.createPriceLine({price,color,lineWidth:1,lineStyle:st||0,axisLabelVisible:true,title}));
   pl(L.e,'#64748b','DCA ENTRY '+L.side,2);pl(L.sl,'#dc2626','SL chung');(L.tp||[]).forEach((v,k)=>pl(v,'#0e9fb4','TP'+(k+1)+' (1:'+(L.rr?L.rr[k]:k+1)+')',2))}}
 setInterval(()=>{if(VIEWMODE=='chart'&&!document.hidden)fcSig(false)},5000);
+// Lớp phủ: nhãn BUY / SELL nổi bật như Biểu đồ PinYin + vùng rủi ro / mục tiêu của tín hiệu gần nhất
+function fcRR(x,X,Y,w,h,r){x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,r);else x.rect(X,Y,w,h)}
+function fcOv(){const cv=$('fcov');if(!cv||!FC.chart)return;const W=cv.clientWidth,H=cv.clientHeight,r=devicePixelRatio||1;
+ if(cv.width!=Math.round(W*r)||cv.height!=Math.round(H*r)){cv.width=Math.round(W*r);cv.height=Math.round(H*r)}
+ const x=cv.getContext('2d');x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,W,H);
+ const S=FC.dca&&FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf?FC.sig.sig:null;if(!S||!S.length||!FC.rows.length)return;
+ const ts=FC.chart.timeScale(),pw=W-FC.chart.priceScale('right').width(),bs=fcBars(),idx=new Map(bs.map((b,i)=>[b.t,i])),py=v=>FC.cs.priceToCoordinate(v),sp=ts.options().barSpacing||8;
+ x.save();x.beginPath();x.rect(0,0,pw,H);x.clip();
+ const L=S[S.length-1],x0=ts.timeToCoordinate(L.t+FCVN);
+ if(x0!=null&&L.tp&&L.tp.length){const x1=Math.min(pw,x0+sp*40),ye=py(L.e),ys=py(L.sl),yt=py(L.tp[L.tp.length-1]);
+  if(ye!=null&&ys!=null){x.fillStyle='rgba(220,38,38,.13)';x.fillRect(x0,Math.min(ye,ys),x1-x0,Math.abs(ye-ys))}
+  if(ye!=null&&yt!=null){x.fillStyle='rgba(22,163,74,.11)';x.fillRect(x0,Math.min(ye,yt),x1-x0,Math.abs(ye-yt))}}
+ const fs=sp<4?11:12;x.font='800 '+fs+'px system-ui,-apple-system,Segoe UI,sans-serif';x.textBaseline='middle';x.textAlign='center';
+ S.forEach(g=>{const i=idx.get(g.t);if(i==null)return;const cx=ts.timeToCoordinate(g.t+FCVN);if(cx==null||cx<-60||cx>pw+60)return;
+  const b=g.side=='BUY',q=bs[i],y0=py(b?q.l:q.h);if(y0==null)return;const c=b?'#16a34a':'#dc2626',txt=(b?'▲ ':'▼ ')+g.side+(g.rev?(g.ctr?' ĐC*':' ĐC'):''),
+   w=x.measureText(txt).width+16,h=fs+10,yy=b?y0+14:y0-14-h,bx=cx-w/2;
+  x.fillStyle=c;x.beginPath();if(b){x.moveTo(cx,y0+3);x.lineTo(cx-6,y0+14);x.lineTo(cx+6,y0+14)}else{x.moveTo(cx,y0-3);x.lineTo(cx-6,y0-14);x.lineTo(cx+6,y0-14)}x.closePath();x.fill();
+  x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=8;x.shadowOffsetY=2;fcRR(x,bx,yy,w,h,5);x.fill();x.shadowBlur=0;x.shadowOffsetY=0;
+  x.strokeStyle='#facc15';x.lineWidth=1.5;fcRR(x,bx,yy,w,h,5);x.stroke();x.fillStyle='#fff';x.fillText(txt,cx,yy+h/2+.5)});
+ x.restore()}
+function fcOvLoop(){if(VIEWMODE=='chart'&&!document.hidden)try{fcOv()}catch(e){}requestAnimationFrame(fcOvLoop)}
 function fcLegend(t){const el=$('fcleg'),bs=fcBars();if(!bs.length){el.innerHTML=`<b class="fcs">${FC.sym}</b><span class="mut">· ${FC.tf}</span>`;return}let i=bs.length-1;
  if(t!=null){const j=bs.findIndex(x=>x.t+FCVN==t);if(j>=0)i=j}
  const b=bs[i],dg=(PR[FC.sym]||{}).dg||5,p=i?bs[i-1].c:b.o,ch=b.c-p,pc=p?ch/p*100:0,col=ch>=0?'#26a69a':'#ef5350',f=x=>x.toFixed(dg),sg=ch>=0?'+':'';
@@ -1149,7 +1169,7 @@ addEventListener('resize',fcSize);
 async function fcOpen(){fcBar();window.scrollTo(0,0);fcSize();
  if(!LV){fcMsg('Biểu đồ cần dữ liệu MT5 thật: mở trang từ máy chủ PinYin để xem.')}
  try{await fcLib()}catch(e){fcMsg('Không tải được thư viện biểu đồ (kiểm tra mạng), bấm lại tab Biểu đồ để thử lại.');return}
- if(!FC.chart)fcBuild();fcTheme();if(LV){fcLoad(FC.key!=FC.sym+'|'+FC.tf);fcSig(false)}
+ if(!FC.chart){fcBuild();requestAnimationFrame(fcOvLoop)}fcTheme();if(LV){fcLoad(FC.key!=FC.sym+'|'+FC.tf);fcSig(false)}
  if(!FC.tm)FC.tm=setInterval(()=>{if(VIEWMODE=='chart'&&LV&&!document.hidden)fcLoad(false)},1500)}
 document.addEventListener('keydown',e=>{if(VIEWMODE!='chart'||/INPUT|SELECT|TEXTAREA/.test((e.target||{}).tagName||''))return;if(!e.ctrlKey&&!e.metaKey&&(e.key=='f'||e.key=='F'))fcFull()});
 
