@@ -317,6 +317,85 @@ def resend(email, ip):
     return (True, f"Đã gửi lại thư xác nhận tới {email}. Kiểm tra hộp thư và mục Spam.") if sent else (False, "Chưa gửi được thư, thử lại sau ít phút.")
 
 
+# ---------- Quên mật khẩu ----------
+
+_fp_ip: dict[str, list[float]] = {}
+_fp_mail: dict[str, list[float]] = {}
+RESET_SEC = 3600                       # link đặt lại mật khẩu dùng được 1 giờ
+
+
+def _rate(bucket, key, limit, now):
+    bucket[key] = [t for t in bucket.get(key, []) if now - t < 3600]
+    if len(bucket[key]) >= limit:
+        return False
+    bucket[key].append(now)
+    return True
+
+
+def forgot(email, ip):
+    """Khách quên mật khẩu: gửi link đặt lại tới email. Không tiết lộ email nào đã đăng ký. Trả (ok, thông báo)."""
+    now = time.time()
+    email = (email or "").strip().lower()[:80]
+    if not EMAIL_RE.match(email):
+        return False, "Email không hợp lệ."
+    if not mailer.configured():
+        return False, "Máy chủ chưa bật gửi email. Nhắn Telegram @TuanKom hoặc Zalo để được cấp mật khẩu mới."
+    if not _rate(_fp_ip, ip, 5, now):
+        return False, "Gửi quá nhiều lần, thử lại sau 1 giờ."
+    generic = (f"Nếu {email} đã đăng ký, thư đặt lại mật khẩu đã được gửi. Mở hộp thư (xem cả mục Spam / Quảng cáo) "
+               "và bấm \"Đặt lại mật khẩu\". Link có hiệu lực 1 giờ.")
+    u = load().get(email)
+    if not u or not _rate(_fp_mail, email, 3, now):
+        return True, generic
+    tok = secrets.token_urlsafe(24)
+    _set(email, rs=hashlib.sha256(tok.encode()).hexdigest(), rs_het=int(now + RESET_SEC))
+    link = f"{_base()}/dat-lai-mat-khau?t={tok}"
+    sent, e = mailer.send(email, "Đặt lại mật khẩu PinYin CKG", mailer.reset_html(html.escape(u.get("ten") or ""), link))
+    if not sent:
+        _notify(f"⚠️ Không gửi được thư đặt lại mật khẩu tới {email}: {e}")
+        return False, "Chưa gửi được thư, thử lại sau ít phút hoặc nhắn Telegram @TuanKom."
+    return True, generic
+
+
+def _by_reset(tok):
+    if not tok or len(tok) < 20:
+        return None, None
+    h = hashlib.sha256(tok.encode()).hexdigest()
+    for email, u in load().items():
+        if u.get("rs") and hmac.compare_digest(u["rs"], h):
+            return email, u
+    return None, None
+
+
+def reset_check(tok):
+    """Link còn dùng được không. Trả (ok, thông báo lỗi)."""
+    email, u = _by_reset(tok)
+    if not u:
+        return False, "Link đặt lại mật khẩu không đúng hoặc đã dùng. Gửi lại yêu cầu mới."
+    if (u.get("rs_het") or 0) < time.time():
+        return False, "Link đã hết hạn (quá 1 giờ). Gửi lại yêu cầu mới."
+    return True, email
+
+
+def reset_pw(tok, pw, pw2):
+    ok, email = reset_check(tok)
+    if not ok:
+        return False, email
+    if len(pw) < 6:
+        return False, "Mật khẩu tối thiểu 6 ký tự."
+    if pw != pw2:
+        return False, "Hai lần nhập mật khẩu không khớp."
+    u = load().get(email) or {}
+    kw = {"mk": _hash(pw), "rs": None, "rs_het": None, "doi_mk": int(time.time())}
+    if u.get("tt") == "xac_minh":                 # bấm được link trong thư = email là thật
+        kw.update(tt="cho", xm=None, xm_het=None, xac_minh=int(time.time()))
+    _set(email, **kw)                              # đổi mật khẩu → mọi phiên đăng nhập cũ tự hết
+    _notify(f"🔑 Khách {email} vừa tự đặt lại mật khẩu qua email.")
+    if kw.get("tt") == "cho":
+        _notify_new(email)
+    return True, "Đã đặt mật khẩu mới. Đăng nhập lại bằng email và mật khẩu mới."
+
+
 def login(user, pw):
     """user = email. Trả (mã khách | None, lỗi)."""
     user = user.strip().lower()
@@ -440,6 +519,10 @@ def admin_act(user, act, days=30):
         elif act == "bot_off":
             u["bot"] = False
             msg = f"Đã tắt bot tự động của {user} (bot dừng, lệnh đang mở giữ SL trên MT5)."
+        elif act == "mk_moi":
+            tmp = "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8))
+            u.update(mk=_hash(tmp), rs=None, rs_het=None, doi_mk=int(now))
+            msg = f"Mật khẩu mới của {user}: {tmp} — gửi cho khách qua Zalo / Telegram (phiên đăng nhập cũ đã hết). Khách nên vào Quên mật khẩu để tự đổi sau."
         elif act == "key_moi":
             u["ea_key"] = "PY-" + secrets.token_urlsafe(18)
             msg = f"Đã cấp mã kết nối EA mới cho {user} (mã cũ hết dùng)."
@@ -508,6 +591,25 @@ def msg_page(logo, title, msg, ok=True, extra=""):
     return page("PinYin · " + title, f'<div class="box">{inner}</div>')
 
 
+def forgot_page(logo, msg="", ok=False):
+    inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Quên mật khẩu? Nhập email đã đăng ký, PinYin gửi link để bạn đặt mật khẩu mới.</p>
+<form method="post" action="/quen-mat-khau"><label>Email</label><input type="email" name="email" required maxlength="80" autocomplete="email">
+<button class="full">Gửi link đặt lại mật khẩu</button>{f'<div class="{"ok" if ok else "e"}" style="margin-top:10px;font-size:13px">{html.escape(msg)}</div>' if msg else ''}</form>
+<div class="alt">Không nhận được thư? Nhắn <a href="https://t.me/TuanKom" target="_blank" rel="noopener">Telegram @TuanKom</a> để được cấp mật khẩu mới.<br><a href="/login">Đăng nhập</a> · <a href="/dang-ky">Đăng ký</a></div>"""
+    return page("PinYin · Quên mật khẩu", f'<div class="box">{inner}</div>')
+
+
+def reset_page(logo, tok, msg="", email=""):
+    inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Đặt mật khẩu mới cho <b>{html.escape(email)}</b>.</p>
+<form method="post" action="/dat-lai-mat-khau"><input type="hidden" name="t" value="{html.escape(tok)}">
+<input type="email" name="user" value="{html.escape(email)}" autocomplete="username" hidden>
+<label>Mật khẩu mới</label><input type="password" name="pw" required minlength="6" autocomplete="new-password" autofocus>
+<label>Nhập lại mật khẩu mới</label><input type="password" name="pw2" required minlength="6" autocomplete="new-password">
+<button class="full">Lưu mật khẩu mới</button>{f'<div class="e">{html.escape(msg)}</div>' if msg else ''}</form>
+<div class="alt"><a href="/login">Đăng nhập</a></div>"""
+    return page("PinYin · Đặt lại mật khẩu", f'<div class="box">{inner}</div>')
+
+
 def resend_page(logo, msg="", ok=False):
     inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Chưa nhận được thư xác nhận? Nhập email đã đăng ký để gửi lại.</p>
 <form method="post" action="/gui-lai-xac-minh"><label>Email</label><input type="email" name="email" required maxlength="80">
@@ -526,10 +628,11 @@ async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'}
   let a=(u.tt=='cho'||u.tt=='xac_minh')?`${d}<button onclick="act('${u.user}','duyet')">Duyệt</button><button class="red" onclick="act('${u.user}','xoa')">Từ chối</button>`:
    u.tt=='khoa'?`${d}<button onclick="act('${u.user}','mo')">Mở khóa</button><button class="red" onclick="act('${u.user}','xoa')">Xóa</button>`:
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
+  a+=`<br><button onclick="act('${u.user}','mk_moi')" title="Khách quên mật khẩu, không nhận được thư: cấp mật khẩu tạm rồi gửi khách qua Zalo / Telegram">🔑 Cấp MK mới</button>`;
   return `<tr><td><b>${e(u.ten)}</b><br><a class="m" href="mailto:${e(u.user)}">${e(u.user)}</a></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
    <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${u.gd?`<b class="ok">✅ Được giao dịch</b><br><span class="m">${u.ea?(u.ea.on?'🟢 EA online · #'+e(u.ea.login)+' · '+e(u.ea.server)+(u.ea.demo?' (demo)':' (THẬT)')+' · EA '+e(u.ea.ver||'?')+(u.ea.old?' <b class="wn">(cũ)</b>':''):'⚪ EA offline'+(u.ea.login?' · #'+e(u.ea.login):'')):'⚪ chưa nối EA'}</span><br>${u.bot?`<b class="ok">🤖 Được dùng bot</b> <span class="m">${u.cbot?(u.cbot.on?'· đang BẬT '+e(u.cbot.tf)+(u.cbot.camp?' · '+e(u.cbot.camp):''):'· đang tắt'):''}</span><br><button class="red" onclick="act('${u.user}','bot_off')">Tắt bot</button> `:`<button onclick="act('${u.user}','bot_on')">🤖 Cho dùng bot</button> `}<br><span class="m">🖥 MT5: <b>${u.nacc}/${u.max_acc}</b> tài khoản</span> <button onclick="act('${u.user}','acc_up')" title="Mở thêm 1 tài khoản MT5 (có phí)">＋ MT5</button><button class="red" onclick="act('${u.user}','acc_down')" title="Giảm 1 tài khoản">－</button>${u.acc_req?' <b class="wn">📩 khách xin thêm</b>':''}<br><button class="red" onclick="act('${u.user}','gd_off')">Tắt giao dịch</button>`:(u.tt=='ok'?`<button onclick="act('${u.user}','gd_on')">Cho giao dịch</button>`:'<span class="m">-</span>')}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
 async function act(user,a){const days=+($('d_'+user)||{}).value||30;
- if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;
+ if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;if(a=='mk_moi'&&!confirm('Cấp mật khẩu mới cho '+user+'? Mật khẩu cũ hết dùng, khách bị đăng xuất.'))return;
  const r=await fetch('/quan-ly/api/act',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,act:a,days})});const j=await r.json();
  $('msg').innerHTML=j.ok?'<span class="ok">✅ '+j.msg+'</span>':'<span class="no">⚠️ '+j.loi+'</span>';load()}
 function copyLink(){navigator.clipboard.writeText('https://pinyin.id.vn/dang-ky').then(()=>{$('msg').innerHTML='<span class="ok">✅ Đã chép link đăng ký</span>'})}

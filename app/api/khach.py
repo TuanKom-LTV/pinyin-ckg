@@ -55,6 +55,41 @@ async def resend_submit(request: Request):
     return HTMLResponse(users.resend_page(LOGO_K, msg, ok), headers=NOSTORE)
 
 
+@router.get("/quen-mat-khau", include_in_schema=False)
+def forgot_form():
+    return HTMLResponse(users.forgot_page(LOGO_K), headers=NOSTORE)
+
+
+@router.post("/quen-mat-khau", include_in_schema=False)
+async def forgot_submit(request: Request):
+    f = {k: v[0] for k, v in parse_qs((await request.body()).decode("utf-8", "ignore")).items()}
+    ok, msg = users.forgot(f.get("email", ""), _ip(request))
+    return HTMLResponse(users.forgot_page(LOGO_K, msg, ok), headers=NOSTORE)
+
+
+@router.get("/dat-lai-mat-khau", include_in_schema=False)
+def reset_form(t: str = ""):
+    ok, x = users.reset_check(t)
+    if not ok:
+        return HTMLResponse(users.msg_page(LOGO_K, "Đặt lại mật khẩu", x, False,
+                                           '<a class="btn full" style="background:#1c2a3d" href="/quen-mat-khau">Gửi lại yêu cầu</a>'), headers=NOSTORE)
+    return HTMLResponse(users.reset_page(LOGO_K, t, email=x), headers={**NOSTORE, "Referrer-Policy": "no-referrer"})
+
+
+@router.post("/dat-lai-mat-khau", include_in_schema=False)
+async def reset_submit(request: Request):
+    f = {k: v[0] for k, v in parse_qs((await request.body()).decode("utf-8", "ignore")).items()}
+    t = f.get("t", "")
+    ok, msg = users.reset_pw(t, f.get("pw", ""), f.get("pw2", ""))
+    if ok:
+        return HTMLResponse(users.msg_page(LOGO_K, "Đặt lại mật khẩu", msg, True), headers=NOSTORE)
+    good, email = users.reset_check(t)
+    if not good:
+        return HTMLResponse(users.msg_page(LOGO_K, "Đặt lại mật khẩu", email, False,
+                                           '<a class="btn full" style="background:#1c2a3d" href="/quen-mat-khau">Gửi lại yêu cầu</a>'), headers=NOSTORE)
+    return HTMLResponse(users.reset_page(LOGO_K, t, msg, email), headers={**NOSTORE, "Referrer-Policy": "no-referrer"})
+
+
 @router.get("/api/me")
 def me(request: Request):
     role = getattr(request.state, "role", None) or "chu"

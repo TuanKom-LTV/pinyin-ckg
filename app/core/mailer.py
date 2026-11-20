@@ -83,3 +83,12 @@ def verify_html(name, link):
 <p style="text-align:center;margin:24px 0"><a href="{link}" style="background:#2563eb;color:#fff;text-decoration:none;font-weight:700;padding:12px 26px;border-radius:9px;display:inline-block">Xác nhận email</a></p>
 <p style="font-size:13px;color:#8b95a7">Link có hiệu lực 24 giờ. Sau khi xác nhận, tài khoản sẽ được duyệt và bạn đăng nhập bằng email này.<br>
 Nếu bạn không đăng ký, hãy bỏ qua thư này.</p><p style="font-size:12px;color:#8b95a7;word-break:break-all">Link: {link}</p></div>"""
+
+
+def reset_html(name, link):
+    return f"""<div style="font-family:Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;background:#0d1320;color:#e8ecf3;border-radius:14px;padding:26px">
+<h2 style="margin:0 0 6px;color:#22d3ee">PinYin CKG</h2><p style="color:#8b95a7;margin:0 0 18px;font-size:13px">Hệ thống phân tích CKG đa khung &amp; cố vấn AI thực chiến</p>
+<p>Chào {name},</p><p>Bạn (hoặc ai đó) vừa yêu cầu đặt lại mật khẩu PinYin CKG cho email này. Bấm nút dưới đây để đặt mật khẩu mới:</p>
+<p style="text-align:center;margin:24px 0"><a href="{link}" style="background:#2563eb;color:#fff;text-decoration:none;font-weight:700;padding:12px 26px;border-radius:9px;display:inline-block">Đặt lại mật khẩu</a></p>
+<p style="font-size:13px;color:#8b95a7">Link có hiệu lực 1 giờ và chỉ dùng được 1 lần.<br>
+Nếu bạn không yêu cầu, hãy bỏ qua thư này, mật khẩu cũ vẫn giữ nguyên.</p><p style="font-size:12px;color:#8b95a7;word-break:break-all">Link: {link}</p></div>"""
