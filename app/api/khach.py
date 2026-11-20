@@ -165,6 +165,37 @@ def mail_set(x: MailIn, request: Request):
     return {"ok": True}
 
 
+@router.get("/quan-ly/api/ai")
+def ai_status(request: Request):
+    if not _owner(request):
+        return JSONResponse({"ok": False, "loi": "Không có quyền."}, status_code=403)
+    from app.api import ckg_ai
+    last = max(ckg_ai._last.values(), key=lambda r: r["ts"], default=None)
+    return {"ok": True, "groq": bool(os.getenv("GROQ_API_KEY", "").strip()), "gemini": bool(os.getenv("GEMINI_API_KEY", "").strip()),
+            "last": {"model": last["model"], "gio": last["gio"], "sym": last["sym"]} if last else None}
+
+
+class AiKeyIn(BaseModel):
+    key: str
+
+
+@router.post("/quan-ly/api/ai")
+def ai_set(x: AiKeyIn, request: Request):
+    """Gọi thử key Groq; chạy được mới lưu vào .env."""
+    if not _owner(request):
+        return JSONResponse({"ok": False, "loi": "Không có quyền."}, status_code=403)
+    key = x.key.strip()
+    if not key.startswith("gsk_"):
+        return {"ok": False, "loi": "Key Groq bắt đầu bằng gsk_ (lấy ở console.groq.com → API Keys)."}
+    from app.api import ckg_ai
+    ok, info = ckg_ai.groq_test(key)
+    if not ok:
+        return {"ok": False, "loi": f"Gọi thử Groq không được, chưa lưu key. {info}"}
+    from app.api.ckg_auto import _set_env
+    _set_env("GROQ_API_KEY", key)
+    return {"ok": True, "model": info}
+
+
 class ActIn(BaseModel):
     user: str
     act: str

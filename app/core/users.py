@@ -719,6 +719,14 @@ function mailForm(h){return `<div id="mk" style="display:${h?'none':'flex'};gap:
 async function mailSave(){const key=$('mkey').value.trim(),to=$('mto').value.trim();if(!key||!to){alert('Nhập khóa API và email nhận thư thử.');return}
  $('msg').textContent='Đang gửi thư thử...';const j=await (await fetch('/quan-ly/api/mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,to})})).json();
  $('msg').innerHTML=j.ok?'<span class="ok">✅ Đã gửi thư thử tới '+to+' và bật xác nhận email.</span>':'<span class="no">⚠️ '+String(j.loi).replace(/</g,'&lt;')+'</span>';mailLoad()}
+async function aiLoad(){let j;try{j=await (await fetch('/quan-ly/api/ai',{cache:'no-store'})).json()}catch(e){return}if(!j.ok)return;
+ const L=j.last?` · lần gần nhất: <b>${String(j.last.model).replace(/</g,'&lt;')}</b> (${j.last.sym} ${j.last.gio})`:'';
+ $('aibox').innerHTML=(j.groq?`🤖 <b class="ok">Phân tích AI: Groq ĐANG BẬT</b> (miễn phí, nhanh)${j.gemini?' · Gemini làm dự phòng':''}${L}. <a href="#" onclick="$('ak').style.display='flex';return false">Đổi key</a>`:
+  `🤖 <b class="wn">Phân tích AI: đang dùng ${j.gemini?'Gemini (hay quá tải / hết lượt miễn phí)':'— chưa có key nào'}</b>${L}. Dán key Groq miễn phí (lấy ở <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>) để chạy nhanh và ổn định hơn:`)+
+  `<div id="ak" style="display:${j.groq?'none':'flex'};gap:8px;margin-top:8px;flex-wrap:wrap"><input id="akey" placeholder="Key Groq (gsk_...)" style="flex:2;min-width:240px"><button onclick="aiSave()">Lưu &amp; chạy thử</button></div>`}
+async function aiSave(){const key=$('akey').value.trim();if(!key){alert('Dán key Groq (gsk_...).');return}$('msg').textContent='Đang gọi thử Groq...';
+ const j=await (await fetch('/quan-ly/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})})).json();
+ $('msg').innerHTML=j.ok?'<span class="ok">✅ Groq chạy được ('+j.model+'), đã lưu key. Phân Tích AI giờ dùng Groq trước, Gemini làm dự phòng.</span>':'<span class="no">⚠️ '+String(j.loi).replace(/</g,'&lt;')+'</span>';aiLoad()}
 async function tai(){let j;try{j=await (await fetch('/quan-ly/api/tai',{cache:'no-store'})).json()}catch(e){return}if(!j||!j.ok)return;
  const e=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),L=j.loops||{},lp=(k,n)=>L[k]==null?'':`${n} <b class="${L[k]>30?'no':L[k]>8?'wn':'ok'}">${L[k]<10?'●':L[k]+'s'}</b>`;
  const up=s=>s<3600?Math.floor(s/60)+' phút':s<86400?Math.floor(s/3600)+' giờ':Math.floor(s/86400)+' ngày';
@@ -730,7 +738,7 @@ async function tai(){let j;try{j=await (await fetch('/quan-ly/api/tai',{cache:'n
  <br>💾 Sao lưu: ${b.last?'lần cuối <b>'+e(b.last)+'</b> ('+e(b.file)+', '+b.size_kb+' KB)':'<b class="wn">chưa có</b>'} → ${(b.dirs||[]).map(e).join(' · ')}${b.err?' <b class="no">'+e(b.err)+'</b>':''}
  <button onclick="bk()" style="margin-left:6px;padding:4px 10px;font-size:12px">Sao lưu ngay</button> · UptimeRobot: <code>https://pinyin.id.vn/health</code>`}
 async function bk(){const r=await (await fetch('/quan-ly/api/backup',{method:'POST'})).json();alert(r.ok?r.msg:'Lỗi: '+(r.loi||''));tai()}
-load();mailLoad();tai();setInterval(load,20000);setInterval(tai,5000);
+load();mailLoad();aiLoad();tai();setInterval(load,20000);setInterval(tai,5000);
 """
 
 
@@ -738,6 +746,7 @@ def admin_page(logo):
     body = f"""<div class="box"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
 <h1>{logo}<span>Quản lý khách hàng</span></h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="copyLink()">📋 Chép link đăng ký</button><a class="btn" style="background:#1c2a3d" href="/ckg/">← Về trang phân tích</a></div></div>
 <div id="mailbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px"></div>
+<div id="aibox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px"></div>
 <div id="loadbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px">Đang tải tình trạng máy chủ…</div><p id="sum" style="margin-top:6px"></p><input id="q" type="search" placeholder="🔎 Tìm khách: tên, số Zalo, email, Telegram…" oninput="load()" style="max-width:420px;margin:2px 0 8px"><div id="msg" style="min-height:22px;font-size:14px"></div>
 <div style="overflow-x:auto"><table><thead><tr><th>Khách</th><th>Liên hệ</th><th>Trạng thái</th><th>Hạn dùng</th><th>Hoạt động</th><th>Giao dịch EA</th><th></th></tr></thead><tbody id="tb"><tr><td>Đang tải…</td></tr></tbody></table></div>
 <p style="margin-top:14px">Khách đăng ký tại <b>https://pinyin.id.vn/dang-ky</b> → chờ duyệt ở đây (Telegram báo khi có người đăng ký). Khách chỉ có quyền XEM: không vào lệnh, không thấy tài khoản MT5, không thấy bot.</p></div>

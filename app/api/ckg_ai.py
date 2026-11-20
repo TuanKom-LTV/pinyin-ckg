@@ -1,4 +1,4 @@
-"""PinYin CKG · menu Phân Tích AI (Google Gemini).
+"""PinYin CKG · menu Phân Tích AI (Groq nếu có GROQ_API_KEY, dự phòng Google Gemini).
 
 - Máy chủ tự gom dữ liệu MT5 đa khung (M1, M5, M15, H1, H4, D1), tính chỉ báo và mốc CKG,
   rồi gửi cho Gemini. Key Gemini chỉ nằm trong .env (GEMINI_API_KEY), không bao giờ gửi xuống trình duyệt.
@@ -38,6 +38,9 @@ DEADLINE = 110        # tổng thời gian thử các model cho 1 lần phân t�
 _cool: dict[str, float] = {}   # model -> thời điểm hết "tạm nghỉ"
 CACHE_SECONDS = int(os.getenv("PINYIN_AI_CACHE_GIAY", "60"))
 HOST = "generativelanguage.googleapis.com"
+# Groq (console.groq.com): miễn phí, rất nhanh; có GROQ_API_KEY thì chạy trước, lỗi / hết lượt thì quay về Gemini
+GROQ_HOST = "api.groq.com"
+GROQ_MODELS = [m.strip() for m in os.getenv("GROQ_MODELS", "openai/gpt-oss-120b,llama-3.3-70b-versatile").split(",") if m.strip()]
 PATH = "/v1beta/models/{m}:generateContent"
 
 
@@ -219,15 +222,91 @@ def _collect(sym):
     return data
 
 
+def _user_text(payload):
+    return ("Dữ liệu MT5 hiện tại (JSON):\n" + json.dumps(payload, ensure_ascii=False) +
+            "\n\nHãy phân tích theo phương pháp CKG và đưa ra kịch bản giao dịch.")
+
+
+def _groq_call(model, key, system, user, max_tokens=2500, timeout=CALL_TIMEOUT):
+    """1 lần gọi Groq (API kiểu OpenAI). Trả (chữ, số token). Lỗi tạm thời → _Skip."""
+    body = {"model": model, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            "temperature": 0.4, "max_tokens": max_tokens}
+    if "gpt-oss" in model:
+        body["reasoning_effort"] = "low"          # bớt token suy nghĩ (hạn mức miễn phí tính theo token / phút)
+    conn = _V4Conn(GROQ_HOST, timeout=timeout)
+    try:
+        conn.request("POST", "/openai/v1/chat/completions", body=json.dumps(body).encode(),
+                     headers={"Content-Type": "application/json", "Authorization": "Bearer " + key, "User-Agent": "PinYin-CKG/1.0"})
+        r = conn.getresponse()
+        raw = r.read().decode("utf-8", "ignore")
+    except (OSError, http.client.HTTPException) as e:
+        raise _Skip(f"Groq ({model}) không phản hồi: {e}", 300)
+    finally:
+        conn.close()
+    if r.status != 200:
+        msg = raw
+        try:
+            msg = json.loads(raw)["error"]["message"]
+        except Exception:
+            pass
+        err = f"Groq ({model}) báo lỗi {r.status}: {msg[:200]}"
+        if r.status == 429:
+            raise _Skip(err, 120)        # hết lượt / token mỗi phút: nghỉ 2 phút
+        if r.status in (413, 500, 502, 503, 504) or r.status == 404:
+            raise _Skip(err, 300 if r.status != 404 else 86400)
+        raise RuntimeError(err)          # 401 sai key, 400 ...
+    js = json.loads(raw)
+    text = ((js.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+    if not text.strip():
+        raise _Skip(f"Groq ({model}) không trả về nội dung.", 60)
+    return text, (js.get("usage") or {}).get("total_tokens")
+
+
+def groq_test(key):
+    """Gọi thử key Groq (dùng cho /quan-ly trước khi lưu). Trả (ok, lỗi | tên model)."""
+    for m in GROQ_MODELS:
+        try:
+            _groq_call(m, key, "Trả lời ngắn gọn bằng tiếng Việt.", "Chỉ trả lời đúng 1 chữ: OK", max_tokens=200, timeout=25)
+            return True, m
+        except _Skip as e:
+            last = str(e)
+        except Exception as e:
+            return False, str(e)
+    return False, last
+
+
+def _ai(payload):
+    """Groq trước (nếu có key), không được thì Gemini. Trả (chữ, số token, tên model)."""
+    key, errs = os.getenv("GROQ_API_KEY", "").strip(), []
+    if key:
+        now = time.time()
+        for m in [m for m in GROQ_MODELS if _cool.get("groq:" + m, 0) <= now]:   # model đang tạm nghỉ thì bỏ qua
+            try:
+                text, tok = _groq_call(m, key, SYSTEM, _user_text(payload))
+                _cool.pop("groq:" + m, None)
+                return text, tok, "groq · " + m
+            except _Skip as e:
+                _cool["groq:" + m] = time.time() + e.cool
+                errs.append(str(e))
+            except Exception as e:
+                errs.append(str(e))
+                break
+    try:
+        text, usage, used = _gemini(payload)
+        return text, usage.get("totalTokenCount"), used
+    except Exception as e:
+        if errs:
+            raise RuntimeError(str(e) + " | Groq: " + " | ".join(x[:140] for x in errs[-2:]))
+        raise
+
+
 def _gemini(payload):
     key = os.getenv("GEMINI_API_KEY", "")
     if not key:
         raise RuntimeError("Chưa đặt GEMINI_API_KEY trong .env.")
     body = {
         "systemInstruction": {"parts": [{"text": SYSTEM}]},
-        "contents": [{"role": "user", "parts": [{"text":
-            "Dữ liệu MT5 hiện tại (JSON):\n" + json.dumps(payload, ensure_ascii=False) +
-            "\n\nHãy phân tích theo phương pháp CKG và đưa ra kịch bản giao dịch."}]}],
+        "contents": [{"role": "user", "parts": [{"text": _user_text(payload)}]}],
         "generationConfig": {"temperature": 0.4, "maxOutputTokens": 8192},
     }
     models = [MODEL] + [m for m in FALLBACKS if m != MODEL]
@@ -314,10 +393,10 @@ def analyze(body: AiIn, request: Request):
     try:
         with mt5_service.session():
             payload = _collect(sym)
-        text, usage, used = _gemini(payload)
+        text, tokens, used = _ai(payload)
         rec = {"sym": sym, "ts": time.time(), "text": text, "model": used,
                "gio": datetime.now(VN).strftime("%H:%M:%S %d/%m"),
-               "tokens": usage.get("totalTokenCount")}
+               "tokens": tokens}
         _last[sym] = rec
         return {"ok": True, "co": True, **rec}
     except Exception as e:
