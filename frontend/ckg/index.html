@@ -1114,9 +1114,9 @@ setInterval(()=>{if(VIEWMODE=='chart'&&!document.hidden)fcSig(false)},5000);
 function fcRR(x,X,Y,w,h,r){x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,r);else x.rect(X,Y,w,h)}
 function fcOv(){const cv=$('fcov');if(!cv||!FC.chart)return;const W=cv.clientWidth,H=cv.clientHeight,r=devicePixelRatio||1;
  if(cv.width!=Math.round(W*r)||cv.height!=Math.round(H*r)){cv.width=Math.round(W*r);cv.height=Math.round(H*r)}
- const x=cv.getContext('2d');x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,W,H);
+ const x=cv.getContext('2d');x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,W,H);try{fcCd(x,W)}catch(e){}
  const S=FC.dca&&FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf?FC.sig.sig:null;if(!S||!S.length||!FC.rows.length)return;
- const ts=FC.chart.timeScale(),pw=W-FC.chart.priceScale('right').width(),bs=fcBars(),idx=new Map(bs.map((b,i)=>[b.t,i])),py=v=>FC.cs.priceToCoordinate(v),sp=ts.options().barSpacing||8;
+ const ts=FC.chart.timeScale(),pw=ts.width(),bs=fcBars(),idx=new Map(bs.map((b,i)=>[b.t,i])),py=v=>FC.cs.priceToCoordinate(v),sp=ts.options().barSpacing||8;
  x.save();x.beginPath();x.rect(0,0,pw,H);x.clip();
  const L=S[S.length-1],x0=ts.timeToCoordinate(L.t+FCVN);
  if(x0!=null&&L.tp&&L.tp.length){const x1=Math.min(pw,x0+sp*40),ye=py(L.e),ys=py(L.sl),yt=py(L.tp[L.tp.length-1]);
@@ -1130,6 +1130,14 @@ function fcOv(){const cv=$('fcov');if(!cv||!FC.chart)return;const W=cv.clientWid
   x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=8;x.shadowOffsetY=2;fcRR(x,bx,yy,w,h,5);x.fill();x.shadowBlur=0;x.shadowOffsetY=0;
   x.strokeStyle='#facc15';x.lineWidth=1.5;fcRR(x,bx,yy,w,h,5);x.stroke();x.fillStyle='#fff';x.fillText(txt,cx,yy+h/2+.5)});
  x.restore()}
+// Đồng hồ đếm ngược tới lúc nến hiện tại đóng (dưới nhãn giá ở cột giá, như TradingView)
+const FCSEC={M1:60,M3:180,M5:300,M15:900,M30:1800,H1:3600,H4:14400,D:86400,W:604800};
+function fcCd(x,W){const bs=fcBars(),sec=FCSEC[FC.tf];if(!bs.length||!sec)return;const b=bs[bs.length-1],y=FC.cs.priceToCoordinate(b.c);if(y==null)return;
+ const left=Math.floor(b.t+sec-Date.now()/1000),p=n=>String(n).padStart(2,'0');let t;
+ if(left<0)t=left<-sec?'Đóng cửa':'00:00';else{const d=Math.floor(left/86400),h=Math.floor(left%86400/3600),m=Math.floor(left%3600/60),s=left%60;t=d?d+'n '+p(h)+':'+p(m):h?p(h)+':'+p(m)+':'+p(s):p(m)+':'+p(s)}
+ const sw=FC.chart.priceScale('right').width(),X=FC.chart.timeScale().width(),hh=16,Y=Math.round(y)+11;if(sw<20)return;
+ x.fillStyle=b.c>=b.o?'#26a69a':'#ef5350';x.globalAlpha=.9;x.fillRect(X+1,Y,sw-2,hh);x.globalAlpha=1;
+ x.font='700 11px system-ui,-apple-system,Segoe UI,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText('⏱ '+t,X+sw/2,Y+hh/2+.5)}
 function fcOvLoop(){if(VIEWMODE=='chart'&&!document.hidden)try{fcOv()}catch(e){}requestAnimationFrame(fcOvLoop)}
 function fcLegend(t){const el=$('fcleg'),bs=fcBars();if(!bs.length){el.innerHTML=`<b class="fcs">${FC.sym}</b><span class="mut">· ${FC.tf}</span>`;return}let i=bs.length-1;
  if(t!=null){const j=bs.findIndex(x=>x.t+FCVN==t);if(j>=0)i=j}
