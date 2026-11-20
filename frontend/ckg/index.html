@@ -133,8 +133,8 @@ button.on{border-color:var(--acc);color:var(--acc);font-weight:700}
 .bb{background:var(--ok);color:#fff;border:0;font-weight:700}.bs{background:var(--no);color:#fff;border:0;font-weight:700}
 input,select{font:inherit;padding:6px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:100%}
 input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.f label{font-size:12px;color:var(--mut)}
-.ph{display:flex;gap:3px;margin:6px 0}.ph div{height:30px;border-radius:5px;background:var(--bg);font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--mut)}
-.ph div.on{background:var(--acc);color:#fff;font-weight:700}
+.ph{display:flex;gap:3px;margin:6px 0}.ph div{height:32px;border-radius:6px;background:var(--bg);font-size:12px;white-space:nowrap;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--mut)}
+.ph div.on{background:var(--acc);color:#fff;font-weight:700}.ph div.up{background:rgba(46,204,113,.18);color:var(--ok);border:1px solid rgba(46,204,113,.55);font-weight:700}.ph div.dn{background:rgba(255,92,92,.16);color:var(--no);border:1px solid rgba(255,92,92,.55);font-weight:700}
 .ck{display:flex;gap:8px;padding:4px 0;border-top:1px solid var(--bd)}.big{font-size:18px;font-weight:700;margin:8px 0}
 .tag{font-size:12px;background:var(--bg);border-radius:6px;padding:2px 8px}canvas{width:100%;height:380px;display:block}.cvw{position:relative;height:380px}#tvbox{height:520px}#tvbox>div{position:absolute;inset:0}@media(min-width:1100px){.ws.two #tvbox{height:auto}}.cvw canvas{position:absolute;inset:0;height:100%}
 .pos{border-top:1px solid var(--bd);padding:8px 0}.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
@@ -212,7 +212,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="f"><label>Open<input id="o" type="number" step=".0001" value="1.3200" oninput="render()"></label><label>High<input id="h" type="number" step=".0001" value="1.3215" oninput="render()"></label><label>Low<input id="l" type="number" step=".0001" value="1.3105" oninput="render()"></label><label>Close<input id="cl" type="number" step=".0001" value="1.3110" oninput="render()"></label></div>
 <div class="row" style="margin-top:6px"><span class="mut">Ngưỡng bóng nến mộng (pip, tạm đặt)</span><input id="wk" type="number" value="10" style="width:70px" oninput="render()"></div>
 <div id="dir"></div></div>
-<div class="c"><h2>2 · Pha tuần WPH7 (tuần bắt đầu T2 04:00)</h2><div id="wph"></div><h2 style="margin-top:12px">3 · Nhịp trong ngày (6 chu kỳ)</h2><div id="day"></div></div>
+<div class="c"><h2>2 · Chu kỳ tuần H4 (tuần bắt đầu Thứ 2 04:00)</h2><div id="wph"></div><h2 style="margin-top:12px">3 · Nhịp trong ngày (6 chu kỳ)</h2><div id="day"></div></div>
 </div>
 
 <div class="g" id="gb2">
@@ -287,12 +287,12 @@ function render(){
  <div class="big ${sell?'no':'ok'}">Hướng chính: ${dir} ${dd==W?'':'<span class="wn" style="font-size:13px">· D1 lệch W, chỉ vào thuận W</span>'}</div>`;
  // 2 WPH7
  const e=(t.dow*24+t.h-4)/4,idx=e<0?-1:Math.min(Math.floor(e),30),ph=idx<0||idx>=30?-1:cum.findIndex(x=>idx<x);
- $('wph').innerHTML=`<div class="ph">${[5,4,4,4,4,4,5].map((n,i)=>`<div style="flex:${n}" class="${ph==i?'on':''}">P${i+1}</div>`).join('')}</div>`+
- (ph<0?`<div class="mut">${idx<0?'Chưa mở tuần mới':'Hết tuần giao dịch'}</div>`:`<div class="row"><span>Nến H4 #${idx+1}/30 · P${ph+1}</span><b class="${cl(PS[ph])}">${PT[ph]}</b></div>`);
+ $('wph').innerHTML=`<div class="ph">${[5,4,4,4,4,4,5].map((n,i)=>{const q=S((i?cum[i-1]:0)*48,cum[i]*48,ix),k=ph==i?'on':q&&!q.part?(q.c>=q.o?'up':'dn'):'';return `<div style="flex:${n}" class="${k}" title="${q?(q.d>=0?'+':'')+q.d.toFixed(1)+' pip'+(q.part?' (đang chạy)':''):'Chưa tới'}">Chu kỳ ${i+1}</div>`}).join('')}</div>`+
+ (ph<0?`<div class="mut">${idx<0?'Chưa mở tuần mới':'Hết tuần giao dịch'}</div>`:`<div class="row"><span>Nến H4 #${idx+1}/30 · Chu kỳ ${ph+1}</span><b class="${cl(PS[ph])}">${PT[ph]}</b></div>`);
  // 3 nhịp ngày
  const cy=t.h>=23||t.h<4?5:t.h>=20?4:t.h>=17?3:t.h>=14?2:t.h>=10?1:0;
  const hint=[`Sáng ${ag} nhẹ so với giá mở cửa`,`Trước phiên Âu có đợt ${ag} mạnh 20-30 pip rồi ${al}`,`Đợt ${al} kéo dài đến 17:00`,'Chững lại: đi ngang hoặc nhích nhẹ đến 20:00',`Tiếp tục ${al}, xem xét vào lệnh`,'Cuối ngày, chờ đóng nến D1'];
- $('day').innerHTML=CY.map((r,i)=>`<div class="row" style="${cy==i?'font-weight:700;color:var(--acc)':'color:var(--mut)'}"><span>CK${i+1} ${hm(r[0]%24)}-${hm(r[1]%24)}</span><span style="text-align:right">${cy==i?hint[i]:''}</span></div>`).join('');
+ $('day').innerHTML=CY.map((r,i)=>`<div class="row" style="${cy==i?'font-weight:700;color:var(--acc)':'color:var(--mut)'}"><span>Chu kỳ ${i+1} ${hm(r[0]%24)} → ${hm(r[1]%24)}</span><span style="text-align:right">${cy==i?hint[i]:''}</span></div>`).join('');
  // 4 pip & thời gian
  const dc0=wk.slice(dayS,ix+1).filter(x=>!x.f),dc=dc0.length?dc0:[wk[ix]],sgn=sell?1:-1,agp=sgn*(p-open)/P,since=sgn*(p-(ref??open))/P,up=dc.filter(x=>x.c>open).length,dn=dc.length-up,mx=Math.max(...dc.map(x=>x.h)),mn=Math.min(...dc.map(x=>x.l));
  const tm=up>dn?'BUY':'SELL',big=Math.max((mx-open)/P,(open-mn)/P);
@@ -305,7 +305,7 @@ function render(){
  const s1=t.h>=12&&t.h<13.5,s2=t.h>=18&&t.h<20;
  const pc=s1?(agp>=20?'ok':'no'):s2?(since<=55?'ok':since<60?'warn':'no'):'no';
  const pd=s1?`Bước 1: ${agp.toFixed(0)} pip ngược chiều (cần khoảng 20-25)`:s2?`Bước 2: ${since.toFixed(0)} pip từ lúc cắt lệnh trước (≤55 mới vào; 60-70 trở lên bỏ, chờ sau 23:00)`:'Ngoài khung giờ vào lệnh';
- const CK=[[dd==W?'ok':'warn','Hướng W và D1',`${W} / ${dd}`],[ph<0?'no':PS[ph],'Pha tuần WPH7',ph<0?'Ngoài tuần':'P'+(ph+1)+' · '+PT[ph]],[s1||s2?'ok':'no','Khung giờ quan sát',s1?'Bước 1 · 12:00-13:30':s2?'Bước 2 · 18:00-19:59':'Chờ 12:00 hoặc 18:00'],[pc,'Số pip',pd],[m5ok?'ok':'no','Loạt nến M5',`${k} nến ${ag}, ${tot.toFixed(0)} pip${m5ok?', nến kết thúc lực xuất hiện':' (cần 3-7 nến, 10-15 pip, rồi nến đảo)'}`]];
+ const CK=[[dd==W?'ok':'warn','Hướng W và D1',`${W} / ${dd}`],[ph<0?'no':PS[ph],'Chu kỳ tuần H4',ph<0?'Ngoài tuần':'Chu kỳ '+(ph+1)+' · '+PT[ph]],[s1||s2?'ok':'no','Khung giờ quan sát',s1?'Bước 1 · 12:00-13:30':s2?'Bước 2 · 18:00-19:59':'Chờ 12:00 hoặc 18:00'],[pc,'Số pip',pd],[m5ok?'ok':'no','Loạt nến M5',`${k} nến ${ag}, ${tot.toFixed(0)} pip${m5ok?', nến kết thúc lực xuất hiện':' (cần 3-7 nến, 10-15 pip, rồi nến đảo)'}`]];
  const all=CK.every(x=>x[0]!='no');
  $('chk').innerHTML=CK.map(x=>`<div class="ck"><span>${ic(x[0])}</span><span><b>${x[1]}</b><br><span class="mut">${x[2]}</span></span></div>`).join('')+`<div class="big ${all?(sell?'no':'ok'):'wn'}">${all?'ĐỦ ĐIỀU KIỆN → '+dir:'CHỜ, CHƯA ĐỦ ĐIỀU KIỆN'}</div>`;
  }
