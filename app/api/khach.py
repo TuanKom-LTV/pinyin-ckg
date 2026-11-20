@@ -67,6 +67,18 @@ async def forgot_submit(request: Request):
     return HTMLResponse(users.forgot_page(LOGO_K, msg, ok), headers=NOSTORE)
 
 
+@router.get("/quen-tai-khoan", include_in_schema=False)
+def find_form():
+    return HTMLResponse(users.find_page(LOGO_K), headers=NOSTORE)
+
+
+@router.post("/quen-tai-khoan", include_in_schema=False)
+async def find_submit(request: Request):
+    f = {k: v[0] for k, v in parse_qs((await request.body()).decode("utf-8", "ignore")).items()}
+    ok, msg, hints = users.find_account(f.get("q", ""), _ip(request))
+    return HTMLResponse(users.find_page(LOGO_K, msg, ok, hints), headers=NOSTORE)
+
+
 @router.get("/dat-lai-mat-khau", include_in_schema=False)
 def reset_form(t: str = ""):
     ok, x = users.reset_check(t)

@@ -357,6 +357,55 @@ def forgot(email, ip):
     return True, generic
 
 
+# ---------- Quên email đăng nhập ----------
+
+_fa_ip: dict[str, list[float]] = {}
+OPEN_MAIL = {"gmail.com", "yahoo.com", "yahoo.com.vn", "outlook.com", "hotmail.com", "icloud.com", "live.com"}
+
+
+def _phone_key(s):
+    """Chuẩn hóa số điện thoại để so: chỉ giữ số, +84 / 84 đầu → 0."""
+    d = re.sub(r"\D", "", s or "")
+    if d.startswith("84") and len(d) >= 11:
+        d = "0" + d[2:]
+    return d
+
+
+def mask_email(e):
+    """tuancom@gmail.com → tu*****@gmail.com (tên miền lạ cũng che: c***.vn)."""
+    loc, _, dom = e.partition("@")
+    m = loc[:2] + "*" * max(3, len(loc) - 2)
+    if dom not in OPEN_MAIL:
+        name, _, tld = dom.partition(".")
+        dom = name[:1] + "***" + ("." + tld if tld else "")
+    return m + "@" + dom
+
+
+def find_account(q, ip):
+    """Khách quên đã đăng ký bằng email nào: tìm theo số Zalo hoặc Telegram. Trả (ok, thông báo, [email đã che])."""
+    now = time.time()
+    q = (q or "").strip()[:60]
+    if not q:
+        return False, "Nhập số Zalo hoặc Telegram đã dùng khi đăng ký.", []
+    if not _rate(_fa_ip, ip, 5, now):
+        return False, "Tìm quá nhiều lần, thử lại sau 1 giờ hoặc nhắn Telegram @TuanKom.", []
+    ph, tg = _phone_key(q), q.lstrip("@").lower()
+    hits = [(e, u) for e, u in load().items()
+            if (len(ph) >= 9 and _phone_key(u.get("sdt")) == ph) or (tg and not tg.isdigit() and (u.get("tg") or "").lower() == tg)]
+    if not hits:
+        return False, "Không tìm thấy tài khoản nào đăng ký bằng số / Telegram này. Kiểm tra lại, hoặc nhắn Telegram @TuanKom để được hỗ trợ.", []
+    sent = 0
+    if mailer.configured():
+        for e, u in hits[:3]:
+            ok, _ = mailer.send(e, "Email đăng nhập PinYin CKG của bạn", mailer.remind_html(html.escape(u.get("ten") or ""), e, _base() + "/login"))
+            sent += bool(ok)
+    _notify(f"🔎 Có người tìm lại email đăng nhập bằng \"{q}\": {', '.join(e for e, _ in hits)}")
+    msg = "Tài khoản đăng ký bằng số / Telegram này dùng email:" if len(hits) == 1 else "Có nhiều tài khoản đăng ký bằng số / Telegram này:"
+    if sent:
+        msg += " PinYin cũng đã gửi thư nhắc vào email đó (xem cả mục Spam)."
+    return True, msg, [mask_email(e) for e, _ in hits]
+
+
 def _by_reset(tok):
     if not tok or len(tok) < 20:
         return None, None
@@ -599,6 +648,20 @@ def forgot_page(logo, msg="", ok=False):
     return page("PinYin · Quên mật khẩu", f'<div class="box">{inner}</div>')
 
 
+def find_page(logo, msg="", ok=False, hints=None):
+    res = ""
+    if msg:
+        lst = "".join(f'<div style="font-size:17px;font-weight:800;margin:6px 0;letter-spacing:.02em">📧 {html.escape(h)}</div>' for h in (hints or []))
+        res = f'<div class="{"ok" if ok else "e"}" style="margin-top:12px;font-size:13px">{html.escape(msg)}</div>{lst}'
+        if ok:
+            res += '<a class="btn full" href="/login">Đăng nhập</a><div class="alt">Quên luôn mật khẩu? <a href="/quen-mat-khau">Lấy lại mật khẩu</a></div>'
+    inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Quên đã đăng ký bằng email nào? Nhập số Zalo (hoặc Telegram) đã dùng khi đăng ký.</p>
+<form method="post" action="/quen-tai-khoan"><label>Số Zalo hoặc Telegram</label><input name="q" required maxlength="60" placeholder="0912345678 hoặc @tennguoidung" autocomplete="tel">
+<button class="full">Tìm email đăng nhập</button></form>{res}
+<div class="alt">Vẫn không nhớ? Nhắn <a href="https://t.me/TuanKom" target="_blank" rel="noopener">Telegram @TuanKom</a> kèm họ tên + số Zalo.<br><a href="/login">Đăng nhập</a> · <a href="/dang-ky">Đăng ký</a></div>"""
+    return page("PinYin · Quên email đăng nhập", f'<div class="box">{inner}</div>')
+
+
 def reset_page(logo, tok, msg="", email=""):
     inner = f"""<h1>{logo}<span>PinYin</span></h1><p>Đặt mật khẩu mới cho <b>{html.escape(email)}</b>.</p>
 <form method="post" action="/dat-lai-mat-khau"><input type="hidden" name="t" value="{html.escape(tok)}">
@@ -622,7 +685,9 @@ ADMIN_JS = r"""
 const $=i=>document.getElementById(i);
 const TT={xac_minh:['📧 Chưa xác nhận email','m'],cho:['⏳ Chờ duyệt','wn'],ok:['✅ Đang dùng','ok'],het:['⌛ Hết hạn','no'],khoa:['⛔ Bị khóa','no']};
 async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'});const j=await r.json();if(!j.ok){$('tb').innerHTML='<tr><td>'+j.loi+'</td></tr>';return}
- const L=j.users;$('sum').textContent=`${L.length} tài khoản · ${L.filter(x=>x.tt=='cho').length} chờ duyệt · ${L.filter(x=>x.tt=='ok').length} đang dùng`;
+ const q=(($('q')||{}).value||'').trim().toLowerCase(),qd=q.replace(/\D/g,'').replace(/^84/,'0');
+ let L=j.users;const all=L.length;if(q)L=L.filter(u=>[u.ten,u.user,u.email,u.tg,u.sdt].some(v=>String(v||'').toLowerCase().includes(q))||(qd.length>=4&&String(u.sdt||'').replace(/\D/g,'').replace(/^84/,'0').includes(qd)));
+ $('sum').textContent=(q?`Tìm "${q}": ${L.length}/${all} khách · `:'')+`${L.length} tài khoản · ${L.filter(x=>x.tt=='cho').length} chờ duyệt · ${L.filter(x=>x.tt=='ok').length} đang dùng`;
  $('tb').innerHTML=L.length?L.map(u=>{const t=TT[u.tt]||[u.tt,''],e=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   const d=`<select id="d_${u.user}"><option value="7">7 ngày</option><option value="30" selected>30 ngày</option><option value="90">90 ngày</option><option value="365">365 ngày</option></select>`;
   let a=(u.tt=='cho'||u.tt=='xac_minh')?`${d}<button onclick="act('${u.user}','duyet')">Duyệt</button><button class="red" onclick="act('${u.user}','xoa')">Từ chối</button>`:
@@ -630,7 +695,7 @@ async function load(){const r=await fetch('/quan-ly/api/list',{cache:'no-store'}
    `${d}<button onclick="act('${u.user}','gia_han')">Gia hạn</button><button class="red" onclick="act('${u.user}','khoa')">Khóa</button>`;
   a+=`<br><button onclick="act('${u.user}','mk_moi')" title="Khách quên mật khẩu, không nhận được thư: cấp mật khẩu tạm rồi gửi khách qua Zalo / Telegram">🔑 Cấp MK mới</button>`;
   return `<tr><td><b>${e(u.ten)}</b><br><a class="m" href="mailto:${e(u.user)}">${e(u.user)}</a></td><td><a href="https://zalo.me/${e(u.sdt)}" target="_blank" rel="noopener">Zalo ${e(u.sdt)}</a>${u.tg?`<br><a href="https://t.me/${e(u.tg)}" target="_blank" rel="noopener">@${e(u.tg)}</a>`:''}</td>
-   <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${u.gd?`<b class="ok">✅ Được giao dịch</b><br><span class="m">${u.ea?(u.ea.on?'🟢 EA online · #'+e(u.ea.login)+' · '+e(u.ea.server)+(u.ea.demo?' (demo)':' (THẬT)')+' · EA '+e(u.ea.ver||'?')+(u.ea.old?' <b class="wn">(cũ)</b>':''):'⚪ EA offline'+(u.ea.login?' · #'+e(u.ea.login):'')):'⚪ chưa nối EA'}</span><br>${u.bot?`<b class="ok">🤖 Được dùng bot</b> <span class="m">${u.cbot?(u.cbot.on?'· đang BẬT '+e(u.cbot.tf)+(u.cbot.camp?' · '+e(u.cbot.camp):''):'· đang tắt'):''}</span><br><button class="red" onclick="act('${u.user}','bot_off')">Tắt bot</button> `:`<button onclick="act('${u.user}','bot_on')">🤖 Cho dùng bot</button> `}<br><span class="m">🖥 MT5: <b>${u.nacc}/${u.max_acc}</b> tài khoản</span> <button onclick="act('${u.user}','acc_up')" title="Mở thêm 1 tài khoản MT5 (có phí)">＋ MT5</button><button class="red" onclick="act('${u.user}','acc_down')" title="Giảm 1 tài khoản">－</button>${u.acc_req?' <b class="wn">📩 khách xin thêm</b>':''}<br><button class="red" onclick="act('${u.user}','gd_off')">Tắt giao dịch</button>`:(u.tt=='ok'?`<button onclick="act('${u.user}','gd_on')">Cho giao dịch</button>`:'<span class="m">-</span>')}</td><td class="act">${a}</td></tr>`}).join(''):'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>'}
+   <td class="${t[1]}"><b>${t[0]}</b></td><td>${u.het_han}${u.con!=null&&u.tt=='ok'?'<br><span class="m">còn '+u.con+' ngày</span>':''}</td><td class="m">ĐK ${u.tao}<br>Vào ${u.dang_nhap}</td><td class="act">${u.gd?`<b class="ok">✅ Được giao dịch</b><br><span class="m">${u.ea?(u.ea.on?'🟢 EA online · #'+e(u.ea.login)+' · '+e(u.ea.server)+(u.ea.demo?' (demo)':' (THẬT)')+' · EA '+e(u.ea.ver||'?')+(u.ea.old?' <b class="wn">(cũ)</b>':''):'⚪ EA offline'+(u.ea.login?' · #'+e(u.ea.login):'')):'⚪ chưa nối EA'}</span><br>${u.bot?`<b class="ok">🤖 Được dùng bot</b> <span class="m">${u.cbot?(u.cbot.on?'· đang BẬT '+e(u.cbot.tf)+(u.cbot.camp?' · '+e(u.cbot.camp):''):'· đang tắt'):''}</span><br><button class="red" onclick="act('${u.user}','bot_off')">Tắt bot</button> `:`<button onclick="act('${u.user}','bot_on')">🤖 Cho dùng bot</button> `}<br><span class="m">🖥 MT5: <b>${u.nacc}/${u.max_acc}</b> tài khoản</span> <button onclick="act('${u.user}','acc_up')" title="Mở thêm 1 tài khoản MT5 (có phí)">＋ MT5</button><button class="red" onclick="act('${u.user}','acc_down')" title="Giảm 1 tài khoản">－</button>${u.acc_req?' <b class="wn">📩 khách xin thêm</b>':''}<br><button class="red" onclick="act('${u.user}','gd_off')">Tắt giao dịch</button>`:(u.tt=='ok'?`<button onclick="act('${u.user}','gd_on')">Cho giao dịch</button>`:'<span class="m">-</span>')}</td><td class="act">${a}</td></tr>`}).join(''):(q?'<tr><td colspan="6" class="m">Không có khách nào khớp từ khóa này.</td></tr>':'<tr><td colspan="6" class="m">Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.</td></tr>')}
 async function act(user,a){const days=+($('d_'+user)||{}).value||30;
  if(a=='xoa'&&!confirm('Xóa tài khoản '+user+'?'))return;if(a=='khoa'&&!confirm('Khóa tài khoản '+user+'?'))return;if(a=='mk_moi'&&!confirm('Cấp mật khẩu mới cho '+user+'? Mật khẩu cũ hết dùng, khách bị đăng xuất.'))return;
  const r=await fetch('/quan-ly/api/act',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,act:a,days})});const j=await r.json();
@@ -662,7 +727,7 @@ def admin_page(logo):
     body = f"""<div class="box"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
 <h1>{logo}<span>Quản lý khách hàng</span></h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="copyLink()">📋 Chép link đăng ký</button><a class="btn" style="background:#1c2a3d" href="/ckg/">← Về trang phân tích</a></div></div>
 <div id="mailbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px"></div>
-<div id="loadbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px">Đang tải tình trạng máy chủ…</div><p id="sum" style="margin-top:6px"></p><div id="msg" style="min-height:22px;font-size:14px"></div>
+<div id="loadbox" style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px">Đang tải tình trạng máy chủ…</div><p id="sum" style="margin-top:6px"></p><input id="q" type="search" placeholder="🔎 Tìm khách: tên, số Zalo, email, Telegram…" oninput="load()" style="max-width:420px;margin:2px 0 8px"><div id="msg" style="min-height:22px;font-size:14px"></div>
 <div style="overflow-x:auto"><table><thead><tr><th>Khách</th><th>Liên hệ</th><th>Trạng thái</th><th>Hạn dùng</th><th>Hoạt động</th><th>Giao dịch EA</th><th></th></tr></thead><tbody id="tb"><tr><td>Đang tải…</td></tr></tbody></table></div>
 <p style="margin-top:14px">Khách đăng ký tại <b>https://pinyin.id.vn/dang-ky</b> → chờ duyệt ở đây (Telegram báo khi có người đăng ký). Khách chỉ có quyền XEM: không vào lệnh, không thấy tài khoản MT5, không thấy bot.</p></div>
 <style>table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{text-align:left;padding:9px 8px;border-top:1px solid var(--bd);vertical-align:middle}}th{{color:var(--h2);font-size:12px;text-transform:uppercase;letter-spacing:.04em}}

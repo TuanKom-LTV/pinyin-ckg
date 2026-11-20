@@ -92,3 +92,12 @@ def reset_html(name, link):
 <p style="text-align:center;margin:24px 0"><a href="{link}" style="background:#2563eb;color:#fff;text-decoration:none;font-weight:700;padding:12px 26px;border-radius:9px;display:inline-block">Đặt lại mật khẩu</a></p>
 <p style="font-size:13px;color:#8b95a7">Link có hiệu lực 1 giờ và chỉ dùng được 1 lần.<br>
 Nếu bạn không yêu cầu, hãy bỏ qua thư này, mật khẩu cũ vẫn giữ nguyên.</p><p style="font-size:12px;color:#8b95a7;word-break:break-all">Link: {link}</p></div>"""
+
+
+def remind_html(name, email, link):
+    return f"""<div style="font-family:Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;background:#0d1320;color:#e8ecf3;border-radius:14px;padding:26px">
+<h2 style="margin:0 0 6px;color:#22d3ee">PinYin CKG</h2><p style="color:#8b95a7;margin:0 0 18px;font-size:13px">Hệ thống phân tích CKG đa khung &amp; cố vấn AI thực chiến</p>
+<p>Chào {name},</p><p>Bạn (hoặc ai đó) vừa tìm lại email đăng nhập PinYin CKG. Tài khoản của bạn đăng nhập bằng email:</p>
+<p style="text-align:center;font-size:18px;font-weight:800;margin:18px 0">{email}</p>
+<p style="text-align:center;margin:24px 0"><a href="{link}" style="background:#2563eb;color:#fff;text-decoration:none;font-weight:700;padding:12px 26px;border-radius:9px;display:inline-block">Đăng nhập</a></p>
+<p style="font-size:13px;color:#8b95a7">Quên mật khẩu thì bấm "Quên mật khẩu?" ở trang đăng nhập.<br>Nếu bạn không yêu cầu, hãy bỏ qua thư này.</p></div>"""
