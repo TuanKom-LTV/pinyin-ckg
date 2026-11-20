@@ -1142,7 +1142,7 @@ function fcCd(x,W){const bs=fcBars(),sec=FCSEC[FC.tf];if(!bs.length||!sec)return
  x.font='700 11px system-ui,-apple-system,Segoe UI,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText('⏱ '+t,X+sw/2,Y+hh/2+.5)}
 // ===== Công cụ vẽ (như MT5): lưu theo cặp, điểm neo = (thời gian nến, giá) nên đổi khung vẫn đúng chỗ =====
 const DW={tool:'cur',list:[],sel:-1,drag:null,tmp:null,meas:null,col:'#facc15',init:0};
-const DWT={cur:['↖','Con trỏ: bấm chọn hình, kéo để di chuyển, kéo ô vuông để chỉnh (Esc)'],cross:['✛','Thước đo: kéo để đo khoảng giá / pip / số nến'],
+const DWT={cur:['↖','Con trỏ: bấm chọn hình, kéo để di chuyển, kéo ô vuông để chỉnh. Tắt công cụ vẽ: bấm lại nút công cụ, bấm chuột phải hoặc Esc'],cross:['✛','Thước đo: kéo để đo khoảng giá / pip / số nến'],
  v:['│','Đường dọc'],h:['─','Đường ngang'],tl:['╱','Đường xu hướng (kéo, hoặc bấm 2 điểm)'],ray:['➚','Tia: đường xu hướng kéo dài'],
  rect:['▭','Hình chữ nhật'],fib:['Fib','Fibonacci thoái lui: kéo từ đỉnh xuống đáy (hoặc ngược lại)'],txt:['T','Ghi chú chữ']};
 const FIBL=[0,.236,.382,.5,.618,.786,1];
@@ -1159,7 +1159,7 @@ const DWI={cur:'<path d="M5 3l12 9-5 1 3 6-2 1-3-6-4 3z" fill="currentColor"/>',
 function dwBar(){const e=$('fcdw');if(!e)return;e.innerHTML=Object.keys(DWT).map(k=>`<button class="${DW.tool==k?'on':''}" onclick="dwTool('${k}')" title="${DWT[k][1]}" aria-label="${DWT[k][1]}"><svg viewBox="0 0 24 24" width="17" height="17" style="display:block">${DWI[k]}</svg></button>`).join('')+
  `<input type="color" value="${DW.col}" onchange="dwColor(this.value)" title="Màu nét vẽ (đổi luôn màu hình đang chọn)"><button onclick="dwDel()" title="Xóa hình đang chọn (phím Delete)">🗑</button><button onclick="dwClear()" title="Xóa hết hình vẽ của ${FC.sym}">Xóa hết</button>`}
 function dwLock(on){if(FC.chart)FC.chart.applyOptions({handleScroll:!on,handleScale:!on})}
-function dwTool(k){DW.tool=k;DW.tmp=null;if(k!='cross')DW.meas=null;dwBar();dwLock(k!='cur');const b=$('fcbox');if(b)b.style.cursor=k=='cur'?'':'crosshair'}
+function dwTool(k){if(k==DW.tool&&k!='cur')k='cur';DW.tool=k;DW.tmp=null;DW.drag=null;if(k!='cross')DW.meas=null;dwBar();dwLock(k!='cur');const b=$('fcbox');if(b)b.style.cursor=k=='cur'?'':'crosshair'}
 function dwDel(){if(DW.sel<0||!DW.list[DW.sel])return;DW.list.splice(DW.sel,1);DW.sel=-1;dwSave()}
 function dwClear(){if(!DW.list.length||!confirm('Xóa hết hình vẽ trên '+FC.sym+'?'))return;DW.list=[];DW.sel=-1;dwSave()}
 function dwColor(c){DW.col=c;if(DW.sel>=0&&DW.list[DW.sel]){DW.list[DW.sel].c=c;dwSave()}}
@@ -1213,6 +1213,7 @@ function dwDraw(x,W,H){if(!FC.rows.length)return;const pw=FC.chart.timeScale().w
  x.font='700 11px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';ax.forEach(([y,c,t])=>{if(y<0||y>H)return;x.fillStyle=c;x.fillRect(pw+1,y-8,sw-2,16);x.fillStyle=dwInk(c);x.fillText(t,pw+sw/2,y+.5)})}
 function dwFin(){const d=DW.tmp;DW.tmp=null;const a=d.pts[0],b=d.pts[1];if(a.t!=b.t||a.p!=b.p){DW.list.push(d);DW.sel=DW.list.length-1;dwSave()}dwTool('cur')}
 function dwInit(){if(DW.init)return;DW.init=1;const box=$('fcbox');
+ box.addEventListener('contextmenu',e=>{if(DW.tool!='cur'||DW.tmp||DW.meas){e.preventDefault();DW.meas=null;dwTool('cur')}},true);
  box.addEventListener('pointerdown',e=>{if(!FC.chart||e.button>0)return;const pt=dwPt(e);if(!pt)return;const T=DW.tool;
   if(T=='cur'){const h=dwHit(pt);DW.sel=h?h.i:-1;if(h){DW.drag={i:h.i,a:h.a,s:pt,o:JSON.parse(JSON.stringify(DW.list[h.i].pts))};dwLock(true);e.stopPropagation()}return}
   e.stopPropagation();e.preventDefault();
