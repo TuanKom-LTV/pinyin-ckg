@@ -10,6 +10,7 @@
 import http.client
 import json
 import os
+import re
 import socket
 import time
 from datetime import datetime, timedelta, timezone
@@ -40,7 +41,7 @@ CACHE_SECONDS = int(os.getenv("PINYIN_AI_CACHE_GIAY", "60"))
 HOST = "generativelanguage.googleapis.com"
 # Groq (console.groq.com): miễn phí, rất nhanh; có GROQ_API_KEY thì chạy trước, lỗi / hết lượt thì quay về Gemini
 GROQ_HOST = "api.groq.com"
-GROQ_MODELS = [m.strip() for m in os.getenv("GROQ_MODELS", "openai/gpt-oss-120b,llama-3.3-70b-versatile").split(",") if m.strip()]
+GROQ_MODELS = [m.strip() for m in os.getenv("GROQ_MODELS", "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b").split(",") if m.strip()]
 PATH = "/v1beta/models/{m}:generateContent"
 
 
@@ -257,6 +258,7 @@ def _groq_call(model, key, system, user, max_tokens=2500, timeout=CALL_TIMEOUT):
         raise RuntimeError(err)          # 401 sai key, 400 ...
     js = json.loads(raw)
     text = ((js.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+    text = re.sub(r"(?s)<think>.*?</think>\s*", "", text)      # model "suy nghĩ" (Qwen) in kèm phần nháp
     if not text.strip():
         raise _Skip(f"Groq ({model}) không trả về nội dung.", 60)
     return text, (js.get("usage") or {}).get("total_tokens")
