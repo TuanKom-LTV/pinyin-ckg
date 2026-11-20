@@ -1052,8 +1052,8 @@ function aiMd(t){t=t.replace(/\$([^$\n]{1,40})\$/g,'$1').replace(/\\geq?\b/g,'�
   else if(m){if(!ul){h+='<ul>';ul=true}h+='<li>'+inl(m[1])+'</li>'}
   else if(l.trim()){close();h+='<p>'+inl(l)+'</p>'}else close()});
  close();return h}
-function aiShow(r){if(!r||!r.co){$('aiout').innerHTML='';$('aist').textContent=VIEW?'Chưa có bản phân tích nào cho '+cs+'. Chủ tài khoản cần bấm phân tích trước.':'Chưa có bản phân tích cho '+cs+'. Bấm "⚡ Phân tích ngay".';return}
- $('aist').innerHTML=`Phân tích lúc <b>${r.gio}</b> · model ${aiEsc(r.model||'')}${r.tu_bo_nho?' · bản lưu (dưới 60 giây)':''}${r.tokens?' · '+r.tokens+' token':''}`;$('aiout').innerHTML=aiMd(r.text||'')}
+function aiShow(r){if(!r||!r.co){$('aiout').innerHTML='';$('aist').textContent='Chưa có bản phân tích cho '+cs+'. Máy chủ tự phân tích sau mỗi nến '+(cs=='XAUUSD'?'H1':'H4')+' đóng'+(VIEW?', quay lại sau ít phút.':', hoặc bấm "⚡ Phân tích ngay".');return}
+ $('aist').innerHTML=`Phân tích lúc <b>${r.gio}</b> · model ${aiEsc(r.model||'')}${r.auto?' · 🔄 tự cập nhật (mỗi nến '+(r.sym=='XAUUSD'?'H1':'H4')+')':''}${r.tu_bo_nho?' · bản lưu (dưới 60 giây)':''}${r.tokens?' · '+r.tokens+' token':''}`;$('aiout').innerHTML=aiMd(r.text||'')}
 async function aiLoad(){$('ais').textContent=cs;[$('aib'),$('aib2')].forEach(b=>b.style.display=VIEW?'none':'');
  if(!LV){$('aist').textContent='Phân Tích AI cần chạy từ máy chủ PinYin (mở trang qua /ckg/ hoặc link từ xa).';$('aiout').innerHTML='';return}
  try{aiShow(await jget('api/ai/last?sym='+cs))}catch(e){$('aist').textContent='Không đọc được bản phân tích: '+e.message}}

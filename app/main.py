@@ -57,6 +57,8 @@ def _start_bot():
     from app.services import health, copytrade
     health.start()  # theo dõi MT5 / vòng bot (báo Telegram) + tự sao lưu data/ mỗi ngày
     copytrade._start()
+    from app.api import ckg_ai
+    ckg_ai.start_auto()   # Phân Tích AI tự cập nhật: XAUUSD mỗi nến H1, các cặp khác mỗi nến H4
 
 
 @app.on_event("startup")

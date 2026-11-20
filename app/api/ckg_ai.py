@@ -56,6 +56,21 @@ class _V4Conn(http.client.HTTPSConnection):
 router = APIRouter(prefix="/ckg/api/ai", tags=["PinYin CKG · Phân Tích AI"])
 
 _last: dict[str, dict] = {}      # mã -> bản phân tích gần nhất
+LAST_FILE = Path(__file__).resolve().parents[2] / "data" / "ai_last.json"
+try:                                  # máy chủ khởi động lại vẫn còn bài gần nhất
+    _last.update(json.loads(LAST_FILE.read_text(encoding="utf-8")))
+except Exception:
+    pass
+
+
+def _save_last():
+    try:
+        LAST_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = LAST_FILE.with_suffix(".tmp")
+        tmp.write_text(json.dumps(_last, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(LAST_FILE)
+    except Exception:
+        pass
 _busy = Lock()
 
 PIP = {"GBPUSD": 1e-4, "EURUSD": 1e-4, "AUDUSD": 1e-4, "GBPJPY": .01, "EURJPY": .01, "XAUUSD": .1}
@@ -391,17 +406,96 @@ def analyze(body: AiIn, request: Request):
     if cached and not body.lam_moi and time.time() - cached["ts"] < CACHE_SECONDS:
         return {"ok": True, "co": True, "tu_bo_nho": True, **cached}
     if not _busy.acquire(timeout=1):
-        return {"ok": False, "loi": "AI đang phân tích một yêu cầu khác, thử lại sau vài giây."}
+        return {"ok": False, "loi": "AI đang phân tích một yêu cầu khác (có thể là lượt tự cập nhật), thử lại sau vài giây."}
     try:
-        with mt5_service.session():
-            payload = _collect(sym)
-        text, tokens, used = _ai(payload)
-        rec = {"sym": sym, "ts": time.time(), "text": text, "model": used,
-               "gio": datetime.now(VN).strftime("%H:%M:%S %d/%m"),
-               "tokens": tokens}
-        _last[sym] = rec
-        return {"ok": True, "co": True, **rec}
+        return {"ok": True, "co": True, **_run(sym)}
     except Exception as e:
         return {"ok": False, "loi": str(e)}
     finally:
         _busy.release()
+
+
+def _run(sym, auto=False):
+    """Gom dữ liệu MT5 → AI → lưu làm bài gần nhất của mã (gọi khi đang giữ _busy)."""
+    with mt5_service.session():
+        payload = _collect(sym)
+    text, tokens, used = _ai(payload)
+    rec = {"sym": sym, "ts": time.time(), "text": text, "model": used,
+           "gio": datetime.now(VN).strftime("%H:%M:%S %d/%m"), "tokens": tokens, "auto": auto}
+    _last[sym] = rec
+    _save_last()
+    return rec
+
+
+# ---------- Tự cập nhật theo nến ----------
+AUTO_H1 = [x.strip() for x in os.getenv("PINYIN_AI_AUTO_H1", "XAUUSD").split(",") if x.strip()]
+AUTO_GAP = 65                         # giây giữa 2 lượt (Groq miễn phí: 8.000 token / phút, 1 bài ~5.300 token)
+_auto = {"slot": None, "log": []}
+
+
+def _market_open(sym):
+    """Có tick trong 15 phút gần nhất (cuối tuần / nghỉ lễ thì bỏ qua)."""
+    try:
+        with mt5_service.session():
+            t = mt5.symbol_info_tick(sym)
+        return bool(t) and t.time > 0 and time.time() - (t.time - server_offset()[0]) < 900
+    except Exception:
+        return False
+
+
+def _auto_due():
+    """Trả (mốc giờ, [mã]) khi vừa sang giờ mới theo giờ máy chủ MT5; H4 = giờ máy chủ chia hết cho 4."""
+    with mt5_service.session():
+        off = server_offset()[0]
+    srv = time.time() + off
+    slot = int(srv // 3600)
+    _auto["t0"] = slot * 3600 - off                     # lúc mở nến H1 hiện tại (giây UTC)
+    if slot == _auto["slot"] or (srv % 3600) < 60:      # chờ 1 phút sau khi đóng nến cho dữ liệu đủ
+        return None, []
+    syms = list(AUTO_H1)
+    if slot % 4 == 0:
+        syms += [x for x in sorted(CKG_SYMBOLS) if x not in syms]
+    return slot, [x for x in syms if x in CKG_SYMBOLS]
+
+
+def _auto_tick(sleep=time.sleep):
+    """1 vòng kiểm tra: vừa sang giờ mới thì phân tích lần lượt các mã đến lượt."""
+    if os.getenv("PINYIN_AI_AUTO", "1") == "0" or not (os.getenv("GROQ_API_KEY") or os.getenv("GEMINI_API_KEY")):
+        return
+    slot, syms = _auto_due()
+    if slot is None:
+        return
+    _auto["slot"] = slot
+    ran = 0
+    for sym in syms:
+        if not _market_open(sym) or (_last.get(sym) or {}).get("ts", 0) >= _auto["t0"] + 60:
+            continue                       # thị trường nghỉ, hoặc đã có bài mới trong giờ này (vừa khởi động lại / ai đó vừa bấm)
+        if ran:
+            sleep(AUTO_GAP)
+        ran += 1
+        if not _busy.acquire(timeout=120):
+            continue
+        try:
+            r = _run(sym, auto=True)
+            _auto["log"] = (_auto["log"] + [f"{r['gio']} {sym} ✓ {r['model']}"])[-30:]
+        except Exception as e:
+            _auto["log"] = (_auto["log"] + [f"{datetime.now(VN).strftime('%H:%M:%S %d/%m')} {sym} ✗ {str(e)[:160]}"])[-30:]
+        finally:
+            _busy.release()
+
+
+def _auto_loop():
+    time.sleep(90)
+    while True:
+        try:
+            _auto_tick()
+        except Exception:
+            pass
+        time.sleep(30)
+
+
+def start_auto():
+    import threading
+    if not getattr(start_auto, "_on", False):
+        start_auto._on = True
+        threading.Thread(target=_auto_loop, name="ai-auto", daemon=True).start()

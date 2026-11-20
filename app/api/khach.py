@@ -172,7 +172,8 @@ def ai_status(request: Request):
     from app.api import ckg_ai
     last = max(ckg_ai._last.values(), key=lambda r: r["ts"], default=None)
     return {"ok": True, "groq": bool(os.getenv("GROQ_API_KEY", "").strip()), "gemini": bool(os.getenv("GEMINI_API_KEY", "").strip()),
-            "last": {"model": last["model"], "gio": last["gio"], "sym": last["sym"]} if last else None}
+            "last": {"model": last["model"], "gio": last["gio"], "sym": last["sym"]} if last else None,
+            "auto": os.getenv("PINYIN_AI_AUTO", "1") != "0", "auto_log": ckg_ai._auto["log"][-6:]}
 
 
 class AiKeyIn(BaseModel):

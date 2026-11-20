@@ -723,6 +723,7 @@ async function aiLoad(){let j;try{j=await (await fetch('/quan-ly/api/ai',{cache:
  const L=j.last?` · lần gần nhất: <b>${String(j.last.model).replace(/</g,'&lt;')}</b> (${j.last.sym} ${j.last.gio})`:'';
  $('aibox').innerHTML=(j.groq?`🤖 <b class="ok">Phân tích AI: Groq ĐANG BẬT</b> (miễn phí, nhanh)${j.gemini?' · Gemini làm dự phòng':''}${L}. <a href="#" onclick="$('ak').style.display='flex';return false">Đổi key</a>`:
   `🤖 <b class="wn">Phân tích AI: đang dùng ${j.gemini?'Gemini (hay quá tải / hết lượt miễn phí)':'— chưa có key nào'}</b>${L}. Dán key Groq miễn phí (lấy ở <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>) để chạy nhanh và ổn định hơn:`)+
+  (j.auto?`<div class="m" style="margin-top:6px">🔄 Tự cập nhật: XAUUSD sau mỗi nến H1, các cặp khác sau mỗi nến H4 (bỏ qua khi thị trường nghỉ)${(j.auto_log||[]).length?' · gần nhất: '+j.auto_log.slice(-3).map(x=>String(x).replace(/</g,'&lt;')).join(' · '):''}</div>`:'')+
   `<div id="ak" style="display:${j.groq?'none':'flex'};gap:8px;margin-top:8px;flex-wrap:wrap"><input id="akey" placeholder="Key Groq (gsk_...)" style="flex:2;min-width:240px"><button onclick="aiSave()">Lưu &amp; chạy thử</button></div>`}
 async function aiSave(){const key=$('akey').value.trim();if(!key){alert('Dán key Groq (gsk_...).');return}$('msg').textContent='Đang gọi thử Groq...';
  const j=await (await fetch('/quan-ly/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})})).json();
