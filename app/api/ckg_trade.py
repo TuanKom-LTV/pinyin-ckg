@@ -9,7 +9,7 @@ An toàn:
 
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import MetaTrader5 as mt5
 from fastapi import APIRouter
@@ -304,14 +304,26 @@ def _is_pinyin(m):
 
 @router.get("/history")
 @ttl(3)
-def history():
-    """Các lệnh PinYin đã đóng trong tuần (giống tab History của MT5): lệnh vào tay ở buồng lái + lệnh của mọi bot."""
+def history(day: str = ""):
+    """Các lệnh PinYin đã đóng (giống tab History của MT5): lệnh vào tay ở buồng lái + lệnh của mọi bot.
+    Mặc định: trong tuần này. day=YYYY-MM-DD: các lệnh ĐÓNG trong ngày đó (giờ VN)."""
+    t0 = t1 = None
+    if day:
+        try:
+            d0 = datetime.strptime(day[:10], "%Y-%m-%d").replace(tzinfo=timezone(timedelta(hours=7)))
+        except ValueError:
+            return _err("Ngày không hợp lệ (cần dạng YYYY-MM-DD).")
+        t0 = int(d0.timestamp()); t1 = t0 + 86400
     try:
         names = _src_of_magic()
         with mt5_service.session():
             off, _ = server_offset()
-            frm = datetime.fromtimestamp(week_start_utc() + off - 86400, timezone.utc)
-            to = datetime.fromtimestamp(time.time() + off + 86400, timezone.utc)
+            if t0 is None:
+                frm = datetime.fromtimestamp(week_start_utc() + off - 86400, timezone.utc)
+                to = datetime.fromtimestamp(time.time() + off + 86400, timezone.utc)
+            else:                                   # lùi 7 ngày để lấy được lệnh VÀO của lệnh giữ qua đêm
+                frm = datetime.fromtimestamp(t0 + off - 7 * 86400, timezone.utc)
+                to = datetime.fromtimestamp(t1 + off, timezone.utc)
             deals = [d for d in (mt5.history_deals_get(frm, to) or []) if _is_pinyin(d.magic) or d.magic in names]
             ins = {d.position_id: d for d in deals if d.entry == mt5.DEAL_ENTRY_IN}
             rows = []
@@ -332,7 +344,9 @@ def history():
                     "pf": d.profit + d.swap + d.commission + (i.commission if i else 0),
                     "by": names.get(d.magic, "Bot"),
                 })
+            if t0 is not None:
+                rows = [r for r in rows if t0 * 1000 <= r["cms"] < t1 * 1000]
             rows.sort(key=lambda r: r["cms"])
-            return _ok(rows=rows)
+            return _ok(rows=rows, day=day[:10] if t0 is not None else "")
     except Exception as e:
         return _err(str(e))
