@@ -140,6 +140,12 @@ def ckg_redirect():
     return RedirectResponse("/ckg/")
 
 
+@router.get("/bieu-do", include_in_schema=False)
+def chart_tab():
+    """Biểu đồ ở 1 tab trình duyệt riêng, phủ kín cửa sổ (không menu)."""
+    return RedirectResponse("/ckg/?bd=1")
+
+
 @router.get("/ckg/", include_in_schema=False)
 def ckg_page():
     return FileResponse(CKG_PAGE, headers=NO_CACHE)
@@ -281,8 +287,9 @@ def ckg_dcasig(sym: str = "XAUUSD", tf: str = "M5"):
 
 @router.get("/ckg/api/chart")
 @ttl(1)
-def ckg_chart(sym: str = "GBPUSD", tf: str = "M5", since: int = Query(default=0, ge=0)):
-    """Nến biểu đồ: [[giây UTC, o, h, l, c], ...]. since > 0: chỉ trả nến từ mốc đó (cập nhật nhanh)."""
+def ckg_chart(sym: str = "GBPUSD", tf: str = "M5", since: int = Query(default=0, ge=0), v: int = 0):
+    """Nến biểu đồ: [[giây UTC, o, h, l, c], ...]. since > 0: chỉ trả nến từ mốc đó (cập nhật nhanh).
+    v=1: thêm khối lượng tick ở cột thứ 6 (tab Biểu đồ toàn màn hình)."""
     sym, tf = sym.upper().strip(), tf.upper().strip()
     if sym not in CKG_SYMBOLS or tf not in CHART_TF:
         return {"ok": False, "loi": "Mã hoặc khung chưa hỗ trợ."}
@@ -299,6 +306,9 @@ def ckg_chart(sym: str = "GBPUSD", tf: str = "M5", since: int = Query(default=0,
             else:
                 rates = mt5.copy_rates_from_pos(sym, code, 0, n)
             rows = _rows(rates, off, 0)
+            if v and rates is not None and len(rates) == len(rows):
+                for row, x in zip(rows, rates):
+                    row.append(int(x["tick_volume"]))
             return {"ok": True, "sym": sym, "tf": tf, "rows": rows}
     except Exception as e:
         return {"ok": False, "loi": str(e)}
