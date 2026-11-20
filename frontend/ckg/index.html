@@ -22,7 +22,6 @@ body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-appl
 body.v-chart .w>*:not(#menu):not(#fcp){display:none!important}body.v-chart{overflow:hidden}body.v-chart .w{max-width:none;padding:8px 10px}body.v-chart .menu{margin-top:0}
 #fcp{flex-direction:column;margin-top:8px;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--card)}
 #fcp:fullscreen{border:0;border-radius:0;height:100vh!important}
-body.solo{overflow:hidden}body.solo .w{max-width:none!important;padding:6px 8px!important}body.solo .w>*:not(#tabs):not(#top2){display:none!important}body.solo #tabs{margin-top:0!important}body.solo #top2{display:block!important}body.solo #top2>*:not(#ws){display:none!important}body.solo #ws{display:block!important}body.solo #ws>*:not(#chartc){display:none!important}body.solo #chartc{display:flex!important;flex-direction:column;margin:6px 0 0!important}body.solo #chartc .cvw{flex:1;height:auto!important;min-height:280px}body.solo #chint,body.solo .fcsolo{display:none!important}
 .fcbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid var(--bd)}
 .fcbar select{width:auto;font-weight:800;padding:5px 8px;border-radius:8px}
 .fcbar .fcg{display:flex;gap:2px;flex-wrap:wrap}.fcbar .sp{width:1px;height:22px;background:var(--bd);margin:0 4px}
@@ -159,8 +158,8 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button><button data-v="news" onclick="setView('news')">📰 Tin tức tuần</button><button data-v="chart" onclick="setView('chart')">📊 Biểu đồ</button><button data-v="ck" id="cktab" style="display:none" onclick="setView('ck')">🚀 Buồng lái</button><button data-v="bot" id="bottab" style="display:none" onclick="setView('bot')">🤖 Bot tự động</button></div>
 <div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
 <div id="fcp"><div class="fcbar"><select id="fcsym" onchange="fcSym(this.value)" aria-label="Cặp tiền"></select><span class="sp"></span><div class="fcg" id="fctf"></div><span class="sp"></span>
-<div class="fcg"><button id="fcha" onclick="fcTog('ha')" title="Nến Heikin Ashi">Heikin Ashi</button><button id="fcema" onclick="fcTog('ema')" title="EMA 20 / EMA 50">EMA</button><button id="fcvol" onclick="fcTog('vol')" title="Khối lượng tick">Volume</button></div>
-<div class="fcr"><button onclick="fcFit()" title="Về nến mới nhất">⟲ Về hiện tại</button><button class="fcsolo" onclick="window.open('/bieu-do','_blank')" title="Mở biểu đồ ở 1 tab trình duyệt riêng, phủ kín cửa sổ (kéo sang màn hình khác được)">↗ Tab riêng</button><button onclick="fcFull()" title="Toàn màn hình (phím F)">⛶ Toàn màn hình</button></div></div>
+<div class="fcg"><button id="fcha" onclick="fcTog('ha')" title="Nến Heikin Ashi">Heikin Ashi</button></div><span class="sp"></span><div class="fcg"><button id="fcdca" onclick="fcTog('dca')" title="Nhãn BUY / SELL của bot DCA (theo cài đặt DCA đang lưu) + ENTRY / SL chung / TP của tín hiệu gần nhất · chỉ XAUUSD">Tín hiệu DCA</button><button id="fcbvw" onclick="fcTog('bvw')" title="VWAP ±σ đúng như bot DCA đang dùng · chỉ XAUUSD">VWAP ±σ</button><button id="fctma" onclick="fcTog('tma')" title="Dải TMA trên / giữa / dưới của bot DCA · chỉ XAUUSD">TMA</button><button id="fce9" onclick="fcTog('e9')">EMA 9</button><button id="fce21" onclick="fcTog('e21')">EMA 21</button><button id="fcvol" onclick="fcTog('vol')" title="Khối lượng tick">Volume</button></div>
+<div class="fcr"><button onclick="fcFit()" title="Về nến mới nhất">⟲ Về hiện tại</button><button onclick="fcFull()" title="Toàn màn hình (phím F)">⛶ Toàn màn hình</button></div></div>
 <div class="fcwrap"><div id="fcbox"></div><div id="fcleg"></div><div id="fcmsg" style="display:none"></div></div></div>
 
 
@@ -173,7 +172,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="btns" style="margin:0"><button id="aib" class="bb" style="background:var(--acc)" onclick="aiRun(false)">⚡ Phân tích ngay</button><button id="aib2" onclick="aiRun(true)" title="Bỏ qua bản lưu, gọi AI phân tích mới">🔄 Phân tích lại</button></div></div>
 <div id="aist" class="mut" style="margin:8px 0"></div><div id="aiout" class="aiout"></div>
 <p class="mut" style="font-size:12px;margin:12px 0 0">AI (Google Gemini) đọc dữ liệu MT5 đa khung M1 · M5 · M15 · H1 · H4 · D1 cùng các mốc CKG (pha tuần WPH7, chu kỳ ngày, khung giờ vào lệnh) rồi đưa kịch bản. Đây là phân tích tham khảo, không phải lời khuyên đầu tư; AI có thể sai, luôn tự kiểm tra trước khi vào lệnh.</p></div>
-<div id="top2"><div class="ws" id="ws"><div class="c" id="chartc"><div class="btns" id="cmode" style="margin:0 0 10px;align-items:center"><button data-c="pin" onclick="setCM('pin')">📊 Biểu đồ PinYin</button><button data-c="tv" onclick="setCM('tv')">📈 TradingView</button><span class="ok" style="font-size:12px;margin-left:4px">● TRỰC TIẾP</span><button class="fcsolo" onclick="window.open('/bieu-do','_blank')" title="Mở biểu đồ PinYin ở 1 tab trình duyệt riêng, phủ kín cửa sổ (kéo sang màn hình khác được)" style="margin-left:auto">↗ Tab riêng</button><span id="cmnote" class="mut" style="font-size:11px"></span></div><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" id="cind" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button id="msb" onclick="msToggle()" title="Thước đo: bấm rồi kéo trên biểu đồ (hoặc giữ Shift + kéo)">📏 Đo</button><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><div class="cvw" id="cvbox"><canvas id="cv" style="touch-action:none;cursor:grab"></canvas><canvas id="cvo" style="position:absolute;left:0;top:0;pointer-events:none"></canvas></div><div class="cvw" id="tvbox" style="display:none"></div><div class="mut" id="chint" style="font-size:12px;margin-top:4px">Rê chuột: dấu cộng hiện giá · 📏 Đo (hoặc Shift + kéo): đo khoảng giá / số nến · Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
+<div id="top2"><div class="ws" id="ws"><div class="c" id="chartc"><div class="btns" id="cmode" style="margin:0 0 10px;align-items:center"><button data-c="pin" onclick="setCM('pin')">📊 Biểu đồ PinYin</button><button data-c="tv" onclick="setCM('tv')">📈 TradingView</button><span class="ok" style="font-size:12px;margin-left:4px">● TRỰC TIẾP</span><span id="cmnote" class="mut" style="font-size:11px"></span></div><div class="top"><h2 id="ct" style="margin:0">Nến M5</h2><div id="tfb" class="btns" style="margin:0"></div></div><div class="top" id="cind" style="margin:8px 0 6px"><div id="ind" class="btns" style="margin:0"></div><div class="btns" style="margin:0"><button id="msb" onclick="msToggle()" title="Thước đo: bấm rồi kéo trên biểu đồ (hoặc giữ Shift + kéo)">📏 Đo</button><button onclick="zoom(1/1.25)" title="Phóng to">＋</button><button onclick="zoom(1.25)" title="Thu nhỏ">−</button><button id="yab" class="on" onclick="yauto()" title="Thang giá tự động">A</button><button onclick="zreset()" title="Về mặc định">⟲</button></div></div><div class="cvw" id="cvbox"><canvas id="cv" style="touch-action:none;cursor:grab"></canvas><canvas id="cvo" style="position:absolute;left:0;top:0;pointer-events:none"></canvas></div><div class="cvw" id="tvbox" style="display:none"></div><div class="mut" id="chint" style="font-size:12px;margin-top:4px">Rê chuột: dấu cộng hiện giá · 📏 Đo (hoặc Shift + kéo): đo khoảng giá / số nến · Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm 2 ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định</div></div>
 <div class="c qk" id="qk" style="display:none"><h2 style="margin:0 0 4px"><span>🚀 BUỒNG LÁI THAO TÁC LỆNH (ĐIỀU KHIỂN MT5 TỪ XA)</span><span class="qbadge" id="qdemo">…</span></h2>
 <div id="qslot" style="display:none;margin-bottom:8px"></div>
 <div class="qrow" id="qacc">…</div>
@@ -1009,7 +1008,7 @@ async function liveReverse(q){const m=+$('mu').value,nl=+(q.lot*m).toFixed(2);if
 let _m='dark';// chỉ dùng giao diện tối
 
 // ===== Menu Phân Tích AI (Gemini, gọi qua máy chủ PinYin) =====
-let VIEWMODE='ckg',AIBUSY=false;const SOLO=/[?&]bd=1\b/.test(location.search);
+let VIEWMODE='ckg',AIBUSY=false;
 
 // ===== Tab Tin tức tuần (lịch kinh tế, lọc tin mạnh + vừa) =====
 let NW=null,NWF={imp:'hm',ccy:'ALL',past:false};try{Object.assign(NWF,JSON.parse(localStorage.getItem('ckg-nw')||'{}'))}catch(e){}
@@ -1039,7 +1038,7 @@ function nwRender(){if(!NW)return;const z=v=>String(v).padStart(2,'0'),now=Date.
  $('nwlist').innerHTML=h||'<div class="mut" style="padding:10px 0">Không còn tin '+(NWF.imp=='h'?'mạnh':'mạnh/vừa')+' nào'+(NWF.ccy!='ALL'?' của '+NWF.ccy:'')+' trong tuần. Bật "Hiện cả tin đã ra" để xem lại.</div>';
  const u=new Date(NW.upd*1000+252e5);$('nwupd').textContent=`${shown} tin · nguồn ${NW.src||'-'} · cập nhật ${z(u.getUTCHours())}:${z(u.getUTCMinutes())}`+(NW.cu?' (dùng bản lưu)':'')}
 setInterval(()=>{if(VIEWMODE=='news')nwRender()},30000);setInterval(()=>{if(VIEWMODE=='news')newsLoad()},15*60000);
-function setView(v){if((v=='ck'&&$('cktab').style.display=='none')||(v=='bot'&&$('bottab').style.display=='none'))v='ckg';VIEWMODE=v;document.body.classList.toggle('v-ai',v=='ai');document.body.classList.toggle('v-news',v=='news');document.body.classList.toggle('v-chart',v=='chart');document.body.classList.toggle('v-ck',v=='ck');document.body.classList.toggle('v-bot',v=='bot');if((v=='ck'||v=='bot')&&cs!='XAUUSD')setPair('XAUUSD');[...$('menu').children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));if(!SOLO)try{localStorage.setItem('ckg-view',v)}catch(e){}
+function setView(v){if((v=='ck'&&$('cktab').style.display=='none')||(v=='bot'&&$('bottab').style.display=='none'))v='ckg';VIEWMODE=v;document.body.classList.toggle('v-ai',v=='ai');document.body.classList.toggle('v-news',v=='news');document.body.classList.toggle('v-chart',v=='chart');document.body.classList.toggle('v-ck',v=='ck');document.body.classList.toggle('v-bot',v=='bot');if((v=='ck'||v=='bot')&&cs!='XAUUSD')setPair('XAUUSD');[...$('menu').children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));try{localStorage.setItem('ckg-view',v)}catch(e){}
  if(v=='ai')aiLoad();else if(v=='news')newsLoad();else if(v=='chart')fcOpen();else{render();qTick();botTick()}}
 function aiEsc(t){return t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function aiMd(t){t=t.replace(/\$([^$\n]{1,40})\$/g,'$1').replace(/\\geq?\b/g,'≥').replace(/\\leq?\b/g,'≤').replace(/\\times\b/g,'×').replace(/\\approx\b/g,'≈').replace(/\\%/g,'%');
@@ -1063,10 +1062,12 @@ async function aiRun(fresh){if(AIBUSY||!LV)return;AIBUSY=true;const s0=cs;[$('ai
  catch(e){$('aist').innerHTML='<span class="no">Lỗi kết nối máy chủ: '+aiEsc(e.message)+'</span>'}
  finally{AIBUSY=false;[$('aib'),$('aib2')].forEach(b=>b.disabled=false)}}
 // ===== Tab Biểu đồ toàn màn hình (Lightweight Charts của TradingView, giá thật MT5) =====
-const FC={sym:'XAUUSD',tf:'M5',ha:false,ema:true,vol:true,rows:[],chart:null,cs:null,vs:null,e1:null,e2:null,busy:0,key:'',lib:null,tm:null};
-try{const o=JSON.parse(localStorage.getItem('ckg-fc')||'{}');['sym','tf','ha','ema','vol'].forEach(k=>{if(o[k]!=null)FC[k]=o[k]})}catch(e){}
+const FC={sym:'XAUUSD',tf:'M5',ha:false,vol:true,dca:true,bvw:true,tma:true,e9:true,e21:true,rows:[],chart:null,cs:null,vs:null,e1:null,e2:null,bs:[],pl:[],sig:null,sigKey:'',sigAt:0,sigBusy:0,busy:0,key:'',lib:null,tm:null};
+const FCK=['sym','tf','ha','vol','dca','bvw','tma','e9','e21'];
+try{const o=JSON.parse(localStorage.getItem('ckg-fc')||'{}');FCK.forEach(k=>{if(o[k]!=null)FC[k]=o[k]})}catch(e){}
 if(!PR[FC.sym])FC.sym='XAUUSD';
-function fcSave(){try{localStorage.setItem('ckg-fc',JSON.stringify({sym:FC.sym,tf:FC.tf,ha:FC.ha,ema:FC.ema,vol:FC.vol}))}catch(e){}}
+function fcSave(){try{const o={};FCK.forEach(k=>o[k]=FC[k]);localStorage.setItem('ckg-fc',JSON.stringify(o))}catch(e){}}
+function fcVar(k,d){return getComputedStyle(document.documentElement).getPropertyValue(k).trim()||d}
 function fcLib(){if(window.LightweightCharts)return Promise.resolve();if(FC.lib)return FC.lib;
  FC.lib=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js';s.onload=ok;s.onerror=()=>{FC.lib=null;s.remove();no(new Error('lib'))};document.head.appendChild(s)});return FC.lib}
 const FCVN=7*3600;// hiện giờ Việt Nam trên trục thời gian
@@ -1080,8 +1081,11 @@ function fcBuild(){const LW=window.LightweightCharts,c=fcCol(),box=$('fcbox');bo
  FC.cs=FC.chart.addCandlestickSeries({upColor:c.up,downColor:c.dn,borderUpColor:c.up,borderDownColor:c.dn,wickUpColor:c.up,wickDownColor:c.dn});
  FC.vs=FC.chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'vol',lastValueVisible:false,priceLineVisible:false});
  FC.chart.priceScale('vol').applyOptions({scaleMargins:{top:.82,bottom:0}});
- FC.e1=FC.chart.addLineSeries({color:'#f5c542',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
- FC.e2=FC.chart.addLineSeries({color:'#5b8cff',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+ const ln=(color,w,st)=>FC.chart.addLineSeries({color,lineWidth:w,lineStyle:st||0,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+ const vw=fcVar('--vw','#a855f7'),tm=fcVar('--tma','#f97316');
+ // dải của bot DCA: [VWAP, +σ, −σ, TMA trên, TMA giữa, TMA dưới] (cột 1..6 của bands)
+ FC.bs=[ln(vw,1.6),ln(vw,1,2),ln(vw,1,2),ln(tm,1.4),ln(tm,1,1),ln(tm,1.4)];
+ FC.e1=ln(fcVar('--e9','#ef4444'),1.5);FC.e2=ln(fcVar('--e21','#3b82f6'),1.5);
  FC.chart.subscribeCrosshairMove(p=>fcLegend(p&&p.time!=null?p.time:null))}
 function fcTheme(){if(!FC.chart)return;const c=fcCol();FC.chart.applyOptions({layout:{background:{type:'solid',color:c.bg},textColor:c.tx},grid:{vertLines:{color:c.gr},horzLines:{color:c.gr}},rightPriceScale:{borderColor:c.bd},timeScale:{borderColor:c.bd}})}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',fcTheme)}catch(e){}
@@ -1092,20 +1096,36 @@ const fcC=b=>({time:b.t+FCVN,open:b.o,high:b.h,low:b.l,close:b.c}),fcV=b=>({time
 function fcSet(fit){if(!FC.cs)return;const bs=fcBars(),dg=(PR[FC.sym]||{}).dg||5;
  FC.cs.applyOptions({priceFormat:{type:'price',precision:dg,minMove:Math.pow(10,-dg)}});
  FC.cs.setData(bs.map(fcC));FC.vs.setData(FC.vol?bs.map(fcV):[]);
- FC.e1.setData(FC.ema?fcEma(bs,20):[]);FC.e2.setData(FC.ema?fcEma(bs,50):[]);
+ FC.e1.setData(FC.e9?fcEma(bs,9):[]);FC.e2.setData(FC.e21?fcEma(bs,21):[]);fcSigDraw();
  if(fit&&bs.length)fcFit();fcLegend(null)}
+// Tín hiệu DCA + VWAP ±σ + TMA: cùng số liệu với Biểu đồ PinYin (máy chủ tính theo cài đặt DCA đang lưu của bot, chỉ XAUUSD)
+async function fcSig(force){const want=FC.dca||FC.bvw||FC.tma,key=FC.sym+'|'+FC.tf;if(!LV||!FC.chart||!want||FC.sym!='XAUUSD'||FC.sigBusy)return;
+ if(!force&&FC.sigKey==key&&Date.now()-FC.sigAt<15000)return;FC.sigBusy=1;
+ try{const j=await jget('api/dcasig?sym='+FC.sym+'&tf='+FC.tf,20000);if(j&&j.ok&&key==FC.sym+'|'+FC.tf){FC.sig={sig:j.sig||[],bands:j.bands||[]};FC.sigKey=key;FC.sigAt=Date.now();fcSigDraw();fcLegend(null)}}catch(e){}finally{FC.sigBusy=0}}
+function fcSigDraw(){if(!FC.cs)return;const ok=FC.sym=='XAUUSD'&&FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf,S=ok?FC.sig:{sig:[],bands:[]};
+ const col=(k,on)=>on?S.bands.filter(r=>r[k]!=null).map(r=>({time:r[0]+FCVN,value:r[k]})):[];
+ FC.bs.forEach((x,i)=>x.setData(col(i+1,i<3?FC.bvw:FC.tma)));
+ const have=new Set(FC.rows.map(b=>b.t));
+ FC.cs.setMarkers(FC.dca?S.sig.filter(g=>have.has(g.t)).sort((a,b)=>a.t-b.t).map(g=>{const b=g.side=='BUY';return{time:g.t+FCVN,position:b?'belowBar':'aboveBar',color:b?'#16a34a':'#dc2626',shape:b?'arrowUp':'arrowDown',text:g.side+(g.rev?(g.ctr?' ĐC*':' ĐC'):'')}}):[]);
+ FC.pl.forEach(l=>FC.cs.removePriceLine(l));FC.pl=[];const L=FC.dca&&S.sig.length?S.sig[S.sig.length-1]:null;
+ if(L){const dg=(PR[FC.sym]||{}).dg||2,pl=(price,color,title,st)=>FC.pl.push(FC.cs.createPriceLine({price,color,lineWidth:1,lineStyle:st||0,axisLabelVisible:true,title}));
+  pl(L.e,'#64748b','DCA ENTRY '+L.side,2);pl(L.sl,'#dc2626','SL chung');(L.tp||[]).forEach((v,k)=>pl(v,'#0e9fb4','TP'+(k+1)+' (1:'+(L.rr?L.rr[k]:k+1)+')',2))}}
+setInterval(()=>{if(VIEWMODE=='chart'&&!document.hidden)fcSig(false)},5000);
 function fcLegend(t){const el=$('fcleg'),bs=fcBars();if(!bs.length){el.innerHTML=`<b class="fcs">${FC.sym}</b><span class="mut">· ${FC.tf}</span>`;return}let i=bs.length-1;
  if(t!=null){const j=bs.findIndex(x=>x.t+FCVN==t);if(j>=0)i=j}
  const b=bs[i],dg=(PR[FC.sym]||{}).dg||5,p=i?bs[i-1].c:b.o,ch=b.c-p,pc=p?ch/p*100:0,col=ch>=0?'#26a69a':'#ef5350',f=x=>x.toFixed(dg),sg=ch>=0?'+':'';
  el.innerHTML=`<b class="fcs">${FC.sym}</b><span class="mut">· ${FC.tf=='D'?'D1':FC.tf=='W'?'W1':FC.tf}${FC.ha?' · Heikin Ashi':''} · MT5</span><span>O <b style="color:${col}">${f(b.o)}</b></span><span>H <b style="color:${col}">${f(b.h)}</b></span><span>L <b style="color:${col}">${f(b.l)}</b></span><span>C <b style="color:${col}">${f(b.c)}</b></span><b style="color:${col}">${sg}${f(ch)} (${sg}${pc.toFixed(2)}%)</b>`+
-  (FC.ema?'<span class="fce"><i style="background:#f5c542"></i>EMA 20 <i style="background:#5b8cff"></i>EMA 50</span>':'')}
+  (FC.e9?`<span class="fce"><i style="background:${fcVar('--e9','#ef4444')}"></i>EMA 9</span>`:'')+(FC.e21?`<span class="fce"><i style="background:${fcVar('--e21','#3b82f6')}"></i>EMA 21</span>`:'')+
+  (FC.bvw&&FC.sym=='XAUUSD'?`<span class="fce"><i style="background:${fcVar('--vw','#a855f7')}"></i>VWAP ±σ</span>`:'')+(FC.tma&&FC.sym=='XAUUSD'?`<span class="fce"><i style="background:${fcVar('--tma','#f97316')}"></i>TMA</span>`:'')+
+  (FC.dca&&FC.sym=='XAUUSD'?'<span class="fce"><i style="background:#facc15"></i>Tín hiệu DCA (bot)</span>':'')+
+  ((FC.dca||FC.bvw||FC.tma)&&FC.sym!='XAUUSD'?'<span class="mut">· Tín hiệu DCA / VWAP / TMA chỉ có cho XAUUSD</span>':'')}
 function fcBar(){const tfs=['M1','M3','M5','M15','M30','H1','H4','D','W'];
  $('fcsym').innerHTML=Object.keys(PR).map(s=>`<option${s==FC.sym?' selected':''}>${s}</option>`).join('');
  $('fctf').innerHTML=tfs.map(t=>`<button class="${t==FC.tf?'on':''}" onclick="fcTF('${t}')">${t=='D'?'D1':t=='W'?'W1':t}</button>`).join('');
- $('fcha').classList.toggle('on',FC.ha);$('fcema').classList.toggle('on',FC.ema);$('fcvol').classList.toggle('on',FC.vol)}
-function fcTF(t){FC.tf=t;fcSave();fcBar();fcLoad(true)}
-function fcSym(s){FC.sym=s;fcSave();fcBar();fcLoad(true)}
-function fcTog(k){FC[k]=!FC[k];fcSave();fcBar();fcSet(false)}
+ ['ha','vol','dca','bvw','tma','e9','e21'].forEach(k=>$('fc'+k).classList.toggle('on',!!FC[k]))}
+function fcTF(t){FC.tf=t;fcSave();fcBar();fcLoad(true);fcSig(true)}
+function fcSym(s){FC.sym=s;fcSave();fcBar();fcLoad(true);fcSig(true)}
+function fcTog(k){FC[k]=!FC[k];fcSave();fcBar();fcSet(false);if(k=='dca'||k=='bvw'||k=='tma')fcSig(false)}
 function fcFit(){if(!FC.chart)return;const n=FC.rows.length,k=Math.max(50,Math.min(180,Math.round($('fcbox').clientWidth/8)));FC.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,n-k),to:n+Math.round(k/12)});FC.chart.priceScale('right').applyOptions({autoScale:true})}
 function fcFull(){const e=$('fcp');try{if(document.fullscreenElement||document.webkitFullscreenElement)(document.exitFullscreen||document.webkitExitFullscreen).call(document);else(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}catch(x){}}
 function fcMsg(t){const m=$('fcmsg');m.textContent=t||'';m.style.display=t?'':'none'}
@@ -1123,20 +1143,18 @@ async function fcLoad(full){if(!FC.chart)return;const key=FC.sym+'|'+FC.tf;
   // chỉ vẽ lại đoạn cuối (nến đang chạy + nến mới); HA / EMA tính lại theo nến trước
   const bs=fcBars();let k=bs.length-1;while(k>0&&bs[k-1].t>=last)k--;
   for(let i=k;i<bs.length;i++){FC.cs.update(fcC(bs[i]));if(FC.vol)FC.vs.update(fcV(bs[i]))}
-  if(FC.ema){const n=bs.length-k;fcEma(bs,20).slice(-n).forEach(x=>FC.e1.update(x));fcEma(bs,50).slice(-n).forEach(x=>FC.e2.update(x))}
+  {const n=bs.length-k;if(FC.e9)fcEma(bs,9).slice(-n).forEach(x=>FC.e1.update(x));if(FC.e21)fcEma(bs,21).slice(-n).forEach(x=>FC.e2.update(x))}
   fcLegend(null)}catch(e){if(!FC.rows.length)fcMsg('Chưa lấy được nến (máy chủ chậm hoặc mất kết nối), đang thử lại…')}finally{FC.busy=0}}
-function fcSize(){const p=$('fcp');if(VIEWMODE!='chart'||document.fullscreenElement==p)return;p.style.height=Math.max(320,innerHeight-p.getBoundingClientRect().top-(SOLO?0:10))+'px'}
+function fcSize(){const p=$('fcp');if(VIEWMODE!='chart'||document.fullscreenElement==p)return;p.style.height=Math.max(320,innerHeight-p.getBoundingClientRect().top-10)+'px'}
 addEventListener('resize',fcSize);
 async function fcOpen(){fcBar();window.scrollTo(0,0);fcSize();
  if(!LV){fcMsg('Biểu đồ cần dữ liệu MT5 thật: mở trang từ máy chủ PinYin để xem.')}
  try{await fcLib()}catch(e){fcMsg('Không tải được thư viện biểu đồ (kiểm tra mạng), bấm lại tab Biểu đồ để thử lại.');return}
- if(!FC.chart)fcBuild();fcTheme();if(LV)fcLoad(FC.key!=FC.sym+'|'+FC.tf);
+ if(!FC.chart)fcBuild();fcTheme();if(LV){fcLoad(FC.key!=FC.sym+'|'+FC.tf);fcSig(false)}
  if(!FC.tm)FC.tm=setInterval(()=>{if(VIEWMODE=='chart'&&LV&&!document.hidden)fcLoad(false)},1500)}
 document.addEventListener('keydown',e=>{if(VIEWMODE!='chart'||/INPUT|SELECT|TEXTAREA/.test((e.target||{}).tagName||''))return;if(!e.ctrlKey&&!e.metaKey&&(e.key=='f'||e.key=='F'))fcFull()});
 
-function soloSize(){if(!SOLO)return;const c=$('chartc'),h=Math.max(320,Math.floor(innerHeight-c.getBoundingClientRect().top-6))+'px';if(c.style.height!=h)c.style.height=h}
-if(SOLO){document.body.classList.add('solo');document.title='Biểu đồ · PinYin';addEventListener('resize',soloSize);soloSize();setInterval(()=>{soloSize();const v=($('px')||{}).textContent;if(v&&v!='-')document.title=cs+' '+v+' · '+TF+' · PinYin'},1000)}
-tpslLoad();setPair('XAUUSD');setTheme(_m);meInit();liveInit().then(()=>{if(SOLO){setView('ckg');soloSize();return}let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai'||v=='news'||v=='chart'||v=='ck'||v=='bot')setView(v)});
+tpslLoad();setPair('XAUUSD');setTheme(_m);meInit();liveInit().then(()=>{let v='ckg';try{v=localStorage.getItem('ckg-view')||'ckg'}catch(e){}if(v=='ai'||v=='news'||v=='chart'||v=='ck'||v=='bot')setView(v)});
 </script>
 </body>
 </html>

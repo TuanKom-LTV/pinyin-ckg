@@ -140,12 +140,6 @@ def ckg_redirect():
     return RedirectResponse("/ckg/")
 
 
-@router.get("/bieu-do", include_in_schema=False)
-def chart_tab():
-    """Biểu đồ ở 1 tab trình duyệt riêng, phủ kín cửa sổ (không menu)."""
-    return RedirectResponse("/ckg/?bd=1")
-
-
 @router.get("/ckg/", include_in_schema=False)
 def ckg_page():
     return FileResponse(CKG_PAGE, headers=NO_CACHE)
