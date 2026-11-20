@@ -607,10 +607,21 @@ button,.btn{display:inline-block;text-align:center;font:inherit;font-weight:700;
 a{color:var(--h2)}.alt{text-align:center;margin-top:14px;font-size:13px;color:var(--mut)}"""
 
 
+PW_EYE = r"""<style>.pwb{position:relative;display:block}.pwb>input{padding-right:44px!important;width:100%}
+.pwe{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:34px!important;height:34px;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;color:var(--mut,#8b95a7);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:7px}
+.pwe:hover{color:var(--tx,#e8ecf3);background:rgba(127,127,127,.12)!important}</style>
+<script>(function(){var O='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+C='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10 10 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9 9 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
+function add(i){if(i.dataset.eye)return;i.dataset.eye=1;var w=document.createElement('span');w.className='pwb';i.parentNode.insertBefore(w,i);w.appendChild(i);
+ var b=document.createElement('button');b.type='button';b.className='pwe';b.tabIndex=-1;b.title='Hiện mật khẩu';b.setAttribute('aria-label','Hiện mật khẩu');b.innerHTML=O;
+ b.onmousedown=function(e){e.preventDefault()};b.onclick=function(){var s=i.type=='password';i.type=s?'text':'password';b.innerHTML=s?C:O;b.title=s?'Ẩn mật khẩu':'Hiện mật khẩu';b.setAttribute('aria-label',b.title);i.focus()};w.appendChild(b)}
+function run(){[].forEach.call(document.querySelectorAll('input[type=password]'),add)}if(document.readyState=='loading')document.addEventListener('DOMContentLoaded',run);else run()})()</script>"""
+
+
 def page(title, body, wide=False, logo=""):
     return f"""<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(title)}</title><meta name="robots" content="noindex,nofollow"><style>{STYLE}{'.box{max-width:1180px}' if wide else ''}</style></head>
-<body>{body}</body></html>"""
+<body>{body}{PW_EYE}</body></html>"""
 
 
 def register_page(logo, msg="", ok=False, f=None):
