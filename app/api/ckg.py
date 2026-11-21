@@ -128,8 +128,8 @@ def _last_closed(timeframe, sym, off, length_sec):
 
 CHART_TF = {
     "M1": (mt5.TIMEFRAME_M1, 7500), "M3": (mt5.TIMEFRAME_M3, 2600), "M5": (mt5.TIMEFRAME_M5, 1600),
-    "M15": (mt5.TIMEFRAME_M15, 600), "M30": (mt5.TIMEFRAME_M30, 320), "H1": (mt5.TIMEFRAME_H1, 240),
-    "H4": (mt5.TIMEFRAME_H4, 200), "D": (mt5.TIMEFRAME_D1, 250), "W": (mt5.TIMEFRAME_W1, 150),
+    "M15": (mt5.TIMEFRAME_M15, 1500), "M30": (mt5.TIMEFRAME_M30, 1200), "H1": (mt5.TIMEFRAME_H1, 1000),   # đủ cho STC (cần ~130 nến khởi động)
+    "H4": (mt5.TIMEFRAME_H4, 800), "D": (mt5.TIMEFRAME_D1, 600), "W": (mt5.TIMEFRAME_W1, 400),
 }
 
 

@@ -1158,7 +1158,7 @@ async function fcSig(force){const want=FC.dca||FC.bvw||FC.tma,key=FC.sym+'|'+FC.
  if(!force&&FC.sigKey==key&&Date.now()-FC.sigAt<15000)return;FC.sigBusy=1;
  try{const j=await jget('api/dcasig?sym='+FC.sym+'&tf='+FC.tf,20000);if(j&&j.ok&&key==FC.sym+'|'+FC.tf){FC.sig={sig:j.sig||[],bands:j.bands||[]};FC.sigKey=key;FC.sigAt=Date.now();fcSigDraw();fcLegend(null)}}catch(e){}finally{FC.sigBusy=0}}
 function fcSigDraw(){if(!FC.cs)return;const ok=FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf,S=ok?FC.sig:{sig:[],bands:[]};
- const col=(k,on)=>on?S.bands.filter(r=>r[k]!=null).map(r=>({time:r[0]+FCVN,value:r[k]})):[];
+ const tset=new Set(FC.rows.map(b=>b.t)),col=(k,on)=>on?S.bands.filter(r=>r[k]!=null&&tset.has(r[0])).map(r=>({time:r[0]+FCVN,value:r[k]})):[];   // chỉ trong phạm vi nến đang có (để trục thời gian khớp khung STC)
  FC.bs.forEach((x,i)=>x.setData(col(i+1,i<3?FC.bvw:FC.tma)));
  FC.cs.setMarkers([]);
  FC.pl.forEach(l=>FC.cs.removePriceLine(l));FC.pl=[];const L=FC.dca&&S.sig.length?S.sig[S.sig.length-1]:null;
