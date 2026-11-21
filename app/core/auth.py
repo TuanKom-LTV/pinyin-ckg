@@ -29,7 +29,7 @@ COOKIE = "pinyin_auth"
 SESSION_DAYS = 30
 MAX_FAILS = 5
 LOCK_SECONDS = 15 * 60
-PUBLIC_PATHS = {"/login", "/logout", "/dang-ky", "/xac-minh", "/gui-lai-xac-minh", "/quen-mat-khau", "/dat-lai-mat-khau", "/quen-tai-khoan", "/ea/sync", "/static/images/favicon.svg", "/health", "/mien-tru-trach-nhiem"}
+PUBLIC_PATHS = {"/login", "/logout", "/dang-ky", "/xac-minh", "/gui-lai-xac-minh", "/quen-mat-khau", "/dat-lai-mat-khau", "/quen-tai-khoan", "/ea/sync", "/static/images/favicon.svg", "/static/i18n.js", "/health", "/mien-tru-trach-nhiem"}
 
 _fails: dict[str, list[float]] = {}
 
@@ -125,7 +125,7 @@ def _safe_next(n: str) -> str:
 
 def _login_page(msg: str = "", nxt: str = "/") -> HTMLResponse:
     body = f"""<!doctype html><html lang="vi"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>PinYin · Đăng nhập</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>PinYin · Đăng nhập</title>{users.I18N_TAG}
 <meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="{FAVICON}">
 <style>
 :root{{color-scheme:dark;--bg:#0b0e14;--card:#0d1320;--tx:#e8ecf3;--mut:#8b95a7;--bd:#1c2a3d;--acc:#2563eb;--no:#ff5c5c}}

@@ -111,6 +111,7 @@ Yêu cầu:
 class AiIn(BaseModel):
     sym: str
     lam_moi: bool = False
+    lang: str = "vi"                  # vi | en | zh: ngôn ngữ trả về (bản dịch lưu kèm bài gốc)
 
 
 # ---------- Chỉ báo ----------
@@ -391,10 +392,38 @@ def _call(model, key, body):
 
 # ---------- Đường dẫn ----------
 
+LANG_NAME = {"en": "English", "zh": "Simplified Chinese (简体中文)"}
+
+
+def _in_lang(rec, lang):
+    """Bài phân tích theo ngôn ngữ khách chọn: dịch 1 lần bằng Groq rồi lưu kèm bài gốc (cùng ts)."""
+    if not rec or lang not in LANG_NAME:
+        return rec
+    trs = rec.setdefault("tr", {})
+    if lang in trs:
+        return {**rec, "text": trs[lang], "lang": lang}
+    key = os.getenv("GROQ_API_KEY", "").strip()
+    if not key:
+        return rec
+    sysmsg = (f"Translate this Vietnamese Markdown trading analysis (forex / gold, CKG method) into {LANG_NAME[lang]}. "
+              "Keep the Markdown structure, tables, numbers, prices, tickers and trading acronyms (BUY, SELL, SL, TP, EMA, RSI, ATR, VWAP, "
+              "pip, H1, H4, M1, M5, D1, CKG, WPH7) exactly. Output only the translation.")
+    for m in GROQ_MODELS:
+        try:
+            text, _ = _groq_call(m, key, sysmsg, rec["text"], max_tokens=3500)
+            trs[lang] = text
+            _save_last()
+            return {**rec, "text": text, "lang": lang}
+        except Exception:
+            continue
+    return rec
+
+
 @router.get("/last")
-def last(sym: str = "GBPUSD"):
+def last(sym: str = "GBPUSD", lang: str = "vi"):
     r = _last.get(sym.upper().strip())
-    return {"ok": True, "co": bool(r), **(r or {})}
+    r = _in_lang(r, lang) if r else r
+    return {"ok": True, "co": bool(r), **{k: v for k, v in (r or {}).items() if k != "tr"}}
 
 
 @router.post("")
@@ -404,15 +433,16 @@ def analyze(body: AiIn, request: Request):
         return {"ok": False, "loi": f"Mã {sym} chưa được hỗ trợ."}
     cached = _last.get(sym)
     if cached and not body.lam_moi and time.time() - cached["ts"] < CACHE_SECONDS:
-        return {"ok": True, "co": True, "tu_bo_nho": True, **cached}
+        return {"ok": True, "co": True, "tu_bo_nho": True, **{k: v for k, v in _in_lang(cached, body.lang).items() if k != "tr"}}
     if not _busy.acquire(timeout=1):
         return {"ok": False, "loi": "AI đang phân tích một yêu cầu khác (có thể là lượt tự cập nhật), thử lại sau vài giây."}
     try:
-        return {"ok": True, "co": True, **_run(sym)}
+        rec = _run(sym)
     except Exception as e:
-        return {"ok": False, "loi": str(e)}
-    finally:
         _busy.release()
+        return {"ok": False, "loi": str(e)}
+    _busy.release()
+    return {"ok": True, "co": True, **{k: v for k, v in _in_lang(rec, body.lang).items() if k != "tr"}}
 
 
 def _run(sym, auto=False):

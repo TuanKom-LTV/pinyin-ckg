@@ -607,6 +607,8 @@ button,.btn{display:inline-block;text-align:center;font:inherit;font-weight:700;
 a{color:var(--h2)}.alt{text-align:center;margin-top:14px;font-size:13px;color:var(--mut)}"""
 
 
+I18N_TAG = '<script src="/static/i18n.js?v=68970aa284"></script>'
+
 PW_EYE = r"""<style>.pwb{position:relative;display:block}.pwb>input{padding-right:44px!important;width:100%}
 .pwe{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:34px!important;height:34px;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;color:var(--mut,#8b95a7);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:7px}
 .pwe:hover{color:var(--tx,#e8ecf3);background:rgba(127,127,127,.12)!important}</style>
@@ -620,7 +622,7 @@ function run(){[].forEach.call(document.querySelectorAll('input[type=password]')
 
 def page(title, body, wide=False, logo=""):
     return f"""<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(title)}</title><meta name="robots" content="noindex,nofollow"><style>{STYLE}{'.box{max-width:1180px}' if wide else ''}</style></head>
+<title>{html.escape(title)}</title>{I18N_TAG}<meta name="robots" content="noindex,nofollow"><style>{STYLE}{'.box{max-width:1180px}' if wide else ''}</style></head>
 <body>{body}{PW_EYE}</body></html>"""
 
 

@@ -1,0 +1,6042 @@
+{
+"\". Bật ô \"Gửi tín hiệu của bot này vào nhóm\" cho từng bot muốn gửi.": [
+"Enable \"Send this bot's signals to group\" for each bot you want to send.",
+"为每个想发送的机器人启用“将此机器人的信号发送到群组”。"
+],
+"% chốt TP{0}": [
+"% take profit TP{0}",
+"% 止盈 TP{0}"
+],
+"% từ đỉnh": [
+"% from peak",
+"% 从峰值"
+],
+"% vốn": [
+"% of capital",
+"% 资本"
+],
+"% vốn · cuối": [
+"% capital · end",
+"% 资本·结束"
+],
+"'abc~{0}' → ('abc', {1}) (tài khoản MT{2} thứ {3} của khách abc); 'abc' → ('abc', {4}).": [
+"'abc~{0}' → ('abc', {1}) (MT{2} account #{3} of customer abc); 'abc' → ('abc', {4}).",
+"'abc~{0}' → ('abc', {1}) (客户 abc 的 MT{2} 账户第 {3} 个); 'abc' → ('abc', {4})."
+],
+"(MT{0} sẽ tắt quyền EA; muốn xem khung khác thì mở chart mới). Mỗi MT{1} chỉ dùng cho bot, không vào tay bằng EA đó.": [
+"(MT{0} will disable EA; to view another timeframe open a new chart). Each MT{1} is for bots only, not for manual EA use.",
+"(MT{0} 将关闭 EA 权限；想查看其他周期请打开新图表)。每个 MT{1} 仅用于机器人，不能手动使用 EA。"
+],
+"(PINYIN_MAX_LOT trong .env). Giảm lot / hệ số / số lệnh, hoặc tăng giới hạn.": [
+"(PINYIN_MAX_LOT in .env). Reduce lot / multiplier / order count, or raise the limit.",
+"(.env 中的 PINYIN_MAX_LOT)。降低手数/系数/订单数量，或提升上限。"
+],
+"(THẬT)": [
+"(REAL)",
+"(真实)"
+],
+"(TP{0}/TP{1} giữ nguyên).": [
+"(TP{0}/TP{1} unchanged).",
+"(TP{0}/TP{1} 保持不变)。"
+],
+"(bất kỳ khung) → kéo": [
+"(any timeframe) → drag",
+"(任意周期) → 拖动"
+],
+"(chỉ HA Pro / DCA)": [
+"(HA Pro / DCA only)",
+"(仅 HA Pro / DCA)"
+],
+"(chỉ xem, buồng lái không quản lý):": [
+"(view only, cockpit not managing):",
+"(仅查看，交易驾驶舱不管理)："
+],
+"(cách đường giữa {0} giá): vùng quá bán của dải. Bot DCA chờ tín hiệu": [
+"(midline {0} points away): oversold zone. DCA bot waiting for signal",
+"(距中线 {0} 点)：超卖区。DCA 机器人等待信号"
+],
+"(cách đường giữa {0} giá): vùng quá mua của dải. Bot DCA chờ tín hiệu": [
+"(midline {0} points away): overbought zone. DCA bot waiting for signal",
+"(距中线 {0} 点)：超买区。DCA 机器人等待信号"
+],
+"(cũ)": [
+"(old)",
+"(旧)"
+],
+"(dùng bản lưu)": [
+"(use backup)",
+"(使用备份)"
+],
+"(dùng để đăng nhập)": [
+"(used for login)",
+"(用于登录)"
+],
+"(giá chạm dải dưới rồi có nến xác nhận), không đuổi SELL ở đây.": [
+"(price touched lower band with confirming candle), do not chase SELL here.",
+"(价格触及下轨并有确认K线)，此处不追SELL。"
+],
+"(giá chạm dải trên rồi có nến xác nhận), không đuổi BUY ở đây.": [
+"(price touched upper band with confirming candle), do not chase BUY here.",
+"(价格触及上轨并有确认K线)，此处不追BUY。"
+],
+"(giá dưới EMA{0} & EMA{1})": [
+"(price below EMA{0} & EMA{1})",
+"(价格低于 EMA{0} & EMA{1})"
+],
+"(giá quanh đường trung bình)": [
+"(price around moving average)",
+"(价格在均线附近)"
+],
+"(giá trên EMA{0} & EMA{1})": [
+"(price above EMA{0} & EMA{1})",
+"(价格高于 EMA{0} & EMA{1})"
+],
+"(giờ VN)": [
+"(VN time)",
+"(越南时间)"
+],
+"(gõ /newbot), nhắn /start cho bot mới, rồi dán token vào đây.": [
+"(type /newbot), send /start to new bot, then paste token here.",
+"(输入 /newbot)，向新机器人发送 /start，然后在此粘贴令牌。"
+],
+"(key đã dùng hết quota)": [
+"(key quota exhausted)",
+"(密钥配额已用尽)"
+],
+"(khi đổi tài khoản / profile / mã hoặc khung chart) → OK. Không bỏ tích thì chỉ cần đổi khung chart là MT{0} tự tắt quyền của EA.": [
+"(when changing account / profile / symbol or chart timeframe) → OK. If not unchecking, just change timeframe and MT{0} will auto disable EA rights.",
+"(更换账户/资料/代码或图表周期) → 确认。若未取消勾选，仅切换周期即可让 MT{0} 自动关闭 EA 权限。"
+],
+"(không SL / TP · tín hiệu ngược → đóng cả rổ + vào chiều mới)": [
+"(no SL/TP · opposite signal → close all basket + enter new direction)",
+"(无 SL/TP·信号相反 → 平所有仓位并转向新方向)"
+],
+"(không bot nào)": [
+"(no bot)",
+"(无机器人)"
+],
+"(không phải lệnh bot) · bấm đây để xem": [
+"(not a bot order) · click here to view",
+"(非机器人订单)·点击此处查看"
+],
+"(lệch {0} giá), chưa nghiêng phía nào.": [
+"(offset {0} points), no bias yet.",
+"(偏差 {0} 点)，尚未倾向任何方向。"
+],
+"(máy chủ đang canh lệnh, đóng trang vẫn chạy)": [
+"(server monitoring orders, closing page keeps running)",
+"(服务器正在监控订单，关闭页面仍继续运行)"
+],
+"(mở / thêm lệnh DCA, chốt TP{0}-TP{1}, dời hòa vốn, đóng) sang các tài khoản dưới đây, ở bất kỳ sàn nào. SL đặt theo": [
+"(open / add DCA order, take TP{0}-TP{1}, move breakeven, close) to the accounts below on any exchange. SL set by",
+"（打开/添加 DCA 订单，止盈 TP{0}-TP{1}，移动保本，关闭）至以下任意平台的账户。止损按"
+],
+"(ngoài khung)": [
+"(outside timeframe)",
+"(超出周期)"
+],
+"(nút 🤖 Copy theo).{0}": [
+"(button 🤖 Copy).{0}",
+"(按钮 🤖 复制).{0}"
+],
+"(nến D{0}": [
+"(D{0} candle",
+"(D{0} K线"
+],
+"(nến D{0} đỏ)": [
+"(D{0} red candle)",
+"(D{0} 红色K线)"
+],
+"(nến H{0} #{1}/{2})": [
+"(H{0} candle #{1}/{2})",
+"(H{0} K线 #{1}/{2})"
+],
+"(trễ {0} giây)": [
+"(delay {0} seconds)",
+"(延迟 {0} 秒)"
+],
+"(tài khoản này là Netting: các lệnh cùng mã gộp làm một, bot sẽ giẫm lên nhau).": [
+"(this account is Netting: same symbol orders are merged, bots may overlap).",
+"(此账户为净额模式：同一合约的订单合并为一，机器人可能相互覆盖)。"
+],
+"({0} = dùng ATR)": [
+"({0} = use ATR)",
+"（{0} = 使用 ATR）"
+],
+"({0} = dùng lot ở trên)": [
+"({0} = use lot above)",
+"（{0} = 使用上面的手数）"
+],
+"({0} = không xét)": [
+"({0} = not considered)",
+"（{0} = 不考虑）"
+],
+"({0} = tắt)": [
+"({0} = off)",
+"（{0} = 关闭）"
+],
+"(đang có {0} lệnh)": [
+"(currently {0} orders)",
+"（当前有 {0} 条订单）"
+],
+"(đang {0}/{1}). Nếu khách nhắn Telegram thì mở thêm tại https://pinyin.id.vn/quan-ly (nút ＋ MT{2}).": [
+"(currently {0}/{1}). If a customer messages Telegram, open more at https://pinyin.id.vn/quan-ly (button + MT{2}).",
+"（当前 {0}/{1}）。如果客户在 Telegram 上留言，可在 https://pinyin.id.vn/quan-ly（按钮 + MT{2}）打开更多。"
+],
+"(ưu tiên BÁN)": [
+"(prefer SELL)",
+"（优先卖出）"
+],
+"(ưu tiên MUA)": [
+"(prefer BUY)",
+"（优先买入）"
+],
+") → nhắn {0} tin bất kỳ trong nhóm → bấm Kết nối. Tin nội bộ (tài khoản, lỗi, khách đăng ký) vẫn chỉ gửi riêng cho sếp.": [
+") → send any {0} message in group → click Connect. Internal messages (account, error, customer registration) still go only to admin.",
+"）→ 在群组中发送任意 {0} 条信息 → 点击连接。内部信息（账户、错误、客户注册）仍仅发送给管理员。"
+],
+"), đã lưu key. Phân Tích AI giờ dùng Groq trước, Gemini làm dự phòng.": [
+"), key saved. AI Analysis now uses Groq first, Gemini as backup.",
+"），已保存密钥。AI分析现在优先使用 Groq，Gemini 作为备份。"
+],
+"+{0} pip (đang chạy)": [
+"+{0} pip (running)",
+"+{0} 点（运行中）"
+],
+", biểu đồ đang": [
+", chart is",
+"，图表正在"
+],
+", chép đè vào MQL{0}\\Experts, gỡ EA khỏi chart rồi gắn lại.": [
+", overwrite to MQL{0}\\Experts, detach EA from chart then reattach.",
+"，覆盖到 MQL{0}\\Experts，先从图表移除 EA 再重新挂载。"
+],
+", chép đè vào MQL{0}\\\\Experts, gỡ EA khỏi chart rồi gắn lại.": [
+", overwrite to MQL{0}\\\\Experts, detach EA from chart then reattach.",
+"，覆盖到 MQL{0}\\\\Experts，先从图表移除 EA 再重新挂载。"
+],
+", cách EMA {0} {1} giá. Chờ giá hồi lên thêm {2} giá để vào lệnh.": [
+", {0} {1} points away from EMA. Wait for price to rebound another {2} points to enter.",
+"，距 EMA {0} {1} 点。等待价格再回升 {2} 点后入场。"
+],
+", cách EMA {0} {1} giá. Chờ giá hồi xuống thêm {2} giá để vào lệnh.": [
+", {0} {1} points away from EMA. Wait for price to drop another {2} points to enter.",
+"，距 EMA {0} {1} 点。等待价格再下跌 {2} 点后入场。"
+],
+", cách {0} {1} giá. Chờ giá {2} thêm {3} giá để vào lệnh.": [
+", {0} {1} points away. Wait for price {2} plus {3} points to enter.",
+"，距 {0} {1} 点。等待价格 {2} 再加 {3} 点后入场。"
+],
+", có thể lệch vài pip so với MT{0}": [
+", may differ a few pips from MT{0}",
+"，可能与 MT{0} 有几点差异"
+],
+", dời thêm {0} lệnh cùng chiến dịch": [
+", shift {0} more orders in the same campaign",
+"，在同一活动中再移动 {0} 条订单"
+],
+", hoặc bấm \"⚡ Phân tích ngay\".": [
+", or click \"⚡ Analyze now\".",
+"，或点击“⚡ 立即分析”。"
+],
+", nghiêng về phía {0} trong dải.": [
+", leaning toward {0} within the band.",
+"，倾向于带内的 {0}。"
+],
+", nên dùng Demo), rồi chép": [
+", should use Demo), then copy",
+"，应使用 Demo），然后复制"
+],
+", quay lại sau ít phút.": [
+", return after a few minutes.",
+"，几分钟后返回。"
+],
+", thêm": [
+", add",
+"，添加"
+],
+", thử lại sau vài phút.": [
+", try again after a few minutes.",
+"，几分钟后再试。"
+],
+", và thử lại trên khoảng thời gian khác để chắc không phải may mắn.": [
+", and retry on a different timeframe to ensure it's not luck.",
+"，并在不同时间段重试，以确保不是运气。"
+],
+"-{0} pip (đang chạy)": [
+"-{0} pip (running)",
+"-{0} 点（运行中）"
+],
+". Bật nút Algo Trading trên thanh công cụ MT{0} và tích ô Allow Algo Trading trong cài đặt EA (F{1}).": [
+"Enable the Algo Trading button on MT{0} toolbar and check Allow Algo Trading in EA settings (F{1}).",
+"在 MT{0} 工具栏启用 Algo Trading 按钮，并在 EA 设置中勾选 Allow Algo Trading（F{1}）。"
+],
+". Em muốn mở thêm tài khoản MT{0} cho bot PinYin (đang dùng": [
+"I want to add another MT{0} account for PinYin bot (currently using",
+"我想为 PinYin 机器人添加另一个 MT{0} 账户（当前使用"
+],
+". Kiểm tra tin nhắn trên Telegram.": [
+"Check messages on Telegram.",
+"检查 Telegram 上的消息。"
+],
+". Kết quả trong quá khứ không đảm bảo kết quả tương lai.": [
+"Past results do not guarantee future performance.",
+"过去的结果不能保证未来的表现。"
+],
+". Máy chủ tự phân tích sau mỗi nến": [
+"Server auto-analyzes after each candle.",
+"服务器在每根 K 线后自动分析。"
+],
+". Mỗi bot có chiến lược, khung, lot riêng và chạy song song (đang bật {0}/{1}). Tài khoản copy chọn theo bot nào ở mục": [
+"Each bot has its own strategy, timeframe, lot and runs in parallel (currently {0}/{1} active). Choose copy account by bot in the",
+"每个机器人都有独立的策略、周期、手数并并行运行（当前 {0}/{1} 已启用）。在相应栏目中选择要复制的机器人账户"
+],
+". Mỗi tài khoản có mã kết nối EA riêng (🔑 Mã EA) và bot cài đặt riêng (🟢 EA online · 🤖 bot đang bật).": [
+"Each account has its own EA connection code (🔑 EA Code) and its own bot setup (🟢 EA online · 🤖 bot active).",
+"每个账户都有独立的 EA 连接码（🔑 EA 码）和独立的机器人设置（🟢 EA 在线·🤖 机器人已启用）。"
+],
+". Tài khoản THẬT mặc định bị chặn vào lệnh: bấm nút 🔒 Lệnh THẬT trên dòng tài khoản để bật/tắt.": [
+"Real account is blocked from orders by default: click 🔒 Real Order button on the account row to toggle.",
+"默认情况下真实账户被阻止下单：点击账户行的 🔒 实际订单 按钮以开启/关闭。"
+],
+". Tổng biên độ {0} $, cả cụm dao động {1} $, giá giảm ròng {2} $.": [
+"Total range {0} $, cluster swing {1} $, net price drop {2} $.",
+"总波幅 {0} $，整体波动 {1} $，净跌幅 {2} $。"
+],
+". Tổng biên độ {0} $, cả cụm dao động {1} $, giá tăng ròng {2} $.": [
+"Total range {0} $, cluster swing {1} $, net price rise {2} $.",
+"总波幅 {0} $，整体波动 {1} $，净涨幅 {2} $。"
+],
+". Tổng biên độ {0} $, cả cụm dao động {1} $, giá {2} ròng {3} $.": [
+"Total range {0} $, cluster swing {1} $, price {2} net {3} $.",
+"总波幅 {0} $，整体波动 {1} $，价格 {2} 净 {3} $。"
+],
+": cách TMA trên {0} giá, cách TMA dưới {1} giá.": [
+": TMA distance above {0} points, TMA distance below {1} points.",
+": TMA 上方 {0} 点, 下方 {1} 点."
+],
+": nhãn DCA là của": [
+": DCA label belongs to",
+": DCA 标签属于"
+],
+": phần chốt TP{0} có TP đặt sẵn trên sàn, sàn chốt xong EA tự dời SL hòa vốn, mất mạng vẫn chạy.": [
+": TP{0} segment has preset TP on the floor; after floor TP, EA moves SL to breakeven, continues even if connection lost.",
+": TP{0} 部分在平台预设 TP，平台 TP 完成后 EA 自动将 SL 移至保本，即使掉线仍运行。"
+],
+": vào lệnh theo nhãn chỉ báo HA Pro v{0} (BUY/SELL + đảo chiều ĐC/ĐC*). Mỗi chiến dịch tối đa N lệnh cùng chiều, lệnh thêm chỉ khi có tín hiệu mới và giá tốt hơn ≥ k×ATR. SL chung, TP{1}/TP{2} chốt từng phần theo giá trung bình, sau TP{3} dời hòa vốn, phần còn lại trail EMA{4}.": [
+": enter trade using HA Pro v{0} label (BUY/SELL + reverse DC/DC*). Each campaign max N same‑direction orders; add order only on new signal with price ≥ k×ATR better. Shared SL, TP{1}/TP{2} partial exits at average price, after TP{3} move to breakeven, remaining trail EMA{4}.",
+": 按 HA Pro v{0} 标签入场 (BUY/SELL + 反向 DC/DC*)。每个策略最多 N 笔同向订单，仅在出现新信号且价格优于 ≥ k×ATR 时加单。统一 SL，TP{1}/TP{2} 按均价分批平仓，TP{3} 后移至保本，剩余部分跟随 EMA{4}。"
+],
+"? (bot phải tắt và không còn lệnh mở)": [
+"? (bot must stop and have no open orders)",
+"? (机器人必须停止且无未平仓订单)"
+],
+"? Mật khẩu cũ hết dùng, khách bị đăng xuất.": [
+"? Old password expired, user logged out.",
+"? 旧密码已失效，用户被登出。"
+],
+"AI (Google Gemini) đọc dữ liệu MT{0} đa khung M{1} · M{2} · M{3} · H{4} · H{5} · D{6} cùng các mốc CKG (pha tuần WPH{7}, chu kỳ ngày, khung giờ vào lệnh) rồi đưa kịch bản. Đây là phân tích tham khảo, không phải lời khuyên đầu tư; AI có thể sai, luôn tự kiểm tra trước khi vào lệnh.": [
+"AI (Google Gemini) reads multi‑timeframe MT{0} data M{1}·M{2}·M{3}·H{4}·H{5}·D{6} plus CKG markers (weekly phase WPH{7}, daily cycle, entry time window) and generates a scenario. This is reference analysis, not investment advice; AI may err, always verify before trading.",
+"AI（Google Gemini）读取 MT{0} 多时间框架数据 M{1}·M{2}·M{3}·H{4}·H{5}·D{6} 以及 CKG 标记（周相位 WPH{7}、日周期、入场时间窗口），生成方案。此为参考分析，不构成投资建议；AI 可能出错，入场前请自行核实。"
+],
+"AI đang phân tích một yêu cầu khác (có thể là lượt tự cập nhật), thử lại sau vài giây.": [
+"AI is analyzing another request (maybe an auto‑update), please try again in a few seconds.",
+"AI 正在分析其他请求（可能是自动更新），请稍后几秒重试。"
+],
+"AI đang đọc dữ liệu MT{0} đa khung và phân tích": [
+"AI is reading multi‑timeframe MT{0} data and analyzing",
+"AI 正在读取 MT{0} 多时间框架数据并分析"
+],
+"ATR {0} đang dưới ngưỡng {1}. Biên độ biến động chưa chạm ngưỡng cảnh báo.": [
+"ATR {0} is below threshold {1}. Volatility range hasn't reached alert level.",
+"ATR {0} 低于阈值 {1}。波幅尚未触及警报阈值。"
+],
+"ATR {0} đang {1} ngưỡng {2}. {3}": [
+"ATR {0} is {1} threshold {2}. {3}",
+"ATR {0} 正在 {1} 阈值 {2}。{3}"
+],
+"BE/Trailing chạy trên máy chủ": [
+"BE/Trailing runs on server",
+"BE/Trailing 在服务器上运行"
+],
+"BUY (EMA{0} cắt lên EMA{1})": [
+"BUY (EMA{0} crosses above EMA{1})",
+"BUY (EMA{0} 上穿 EMA{1})"
+],
+"BUY cấp số nhân, lot x{0} → Chốt lãi khi hết CK (không chốt thì SL+, chờ TP hoặc cán SL)": [
+"BUY multiplier, lot x{0} → Take profit when CK exhausted (if not taken, SL+, wait TP or hit SL)",
+"BUY 乘数，手数 x{0} → CK 用完时止盈（未止盈则 SL+，等待 TP 或触发 SL）"
+],
+"BUY cấp số nhân, lot x{0} → ngược hướng, sang CK{1} nhân tiếp": [
+"BUY multiplier, lot x{0} → reverse direction, move to CK{1} multiplier",
+"BUY 乘数，手数 x{0} → 反向，转至 CK{1} 乘数"
+],
+"BUY ở {0}": [
+"BUY at {0}",
+"BUY 于 {0}"
+],
+"Biên bản họp Fed": [
+"Fed meeting minutes",
+"美联储会议纪要"
+],
+"Biên độ": [
+"Range",
+"波幅"
+],
+"Biên độ cả cụm": [
+"Cluster range",
+"整体波幅"
+],
+"Biến động cao": [
+"High volatility",
+"波动高"
+],
+"Biểu đồ cần dữ liệu MT{0} thật: mở trang từ máy chủ PinYin để xem.": [
+"Chart requires real MT{0} data: open page from PinYin server to view.",
+"图表需要真实 MT{0} 数据：请从 PinYin 服务器打开页面查看。"
+],
+"Bot DCA (duy nhất) mà tài khoản theo — chỉ bot này dùng TP{0} đặt sẵn trên sàn của EA.": [
+"Exclusive DCA bot for the account — only this bot uses preset TP{0} on EA floor.",
+"账户专属 DCA 机器人 — 仅此机器人使用 EA 平台预设的 TP{0}。"
+],
+"Bot chưa có lệnh mở.": [
+"Bot has no open orders.",
+"机器人暂无未平仓订单。"
+],
+"Bot chạy M{0} + M{1} là {2} chiến dịch độc lập: backtest từng khung (chọn M{3}, rồi M{4}), lãi/lỗ cộng lại.": [
+"Bot runs M{0}+M{1} as {2} independent campaigns: backtest each timeframe (select M{3}, then M{4}), aggregate P/L.",
+"机器人运行 M{0}+M{1} 为 {2} 个独立策略：对每个时间框架回测（先选 M{3}，再选 M{4}），累计盈亏。"
+],
+"Bot còn {0} lệnh mở. Đóng hết rồi mới xóa.": [
+"Bot has {0} open orders. Close all before deleting.",
+"机器人还有 {0} 笔未平仓订单。全部平仓后方可删除。"
+],
+"Bot cần EA PinYinBridge bản {0}: tải EA mới, chép đè, gỡ khỏi chart rồi gắn lại.": [
+"Bot requires PinYinBridge EA v{0}: download new EA, overwrite, detach from chart and reattach.",
+"机器人需要 PinYinBridge EA {0} 版：下载新 EA，覆盖，先从图表移除再重新挂载。"
+],
+"Bot không gửi được tin vào nhóm {0}: {(r or {1}).get('description', '')}. Kênh thì bot phải là quản trị viên.": [
+"Bot cannot post to group {0}: {(r or {1}).get('description', '')}. Bot must be admin in the channel.",
+"机器人无法向群组 {0} 发送消息：{(r or {1}).get('description', '')}。机器人需在频道中为管理员。"
+],
+"Bot lấy tín hiệu và vào lệnh trên MT{0} của máy chủ (": [
+"Bot fetches signal and enters trade on server MT{0} (",
+"机器人获取信号并在服务器 MT{0} 上入场 ("
+],
+"Bot tự động": [
+"Auto bot",
+"自动机器人"
+],
+"Broker không có mã {0}.": [
+"Broker does not have code {0}.",
+"经纪商没有代码 {0}。"
+],
+"Broker không có {0}": [
+"Broker does not have {0}",
+"经纪商没有 {0}"
+],
+"Broker không có {0}.": [
+"Broker does not have {0}.",
+"经纪商没有 {0}。"
+],
+"Buy nhồi để thuận lệnh": [
+"Buy stuffing to align order",
+"Buy 填充以顺应订单"
+],
+"Buồng lái": [
+"Cockpit",
+"交易驾驶舱"
+],
+"Bán nhiều thời gian nhưng pip ít → nghiêng BUY (ngưỡng {0} pip, tạm đặt)": [
+"Sell long time but few pips → bias BUY (threshold {0} pips, provisional)",
+"卖出时间长但点数少 → 偏向 BUY（阈值 {0} 点，暂定）"
+],
+"Bình thường": [
+"Normal",
+"正常"
+],
+"Bước TP ($, tạm đặt)": [
+"TP step ($, provisional)",
+"TP 步骤（$，暂定）"
+],
+"Bước TP từ {0} đến {1} $.": [
+"TP step from {0} to {1} $.",
+"TP 步骤从 {0} 到 {1} $。"
+],
+"Bước {0} ({1}-{2})": [
+"Step {0} ({1}-{2})",
+"步骤 {0}（{1}-{2}）"
+],
+"Bước {0} · {1}-{2}": [
+"Step {0} · {1}-{2}",
+"步骤 {0} · {1}-{2}"
+],
+"Bước {0}: -{1} pip ngược chiều (cần khoảng {2}-{3})": [
+"Step {0}: -{1} pip opposite direction (need ~{2}-{3})",
+"步骤 {0}：-{1} 点相反方向（需约 {2}-{3}）"
+],
+"Bước {0}: -{1} pip từ lúc cắt lệnh trước (≤{2} mới vào; {3}-{4} trở lên bỏ, chờ sau {5})": [
+"Step {0}: -{1} pip since last cut (enter ≤{2}; discard ≥{3}-{4}, wait {5})",
+"步骤 {0}：-{1} 点自上次平仓后（≤{2} 进入；≥{3}-{4} 放弃，等待 {5}）"
+],
+"Bước {0}: {1} pip ngược chiều (cần khoảng {2}-{3})": [
+"Step {0}: {1} pip opposite direction (need ~{2}-{3})",
+"步骤 {0}：{1} 点相反方向（需约 {2}-{3}）"
+],
+"Bước {0}: {1} pip từ lúc cắt lệnh trước (≤{2} mới vào; {3}-{4} trở lên bỏ, chờ sau {5})": [
+"Step {0}: {1} pip since last cut (enter ≤{2}; discard ≥{3}-{4}, wait {5})",
+"步骤 {0}：{1} 点自上次平仓后（≤{2} 进入；≥{3}-{4} 放弃，等待 {5}）"
+],
+"Bạn chưa xác nhận email. Mở thư PinYin trong hộp thư (xem cả mục Spam) và bấm \"Xác nhận email\".": [
+"You have not confirmed your email. Open the PinYin email in your inbox (check Spam too) and click \"Confirm email\".",
+"您尚未确认邮箱。请在收件箱中打开 PinYin 邮件（也请查看垃圾邮件），点击\"确认邮箱\"。"
+],
+"Bạn đã đăng ký nhiều lần, thử lại sau {0} giờ.": [
+"Too many sign‑ups, try again in {0} h.",
+"注册次数过多，请 {0} 小时后再试。"
+],
+"Bản Pine chiến lược DCA": [
+"Pine script DCA strategy",
+"Pine 脚本 DCA 策略"
+],
+"Bản giao diện theo kịch bản đã duyệt. Khi chưa nối máy chủ MT{0}, giá và nến là giả lập; khi nối rồi (huy hiệu LIVE màu xanh), giá và nến là dữ liệu MT{1} thật. Khi trang chạy từ máy chủ PinYin có MT{2}, buồng lái gửi LỆNH THẬT sang MT{3} (mỗi lệnh đều có hộp xác nhận); khi không nối máy chủ, lệnh chỉ là mô phỏng. Các mốc đánh dấu \"tạm\" là giả định cần sếp chốt.": [
+"Approved script UI. Without MT{0} connection, price & candles are simulated; with LIVE (green) they are real MT{1} data. When hosted on PinYin server with MT{2}, Cockpit sends REAL ORDER to MT{3} (each order has confirm box); offline it's simulated. \"Temp\" markers are placeholders for manual close.",
+"已批准的脚本界面。未连接 MT{0} 时，价格和K线为模拟；连接后（绿色 LIVE 标志）为真实 MT{1} 数据。若页面在带 MT{2} 的 PinYin 服务器上运行，交易驾驶舱会向 MT{3} 发送真实订单（每笔订单都有确认框）；未连接时仅为模拟。标记为“暂” 的点位为需手动平仓的假设。"
+],
+"Bảng dịch tên cặp tiền: tên chuẩn PinYin → tên thật trên sàn đang đăng nhập.": [
+"Currency pair name map: PinYin standard → exchange actual name.",
+"货币对名称映射：PinYin 标准 → 交易所实际名称。"
+],
+"Bảng lương phi nông nghiệp (NFP)": [
+"Non‑farm payroll table",
+"非农就业数据表"
+],
+"Bấm Đăng ký là bạn đã đọc và chấp nhận": [
+"Press Register to acknowledge and accept",
+"点击注册即表示已阅读并同意"
+],
+"BẬT": [
+"ON",
+"开启"
+],
+"BẬT bot tự động vào lệnh {0} trên MT{1}{2}? Khung {3} · DCA tối đa {4} lệnh{5} · lot {6}. Bot chỉ vào lệnh ở tín hiệu MỚI kể từ lúc bật, chạy cả khi đóng trang.": [
+"Enable auto‑entry bot {0} on MT{1}{2}? Frame {3} · max DCA {4} orders{5} · lot {6}. Bot trades only NEW signals after activation, runs in background.",
+"启用自动下单机器人 {0} 于 MT{1}{2}？时间框 {3} · 最大 DCA {4} 笔订单{5} · 手数 {6}. 机器人仅在启用后对新信号下单，页面关闭后仍运行。"
+],
+"BẬT bot.": [
+"Turn bot ON",
+"开启机器人"
+],
+"BẬT copy {0} cho {1}? Từ tín hiệu tiếp theo, lệnh của {2} sẽ được copy sang tài khoản này (cùng lúc với các bot đang bật).": [
+"Enable copy {0} for {1}? From next signal, {2}'s orders will be copied to this account (alongside active bots).",
+"启用复制 {0} 给 {1}？从下一个信号起，{2} 的订单将复制到此账户（与已开启的机器人同时）。"
+],
+"Bật nút": [
+"Press button",
+"按下按钮"
+],
+"Bật/tắt EMA {0}": [
+"Toggle EMA {0}",
+"切换 EMA {0}"
+],
+"Bật/tắt TMA": [
+"Toggle TMA",
+"切换 TMA"
+],
+"Bật/tắt Tín hiệu DCA (bot)": [
+"Toggle DCA signal (bot)",
+"切换 DCA 信号（机器人）"
+],
+"Bật/tắt VWAP ±σ": [
+"Toggle VWAP ±σ",
+"切换 VWAP ±σ"
+],
+"Bật/tắt cho phép vào lệnh trên tài khoản THẬT. Bật cần nhập lại mật khẩu chủ.": [
+"Toggle real‑account trading permission. Enabling requires re‑entering owner password.",
+"切换真实账户下单权限。开启需重新输入管理员密码。"
+],
+"Bắt đầu +": [
+"Start +",
+"开始 +"
+],
+"BỎ TÍCH các ô \"Disable algorithmic trading when…\"": [
+"UNCHECK \"Disable algorithmic trading when…\" boxes",
+"取消勾选“在以下情况下禁用算法交易”"
+],
+"Bỏ chọn ngày: xem các lệnh trong tuần này": [
+"Deselect date: view this week's orders",
+"取消日期选择：查看本周订单"
+],
+"Bỏ lệnh DCA {0}: {1}": [
+"Cancel DCA order {0}: {1}",
+"取消 DCA 订单 {0}：{1}"
+],
+"Bỏ qua bản lưu, gọi AI phân tích mới": [
+"Skip saved version, request new AI analysis",
+"跳过已保存，调用 AI 重新分析"
+],
+"Bỏ qua model này, thử model tiếp theo; tạm nghỉ model trong `cool` giây.": [
+"Skip this model, try next; pause model for `cool` seconds",
+"跳过此模型，尝试下一个；模型暂停 `cool` 秒。"
+],
+"Bỏ tín hiệu {0}:": [
+"Drop signal {0}:",
+"移除信号 {0}："
+],
+"Bỏ tín hiệu: giá {0} đã quá sát / vượt SL {1}.": [
+"Drop signal: price {0} too close / crossed SL {1}.",
+"移除信号：价格 {0} 过近 / 超过止损 {1}。"
+],
+"Bỏ tín hiệu: vốn dưới {0} của bảng vốn (chọn lot cố định).": [
+"Drop signal: equity below {0} of capital table (fixed lot).",
+"移除信号：资金低于资本表的 {0}（固定手数）。"
+],
+"Bỏ {0}: giá cách VWAP quá {1}σ.": [
+"Drop {0}: price > {1}σ from VWAP",
+"移除 {0}：价格距离 VWAP 超过 {1}σ。"
+],
+"CHỜ, CHƯA ĐỦ ĐIỀU KIỆN": [
+"WAIT, CONDITIONS NOT MET",
+"等待，条件未满足"
+],
+"Cao nhất": [
+"High",
+"最高"
+],
+"Cao nhất − thấp nhất cả cụm:": [
+"Cluster high − low:",
+"集群最高‑最低："
+],
+"Cao nhất − thấp nhất cả cụm: {0} → {1}": [
+"Cluster high − low: {0} → {1}",
+"集群最高‑最低：{0} → {1}"
+],
+"Cao {0} nến {1}: {2}": [
+"High {0} candles {1}: {2}",
+"最高 {0} 根蜡烛 {1}: {2}"
+],
+"Cao/Thấp {0} nến": [
+"High/Low {0} candles",
+"最高/最低 {0} 根蜡烛"
+],
+"Chi tiết:": [
+"Details:",
+"详情："
+],
+"Chiến dịch": [
+"Campaign",
+"活动"
+],
+"Chiến dịch {0} DCA kết thúc ({1} lệnh).": [
+"Campaign {0} DCA ended ({1} orders).",
+"活动 {0} DCA 结束（{1} 笔订单）。"
+],
+"Chiến dịch {0} kết thúc (chạm SL {1}).": [
+"Campaign {0} ended (hit SL {1}).",
+"活动 {0} 结束（触及止损 {1}）。"
+],
+"Chiến lược": [
+"Strategy",
+"策略"
+],
+"Chiến lược không hợp lệ.": [
+"Invalid strategy.",
+"无效的策略。"
+],
+"Chiều": [
+"Afternoon",
+"下午"
+],
+"Chiều các lệnh đang mở của bot nguồn (cho copy lệnh đối chiếu). None = chưa rõ / bot không còn.": [
+"View open orders of source bot (for copy‑trade matching). None = unknown / bot stopped.",
+"查看源机器人未平仓订单（用于复制交易匹配）。None = 未知 / 机器人已停止。"
+],
+"Cho phép copy lệnh bot sang tài khoản TIỀN THẬT": [
+"Allow copying bot orders to REAL account",
+"允许将机器人订单复制到真实账户"
+],
+"Cho phép vào lệnh trên tài khoản THẬT (chủ bật/tắt trên buồng lái, lưu PINYIN_ALLOW_REAL trong .env).": [
+"Allow real‑account trading (owner toggles in Cockpit, set PINYIN_ALLOW_REAL in .env).",
+"允许在真实账户下单（管理员在交易驾驶舱开关，.env 中设置 PINYIN_ALLOW_REAL）。"
+],
+"Cho phép vào lệnh trên tài khoản TIỀN THẬT? Buồng lái, bot tự động và lá chắn sẽ giao dịch bằng tiền thật.": [
+"Enable real‑money trading? Cockpit, auto‑bot and shield will trade with real funds.",
+"启用真实资金交易？交易驾驶舱、自动机器人和防护将使用真实资金交易。"
+],
+"Chu kỳ": [
+"Cycle",
+"周期"
+],
+"Chu kỳ tuần H{0}": [
+"Weekly H{0} cycles",
+"H{0} 周周期"
+],
+"Chu kỳ {0}": [
+"Cycle {0}",
+"周期 {0}"
+],
+"Chu kỳ {0} {1} → {2}": [
+"Cycle {0} {1} → {2}",
+"周期 {0} {1} → {2}"
+],
+"Chu kỳ {0} · Quan sát": [
+"Cycle {0} · Observation",
+"周期 {0} · 观察"
+],
+"Chu kỳ {0} · Xác nhận": [
+"Cycle {0} · Confirmation",
+"周期 {0} · 确认"
+],
+"Chu kỳ {0} · Ưu tiên": [
+"Cycle {0} · Priority",
+"周期 {0} · 优先"
+],
+"Chu kỳ {0} …": [
+"Cycle {0} …",
+"周期 {0} …"
+],
+"Chu kỳ {0}-H{1}": [
+"Cycle {0}-H{1}",
+"周期 {0}-H{1}"
+],
+"Chu kỳ {0}-H{1} …": [
+"Cycle {0}-H{1} …",
+"周期 {0}-H{1} …"
+],
+"Chuyển phiên": [
+"Switch session",
+"切换会话"
+],
+"Chuẩn hóa số điện thoại để so: chỉ giữ số, +{0} / {1} đầu → {2}.": [
+"Normalize phone number for comparison: keep digits only, +{0}/{1} prefix → {2}.",
+"规范电话号码以便比较：仅保留数字，+{0}/{1} 前缀 → {2}。"
+],
+"Chuỗi đã kết thúc": [
+"Sequence ended",
+"序列已结束"
+],
+"Chào anh, em là": [
+"Hello sir, I am",
+"您好，我是"
+],
+"Chính sách tiền tệ": [
+"Monetary policy",
+"货币政策"
+],
+"Chúng tôi nỗ lực hết sức để giữ cho nội dung của mình chính xác và cập nhật, nhưng chúng tôi không đảm bảo": [
+"We strive to keep content accurate and up‑to‑date, but we cannot guarantee",
+"我们努力保持内容的准确和最新，但无法保证"
+],
+"Chúng tôi nỗ lực hết sức để giữ cho nội dung của mình chính xác và cập nhật, nhưng chúng tôi không đảm bảo rằng nội dung đó đầy đủ, chính xác hoặc hiện hành. Kết quả tính toán chỉ là ước tính, không bao gồm các chi phí như chênh lệch giá, hoa hồng, phí hoán đổi và trượt giá. Dữ liệu thị trường được cung cấp bởi bên thứ ba và có thể bị chậm trễ.": [
+"We strive to keep content accurate and current, but cannot guarantee completeness, accuracy or timeliness. Calculations are estimates and exclude costs such as spreads, commissions, swap fees and slippage. Market data is third‑party and may be delayed.",
+"我们努力保持内容的准确和最新，但不能保证其完整、准确或时效性。计算结果仅为估算，不包括点差、佣金、掉期费和滑点等费用。市场数据由第三方提供，可能存在延迟。"
+],
+"Chưa chạy": [
+"Not running",
+"未运行"
+],
+"Chưa có bản phân tích cho": [
+"No analysis for",
+"暂无分析"
+],
+"Chưa có chiến dịch DCA đang chạy.": [
+"No active DCA campaign.",
+"暂无进行中的 DCA 活动。"
+],
+"Chưa có file EA trên máy chủ.": [
+"No EA file on server.",
+"服务器上没有 EA 文件。"
+],
+"Chưa có giá {0} (thị trường có thể đang đóng).": [
+"No price {0} (market may be closed).",
+"没有价格 {0}（市场可能已关闭）。"
+],
+"Chưa có hoạt động.": [
+"No activity.",
+"暂无活动。"
+],
+"Chưa có khách nào đăng ký. Gửi link https://pinyin.id.vn/dang-ky cho khách.": [
+"No customers registered. Send https://pinyin.id.vn/dang-ky to prospects.",
+"暂无客户注册。请将 https://pinyin.id.vn/dang-ky 链接发送给潜在客户。"
+],
+"Chưa có lệnh nào đóng.": [
+"No orders closed.",
+"暂无已平仓订单。"
+],
+"Chưa có lệnh trên {0}.": [
+"No orders on {0}.",
+"在 {0} 上没有订单。"
+],
+"Chưa có lệnh.": [
+"No orders.",
+"暂无订单。"
+],
+"Chưa có tài khoản nào đã lưu.": [
+"No saved accounts.",
+"暂无已保存账户。"
+],
+"Chưa có tài khoản nào. Bấm": [
+"No accounts. Tap",
+"暂无账户。点击"
+],
+"Chưa có tài khoản?": [
+"No account?",
+"没有账户？"
+],
+"Chưa có tín hiệu.": [
+"No signal.",
+"暂无信号。"
+],
+"Chưa dời được:": [
+"Cannot move:",
+"无法移动："
+],
+"Chưa gửi được thư, thử lại sau ít phút hoặc nhắn Telegram @TuanKom.": [
+"Failed to send email, try again in a few minutes or message Telegram @TuanKom.",
+"未能发送邮件，请稍后重试或发送 Telegram @TuanKom。"
+],
+"Chưa gửi được thư, thử lại sau ít phút.": [
+"Failed to send email, try again in a few minutes.",
+"未能发送邮件，请稍后重试。"
+],
+"Chưa lấy được nến (máy chủ chậm hoặc mất kết nối), đang thử lại…": [
+"Failed to fetch candles (server slow or disconnected), retrying…",
+"未能获取K线（服务器慢或断开），正在重试…"
+],
+"Chưa lấy được nến:": [
+"Failed to fetch candles:",
+"未能获取K线："
+],
+"Chưa mở tuần mới": [
+"New week not opened",
+"新周未开启"
+],
+"Chưa nhận thư xác nhận?": [
+"No confirmation email received?",
+"未收到确认邮件？"
+],
+"Chưa nhận được thư xác nhận? Nhập email đã đăng ký để gửi lại.": [
+"No confirmation email? Enter your registered email to resend.",
+"未收到确认邮件？请输入已注册的邮箱重新发送。"
+],
+"Chưa qua GMC và chưa quét SL+: nhồi thêm lệnh Buy. Giảm qua GMC và cắn SL+: nghỉ, chờ ngày hôm sau": [
+"Not past GMC and SL+ not hit: add Buy orders. Drop below GMC and hit SL+: stop, wait for next day",
+"未突破GMC且未触及SL+：追加Buy单。跌破GMC并触及SL+：停止，等待次日"
+],
+"Chưa thấy nhóm nào. Thêm bot @{0} vào nhóm (kênh: thêm làm quản trị viên), nhắn {1} tin bất kỳ trong nhóm rồi bấm Kết nối lại.": [
+"No group found. Add bot @{0} to a group (channel: set as admin), send any message {1} in the group then click Reconnect.",
+"未检测到群组。将机器人 @{0} 添加至群组（频道：设为管理员），在群内发送任意消息 {1} 后点击重新连接。"
+],
+"Chưa tới": [
+"Not reached",
+"未到达"
+],
+"Chưa đăng nhập.": [
+"Not logged in.",
+"未登录。"
+],
+"Chưa đặt GEMINI_API_KEY trong .env.": [
+"GEMINI_API_KEY not set in .env.",
+"未在 .env 中设置 GEMINI_API_KEY。"
+],
+"Chưa đủ nến": [
+"Insufficient candles",
+"K线不足"
+],
+"Chưa đủ nến để tính dải TMA.": [
+"Not enough candles to calculate TMA band.",
+"K线不足，无法计算TMA波段。"
+],
+"Chưa đủ nến để tính mức vào.": [
+"Not enough candles to compute entry level.",
+"K线不足，无法计算入场水平。"
+],
+"Chạm TP{0} {1} → chốt {2}%": [
+"Hit TP{0} {1} → close {2}%",
+"触及 TP{0} {1} → 平仓 {2}%"
+],
+"Chạy khi có nến mới đóng: thoát chủ động, mở chiến dịch / thêm lệnh DCA, cập nhật TP.": [
+"Run on new closed candle: active exit, launch campaign / add DCA order, update TP.",
+"在新收盘K线时运行：主动退出，开启策略/添加DCA单，更新止盈。"
+],
+"Chạy mỗi vòng ({0} giây): phát hiện chiến dịch đã kết thúc, giá chạm TP{1}/TP{2} → chốt từng phần, dời SL hòa vốn.": [
+"Loop every ({0}s): detect finished campaign, price hits TP{1}/TP{2} → partial close, move SL to breakeven.",
+"每轮循环 ({0} 秒)：检测已结束的策略，价格触及 TP{1}/TP{2} → 部分平仓，SL 移至保本。"
+],
+"Chạy trên máy chủ {0}/{1}, không cần mở trang.": [
+"Running on server {0}/{1}, no page needed.",
+"在服务器 {0}/{1} 上运行，无需打开页面。"
+],
+"Chế độ không hợp lệ.": [
+"Invalid mode.",
+"模式无效。"
+],
+"Chỉ BUY": [
+"BUY only",
+"仅 BUY"
+],
+"Chỉ SELL": [
+"SELL only",
+"仅 SELL"
+],
+"Chỉ báo HA Pro v{0} (như TradingView)": [
+"HA Pro indicator v{0} (like TradingView)",
+"HA Pro 指标 v{0}（类似 TradingView）"
+],
+"Chỉ số giá sản xuất": [
+"Producer Price Index",
+"生产者价格指数"
+],
+"Chỉ số giá tiêu dùng (lạm phát)": [
+"Consumer Price Index (inflation)",
+"消费者价格指数（通胀）"
+],
+"Chỉ trả lời đúng {0} chữ: OK": [
+"Reply with exactly {0} characters: OK",
+"仅回复 {0} 个字符：OK"
+],
+"Chỉ vào lệnh trong khung giờ": [
+"Enter trades only within time window",
+"仅在时间窗口内入场"
+],
+"Chốt": [
+"Close",
+"平仓"
+],
+"Chốt lệnh #{0}: {1} {2} {3} lot @ {4} (hiện {5} {6})?": [
+"Close order #{0}: {1} {2} {3} lot @ {4} (currently {5} {6})?",
+"平仓订单 #{0}：{1} {2} {3} 手 @ {4}（当前 {5} {6}）？"
+],
+"Chốt lời": [
+"Take profit",
+"止盈"
+],
+"Chốt lời hoặc SL+": [
+"Take profit or SL+",
+"止盈或 SL+"
+],
+"Chốt lời trong ngày": [
+"Intraday take profit",
+"日内止盈"
+],
+"Chốt lời trong ngày, có thể Buy lướt sóng": [
+"Intraday TP, may add wave-buy",
+"日内止盈，可进行波段买入"
+],
+"Chốt lời và nghỉ": [
+"Take profit and exit",
+"止盈并退出"
+],
+"Chốt pct% khối lượng chiến dịch (tính trên khối lượng lúc chạm TP{0}), chia vào các lệnh theo thứ tự.": [
+"Close pct% of campaign volume (based on volume at TP{0}), allocate to orders sequentially.",
+"在 TP{0} 时的持仓量的 pct% 平仓，按顺序分配至各订单。"
+],
+"Chốt tất cả": [
+"Close all",
+"全部平仓"
+],
+"Chốt {0} / {1} lot #{2} {3} @ {4} ({5})": [
+"Close {0}/{1} lot #{2} {3} @ {4} ({5})",
+"平仓 {0}/{1} 手 #{2} {3} @ {4}（{5}）"
+],
+"Chốt {0} {1} {2} {3} lot (hiện {4} {5})?": [
+"Close {0} {1} {2} {3} lot (currently {4} {5})?",
+"平仓 {0} {1} {2} {3} 手（当前 {4} {5}）？"
+],
+"Chốt {0}% khi bắt đầu trailing": [
+"Close {0}% when trailing starts",
+"启动跟踪止损时平仓 {0}%"
+],
+"Chốt ảo pct% khối lượng (tính trên khối lượng lúc chạm TP{0}). Trả tỉ lệ so với khối lượng đang có.": [
+"Virtual close pct% of volume (based on volume at TP{0}). Return proportion relative to current volume.",
+"虚拟平仓 pct%（基于 TP{0} 时的持仓量），按当前持仓比例返还。"
+],
+"Chờ @": [
+"Waiting @",
+"等待 @"
+],
+"Chờ {0} hoặc {1}": [
+"Wait {0} or {1}",
+"等待 {0} 或 {1}"
+],
+"Chủ nhật": [
+"Sunday",
+"星期日"
+],
+"Chững lại: đi ngang hoặc nhích nhẹ đến {0}": [
+"Stagnant: move sideways or slight shift to {0}",
+"停滞：横向或轻微波动至 {0}"
+],
+"Con trỏ: bấm chọn hình, kéo để di chuyển, kéo ô vuông để chỉnh. Chuột trái: vẽ / chọn · chuột phải: thoát (tắt công cụ, bỏ chọn) · hoặc bấm lại nút công cụ / Esc": [
+"Cursor: click to select shape, drag to move, drag square to resize. Left click: draw/select · Right click: exit (close tool, deselect) · or press tool button again / Esc",
+"光标：点击选择形状，拖动移动，拖动方框调整。左键：绘制/选择 · 右键：退出（关闭工具，取消选择）· 或再次点击工具按钮 / Esc"
+],
+"Cuối ngày, chờ đóng nến D{0}": [
+"End of day, wait for D{0} candle close",
+"收盘时，等待 D{0} K线收盘"
+],
+"Các bot mà tài khoản copy đang theo (mặc định Bot {0}).": [
+"Bots the copy account follows (default Bot {0}).",
+"复制账户正在跟随的机器人（默认 Bot {0}）。"
+],
+"Các model Gemini đang quá tải hoặc hết hạn mức miễn phí": [
+"Gemini models are overloaded or free quota exhausted",
+"Gemini 模型已超载或免费配额已用完"
+],
+"Các nhà môi giới bên thứ ba": [
+"Third‑party brokers",
+"第三方经纪商"
+],
+"Các nhà môi giới được đề cập trên trang web này là các công ty độc lập. Hãy kiểm tra xem bất kỳ nhà môi giới nào": [
+"Brokers listed on this site are independent firms. Please check any broker",
+"本网站列出的经纪商为独立公司。请检查任何经纪商"
+],
+"Các nhà môi giới được đề cập trên trang web này là các công ty độc lập. Hãy kiểm tra xem bất kỳ nhà môi giới nào có được cơ quan quản lý tại quốc gia của bạn cấp phép hay không, và đọc kỹ các điều khoản và điều kiện rủi ro của họ trước khi mở tài khoản. Các sản phẩm và đòn bẩy dành cho bạn phụ thuộc vào quốc gia cư trú của bạn.": [
+"Brokers listed on this site are independent firms. Verify that any broker is licensed by your country's regulator and read their risk terms before opening an account. Available products and leverage depend on your residence.",
+"本网站列出的经纪商为独立公司。请确认任何经纪商是否获得您所在国家监管机构的许可，并在开户前仔细阅读其风险条款。可用的产品和杠杆取决于您的居住国。"
+],
+"Các sản phẩm và đòn bẩy dành cho bạn phụ thuộc vào quốc gia cư trú của bạn.": [
+"Products and leverage available to you depend on your residence country.",
+"可用的产品和杠杆取决于您的居住国家。"
+],
+"Các tài khoản MT{0} của khách: [{n, uid, key, name}].": [
+"Client MT{0} accounts: [{n, uid, key, name}].",
+"客户 MT{0} 账户: [{n, uid, key, name}]."
+],
+"Cách": [
+"Method",
+"方式"
+],
+"Cách EMA {0}": [
+"EMA {0} method",
+"EMA {0} 方法"
+],
+"Cách tính lot không hợp lệ.": [
+"Invalid lot calculation.",
+"无效的手数计算。"
+],
+"Cách tối thiểu (nến)": [
+"Minimum method (candles)",
+"最小方式（K线）"
+],
+"Cán cân thương mại": [
+"Trade balance",
+"贸易平衡"
+],
+"Cân bằng": [
+"Balance",
+"平衡"
+],
+"Cây nến mộng (≥{0} pip, bóng ngắn)": [
+"Dream candle (≥{0} pip, short wick)",
+"梦幻K线（≥{0} 点，短影）"
+],
+"Còn": [
+"Remaining",
+"剩余"
+],
+"Có nhiều tài khoản đăng ký bằng số / Telegram này:": [
+"Multiple accounts registered with this phone/Telegram:",
+"多个账户使用此手机号/Telegram 注册："
+],
+"Có tick trong {0} phút gần nhất (cuối tuần / nghỉ lễ thì bỏ qua).": [
+"Tick present in the last {0} minutes (skip weekends/holidays).",
+"最近 {0} 分钟内有 tick（周末/节假日跳过）。"
+],
+"Có {0} tài khoản copy đang theo bot này. Đổi chúng sang bot khác rồi mới xóa.": [
+"There are {0} copy accounts following this bot. Switch them to another bot before deleting.",
+"有 {0} 个复制账户正在跟随此机器人。请先切换到其他机器人后再删除。"
+],
+"Cơ hội việc làm JOLTS": [
+"JOLTS job opportunities",
+"JOLTS 工作机会"
+],
+"Cả hai": [
+"Both",
+"两者"
+],
+"Cả ngày D{0}": [
+"All day D{0}",
+"整天 D{0}"
+],
+"Cả ngày D{0} …": [
+"All day D{0} …",
+"整天 D{0} …"
+],
+"Cả tuần": [
+"Whole week",
+"整周"
+],
+"Cả tuần …": [
+"Whole week …",
+"整周 …"
+],
+"Cản @": [
+"Block @",
+"阻止 @"
+],
+"Cấp mật khẩu mới cho": [
+"Set new password for",
+"为以下对象设置新密码："
+],
+"Cấu trúc trung hạn nghiêng về phía": [
+"Mid‑term structure leaning towards",
+"中期结构倾向于"
+],
+"Cấu trúc:": [
+"Structure:",
+"结构："
+],
+"Cấu trúc: {0}": [
+"Structure: {0}",
+"结构：{0}"
+],
+"Cần cho giao dịch trước khi cho dùng bot.": [
+"Trading required before using the bot.",
+"使用机器人前需先进行交易。"
+],
+"Cập nhật lần cuối ngày {0} tháng {1} năm {2}": [
+"Last updated on {0}/{1}/{2}",
+"最后更新于 {2}年{1}月{0}日"
+],
+"Cắn SL+ thì bỏ qua, mai vào lại": [
+"Hit SL+ – skip, re‑enter tomorrow",
+"触发 SL+，跳过，明日重新入场"
+],
+"Cắn mất SL, nghỉ chờ ngày hôm sau": [
+"SL hit – pause until next day",
+"止损被触发，暂停至次日"
+],
+"Cắt hết lệnh, chờ hôm sau": [
+"Close all orders, wait for next day",
+"全部平仓，等待次日"
+],
+"Cắt hết lệnh, chờ ngày hôm sau": [
+"Close all orders, wait for next day",
+"全部平仓，等待次日"
+],
+"Cắt lệnh {0} {1} {2} lot rồi vào {3} {4} lot?": [
+"Close {0} {1} {2} lot then enter {3} {4} lot?",
+"平掉 {0} {1} {2} 手后再开 {3} {4} 手？"
+],
+"Cắt và đảo": [
+"Close and reverse",
+"平仓并反向"
+],
+"Cặp": [
+"Pair",
+"货币对"
+],
+"Cặp tiền": [
+"Currency pair",
+"币种对"
+],
+"Cộng (cao − thấp) của từng nến": [
+"Sum (high‑low) of each candle",
+"每根K线的（最高‑最低）之和"
+],
+"DCA giữ rổ tới đảo chiều (không SL): không tính được lot theo % rủi ro, dùng lot cố định / bảng vốn.": [
+"DCA holds basket until reversal (no SL): cannot compute lot by risk %, use fixed lot / capital table.",
+"DCA持仓至反转（无止损）：无法按风险%计算手数，使用固定手数/资金表。"
+],
+"DCA: SL chung dời theo lệnh DCA {0}: {1} → {2} ({3}), dời {4} lệnh trước.": [
+"DCA: Common SL moved by DCA order {0}: {1} → {2} ({3}), shift {4} previous orders.",
+"DCA：公共止损随DCA订单 {0} 移动：{1} → {2}（{3}），向前移动 {4} 笔订单。"
+],
+"DCA: bỏ tín hiệu {0}, ngoài khung giờ {1} (giờ VN).": [
+"DCA: discard signal {0}, outside time window {1} (VN time).",
+"DCA：丢弃信号 {0}，超出时间窗口 {1}（越南时间）。"
+],
+"DCA: bỏ {0}, giá cách VWAP quá {1}σ.": [
+"DCA: discard {0}, price deviates from VWAP by >{1}σ.",
+"DCA：丢弃 {0}，价格偏离VWAP超过 {1}σ。"
+],
+"DCA: chưa có giá {0}.": [
+"DCA: price {0} not available.",
+"DCA：暂无价格 {0}。"
+],
+"DCA: chạm TP{0} → dời SL về hòa vốn {1}": [
+"DCA: hit TP{0} → move SL to breakeven {1}",
+"DCA：触及 TP{0} → 将止损移至保本 {1}"
+],
+"DCA: còn {0} lệnh bot cũ đang mở, chờ chúng đóng mới bắt đầu chiến dịch.": [
+"DCA: {0} old bot orders still open, wait until they close to start campaign.",
+"DCA：还有 {0} 笔旧机器人订单未平，待其关闭后再启动。"
+],
+"DCA: giá trị {0} không hợp lệ.": [
+"DCA: value {0} invalid.",
+"DCA：数值 {0} 无效。"
+],
+"DCA: giá {0} đã quá gần/vượt SL {1}, bỏ tín hiệu.": [
+"DCA: price {0} too close/exceeds SL {1}, discard signal.",
+"DCA：价格 {0} 已过于接近/超出止损 {1}，丢弃信号。"
+],
+"DCA: khung giờ dạng {0}-{1} (giờ VN).": [
+"DCA: time window {0}-{1} (VN time).",
+"DCA：时间窗口 {0}-{1}（越南时间）。"
+],
+"DCA: không tính được lot theo % rủi ro.": [
+"DCA: cannot calculate lot by risk %.",
+"DCA：无法按风险%计算手数。"
+],
+"DCA: rủi ro {0}% chia {1} lệnh ra lot {2} < tối thiểu {3}, bỏ tín hiệu.": [
+"DCA: risk {0}% across {1} orders gives lot {2} < min {3}, discard.",
+"DCA：风险 {0}% 分配到 {1} 笔订单得到手数 {2} < 最小 {3}，丢弃。"
+],
+"DCA: vốn dưới mức {0}$ của bảng vốn.": [
+"DCA: capital below ${0} threshold in capital table.",
+"DCA：资本低于资金表中的 ${0}。"
+],
+"DCA: {0} không hợp lệ.": [
+"DCA: {0} invalid.",
+"DCA：{0} 无效。"
+],
+"DCA: {0} phải từ {1} đến {2}.": [
+"DCA: {0} must be between {1} and {2}.",
+"DCA：{0} 必须在 {1} 到 {2} 之间。"
+],
+"DCA: đóng chiến dịch ({0})": [
+"DCA: close campaign ({0})",
+"DCA：关闭策略 ({0})"
+],
+"Danh sách {0} (mới nhất trước, tối đa {1})": [
+"{0} list (newest first, max {1})",
+"{0} 列表（最新在前，最多 {1}）"
+],
+"Doanh số bán lẻ": [
+"Retail sales",
+"零售额"
+],
+"Duyệt tại: {0}/quan-ly": [
+"Approve at: {0}/quan-ly",
+"审核于：{0}/quan-ly"
+],
+"Dán key Groq (gsk_...).": [
+"Paste Groq key (gsk_...).",
+"粘贴 Groq 密钥（gsk_...）。"
+],
+"Dán mã này vào ô \"Mã kết nối PinYin\" của EA PinYinBridge trên MT{0} sàn đó.": [
+"Paste this code into the \"PinYin Connection Code\" field of the PinYinBridge EA on MT{0}.",
+"将此代码粘贴到该 MT{0} 平台上 PinYinBridge EA 的“PinYin 连接码”框中。"
+],
+"Dòng Q gửi EA mỗi lần đồng bộ: khoảng TP{0} để EA đặt TP sẵn trên sàn.": [
+"Q line sent to EA each sync: around TP{0} so EA can pre‑set TP on exchange.",
+"每次同步向 EA 发送的 Q 行：约 TP{0}，以便 EA 在交易所预设 TP。"
+],
+"Dùng cài đặt đang nhập ở ô": [
+"Use current settings in the field",
+"使用当前输入框中的设置"
+],
+"DƯỚI VWAP": [
+"BELOW VWAP",
+"低于 VWAP"
+],
+"DƯỚI giá mở D{0}": [
+"BELOW opening price D{0}",
+"低于开盘价 D{0}"
+],
+"DƯỚI {0}": [
+"BELOW {0}",
+"低于 {0}"
+],
+"Dưới TMA dưới": [
+"Below lower TMA",
+"低于下方 TMA"
+],
+"Dưới VWAP": [
+"Below VWAP",
+"低于 VWAP"
+],
+"Dải TMA trên / giữa / dưới của bot DCA": [
+"Bot DCA upper / middle / lower TMA band",
+"DCA 机器人上/中/下 TMA 带"
+],
+"Dấu … là pha / chu kỳ đang chạy. Biên độ = giá cao nhất − giá thấp nhất (tính bằng pip).": [
+"The … indicates current phase/cycle. Range = high‑low (in pips).",
+"… 表示当前阶段/周期。波幅 = 最高价‑最低价（以点计）。"
+],
+"Dốc lên": [
+"Upward slope",
+"上升倾斜"
+],
+"Dốc xuống": [
+"Downward slope",
+"下降倾斜"
+],
+"Dời SL hòa vốn ngay (giá vào + khóa) cho các lệnh đang lãi đủ xa.": [
+"Move SL to breakeven now (entry+lock) for sufficiently profitable orders.",
+"立即将止损移至保本（入场价+锁定）以锁定足够盈利的订单。"
+],
+"Dữ liệu MT{0} hiện tại (JSON):": [
+"Current MT{0} data (JSON):",
+"当前 MT{0} 数据（JSON）："
+],
+"Dữ liệu không hợp lệ.": [
+"Invalid data.",
+"数据无效。"
+],
+"Dự báo": [
+"Forecast",
+"预测"
+],
+"Dự báo: {0}": [
+"Forecast: {0}",
+"预测: {0}"
+],
+"EA bản {0}": [
+"EA version {0}",
+"EA版本 {0}"
+],
+"EA cần bản {0} (tải lại EA).": [
+"EA requires version {0} (reload EA).",
+"EA需要版本 {0}（重新加载EA）。"
+],
+"EA không phản hồi, lệnh đã hủy. Kiểm tra MT{0} của bạn.": [
+"EA not responding, order cancelled. Check your MT{0}.",
+"EA未响应，订单已取消。检查您的MT{0}。"
+],
+"EA trên MT{0} của bạn đang offline.": [
+"EA on your MT{0} is offline.",
+"您在MT{0}上的EA离线。"
+],
+"EA trên MT{0} của bạn đang offline. Mở MT{1} và kiểm tra EA PinYinBridge.": [
+"EA on your MT{0} is offline. Open MT{1} and check PinYinBridge EA.",
+"您在MT{0}上的EA离线。打开MT{1}并检查PinYinBridge EA。"
+],
+"EA trên MT{0} của bạn đang offline. Mở MT{1}, gắn EA PinYinBridge rồi bật bot.": [
+"EA on your MT{0} is offline. Open MT{1}, attach PinYinBridge EA and start the bot.",
+"您在MT{0}上的EA离线。打开MT{1}，挂载PinYinBridge EA并启动机器人。"
+],
+"EMA{0} (lệnh chờ)": [
+"EMA{0} (pending order)",
+"EMA{0}（挂单）"
+],
+"EMA{0} (nến hiện tại) và Cao/Thấp {1} nến đã đóng của khung tf.": [
+"EMA{0} (current candle) and High/Low {1} of closed candles on timeframe.",
+"EMA{0}（当前K线）和已收盘K线的最高/最低 {1}（时间框架）。"
+],
+"Email không hợp lệ.": [
+"Invalid email.",
+"无效的电子邮件。"
+],
+"Email này đã được đăng ký.": [
+"This email is already registered.",
+"此电子邮件已被注册。"
+],
+"Email đã được xác nhận trước đó. Tài khoản đang chờ duyệt hoặc đã dùng được.": [
+"Email already verified. Account pending approval or active.",
+"电子邮件已验证。账户待审核或已可使用。"
+],
+"Email đăng nhập PinYin CKG của bạn": [
+"Your PinYin CKG login email",
+"您的PinYin CKG登录邮箱"
+],
+"Email để nhận thư thử": [
+"Email to receive test mail",
+"用于接收测试邮件的邮箱"
+],
+"Fibonacci thoái lui: kéo từ đỉnh xuống đáy (hoặc ngược lại)": [
+"Retracement Fibonacci: drag from peak to trough (or reverse)",
+"回撤斐波那契：从峰拖到谷（或相反）"
+],
+"GIẢM": [
+"DOWN",
+"下跌"
+],
+"GIẢM ↘": [
+"DOWN ↘",
+"下跌 ↘"
+],
+"GIẰNG CO": [
+"COIL",
+"线圈"
+],
+"Gemini (hay quá tải / hết lượt miễn phí)": [
+"Gemini (overloaded / free quota exhausted)",
+"Gemini（过载/免费配额已用完）"
+],
+"Gemini ({0}) báo lỗi {1}: {2}": [
+"Gemini ({0}) error {1}: {2}",
+"Gemini（{0}）错误 {1}：{2}"
+],
+"Gemini ({0}) không phản hồi: {1}": [
+"Gemini ({0}) no response: {1}",
+"Gemini（{0}）无响应：{1}"
+],
+"Gemini không trả về nội dung (có thể bị bộ lọc an toàn chặn).": [
+"Gemini returned no content (may be blocked by safety filter).",
+"Gemini未返回内容（可能被安全过滤器拦截）。"
+],
+"Ghi chú chữ": [
+"Text note",
+"文字备注"
+],
+"Ghi/sửa {0} dòng trong .env và cập nhật biến môi trường đang chạy.": [
+"Edit {0} lines in .env and refresh running environment variables.",
+"编辑 .env 中的 {0} 行并刷新运行中的环境变量。"
+],
+"Giao dịch EA": [
+"EA Trading",
+"EA交易"
+],
+"Giao dịch ngoại hối và CFD ký quỹ tiềm ẩn rủi ro cao và có thể không phù hợp với tất cả các nhà đầu tư.": [
+"Forex and CFD margin trading carries high risk and may not suit all investors.",
+"外汇和CFD保证金交易风险高，可能不适合所有投资者。"
+],
+"Giao dịch ngoại hối và CFD ký quỹ tiềm ẩn rủi ro cao và có thể không phù hợp với tất cả các nhà đầu tư. Đòn bẩy có thể gây bất lợi cũng như có lợi cho bạn, và bạn có thể mất nhiều hơn số tiền gửi ban đầu với một số nhà cung cấp. Nội dung trên PinYin CKG chỉ dành cho mục đích giáo dục, tham khảo và hỗ trợ, không phải là lời khuyên đầu tư.": [
+"Forex and CFD margin trading carries high risk and may not suit all investors. Leverage can work both ways; you may lose more than your initial deposit with some providers. Content on PinYin CKG is for education, reference and support only, not investment advice.",
+"外汇和CFD保证金交易风险高，可能不适合所有投资者。杠杆可能带来不利，也可能有利，您可能会亏损超过初始存款。PinYin CKG 上的内容仅用于教育、参考和支持，不构成投资建议。"
+],
+"Giao dịch ngoại hối và hợp đồng chênh lệch (CFD) là những công cụ phức tạp được giao dịch ký quỹ.": [
+"Forex and contracts for difference (CFD) are complex margin‑traded instruments.",
+"外汇和差价合约（CFD）是复杂的保证金交易工具。"
+],
+"Giao dịch ngoại hối và hợp đồng chênh lệch (CFD) là những công cụ phức tạp được giao dịch ký quỹ. Một tỷ lệ lớn các tài khoản nhà đầu tư cá nhân thua lỗ khi giao dịch CFD. Bạn nên cân nhắc xem mình có hiểu cách thức hoạt động của các sản phẩm này hay không và liệu mình có đủ khả năng chấp nhận rủi ro cao khi mất tiền hay không.": [
+"Forex and CFDs are complex margin instruments. A large share of retail accounts lose money trading CFDs. Consider whether you understand these products and can tolerate high risk of loss.",
+"外汇和CFD是复杂的保证金工具。大量散户账户在交易CFD时亏损。请考虑您是否了解这些产品并能承受高风险损失。"
+],
+"Giá dưới": [
+"Price below",
+"价格低于"
+],
+"Giá dưới EMA {0}": [
+"Price below EMA {0}",
+"价格低于 EMA {0}"
+],
+"Giá dưới VWAP": [
+"Price below VWAP",
+"价格低于 VWAP"
+],
+"Giá hiện tại": [
+"Current price",
+"当前价格"
+],
+"Giá hiện tại trên tài khoản tín hiệu (để xét trượt giá trước khi vào lệnh copy trễ).": [
+"Current price on signal account (to check slippage before delayed copy entry).",
+"信号账户上的当前价格（用于在延迟复制入场前检查滑点）。"
+],
+"Giá hiện tại {0} đang nằm dưới EMA {1} {2} giá. Cấu trúc trung hạn nghiêng về phía giảm. Độ dốc EMA: đang hướng lên.": [
+"Current price {0} is below EMA {1} {2} points. Mid-term structure leans down. EMA slope: pointing up.",
+"当前价格 {0} 位于 EMA {1} {2} 点以下。中期结构倾向下跌。EMA 斜率：向上。"
+],
+"Giá hiện tại {0} đang nằm dưới EMA {1} {2} giá. Cấu trúc trung hạn nghiêng về phía giảm. Độ dốc EMA: đang hướng xuống.": [
+"Current price {0} is below EMA {1} {2} points. Mid-term structure leans down. EMA slope: pointing down.",
+"当前价格 {0} 位于 EMA {1} {2} 点以下。中期结构倾向下跌。EMA 斜率：向下。"
+],
+"Giá hiện tại {0} đang nằm dưới EMA {1} {2} giá. Cấu trúc trung hạn nghiêng về phía giảm. Độ dốc EMA: đang hướng xuống. Giá vào lệnh:": [
+"Current price {0} is below EMA {1} {2} points. Mid‑term structure leans down. EMA slope: down. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以下。中期结构偏跌。EMA斜率：向下。入场价："
+],
+"Giá hiện tại {0} đang nằm dưới EMA {1} {2} giá. Xu hướng ngắn hạn nghiêng về phía giảm. Độ dốc EMA: đang hướng lên. Giá vào lệnh:": [
+"Current price {0} is below EMA {1} {2} points. Short-term trend leans down. EMA slope: pointing up. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以下。短期趋势倾向下跌。EMA 斜率：向上。入场价："
+],
+"Giá hiện tại {0} đang nằm dưới EMA {1} {2} giá. Xu hướng ngắn hạn nghiêng về phía giảm. Độ dốc EMA: đang hướng xuống.": [
+"Current price {0} is below EMA {1} {2} points. Short-term trend leans down. EMA slope: pointing down.",
+"当前价格 {0} 位于 EMA {1} {2} 点以下。短期趋势倾向下跌。EMA 斜率：向下。"
+],
+"Giá hiện tại {0} đang nằm dưới EMA {1} {2} giá. Xu hướng ngắn hạn nghiêng về phía giảm. Độ dốc EMA: đang hướng xuống. Giá vào lệnh:": [
+"Current price {0} is below EMA {1} {2} points. Short‑term trend down. EMA slope: down. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以下。短期趋势向下。EMA斜率：向下。入场价："
+],
+"Giá hiện tại {0} đang nằm trên EMA {1} {2} giá. Cấu trúc trung hạn nghiêng về phía tăng. Độ dốc EMA: đang hướng lên. Giá vào lệnh:": [
+"Current price {0} is above EMA {1} {2} points. Mid‑term structure leans up. EMA slope: up. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以上。中期结构偏涨。EMA斜率：向上。入场价："
+],
+"Giá hiện tại {0} đang nằm trên EMA {1} {2} giá. Cấu trúc trung hạn nghiêng về phía tăng. Độ dốc EMA: đang hướng xuống. Giá vào lệnh:": [
+"Current price {0} is above EMA {1} {2} points. Mid-term structure leans up. EMA slope: pointing down. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以上。中期结构倾向上涨。EMA 斜率：向下。入场价："
+],
+"Giá hiện tại {0} đang nằm trên EMA {1} {2} giá. Cấu trúc trung hạn nghiêng về phía tăng. Độ dốc EMA: đi ngang. Giá vào lệnh:": [
+"Current price {0} is above EMA {1} {2} points. Mid-term structure leans up. EMA slope: flat. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以上。中期结构倾向上涨。EMA 斜率：平稳。入场价："
+],
+"Giá hiện tại {0} đang nằm trên EMA {1} {2} giá. Xu hướng ngắn hạn nghiêng về phía tăng. Độ dốc EMA: đang hướng lên.": [
+"Current price {0} is above EMA {1} {2} points. Short‑term trend up. EMA slope: up.",
+"当前价格 {0} 位于 EMA {1} {2} 点以上。短期趋势向上。EMA斜率：向上。"
+],
+"Giá hiện tại {0} đang nằm trên EMA {1} {2} giá. Xu hướng ngắn hạn nghiêng về phía tăng. Độ dốc EMA: đang hướng lên. Giá vào lệnh:": [
+"Current price {0} is above EMA {1} {2} points. Short‑term trend up. EMA slope: up. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以上。短期趋势向上。EMA斜率：向上。入场价："
+],
+"Giá hiện tại {0} đang nằm trên EMA {1} {2} giá. Xu hướng ngắn hạn nghiêng về phía tăng. Độ dốc EMA: đang hướng xuống.": [
+"Current price {0} is above EMA {1} {2} points. Short-term trend leans up. EMA slope: pointing down.",
+"当前价格 {0} 位于 EMA {1} {2} 点以上。短期趋势倾向上涨。EMA 斜率：向下。"
+],
+"Giá hiện tại {0} đang nằm trên EMA {1} {2} giá. Xu hướng ngắn hạn nghiêng về phía tăng. Độ dốc EMA: đang hướng xuống. Giá vào lệnh:": [
+"Current price {0} is above EMA {1} {2} points. Short-term trend leans up. EMA slope: pointing down. Entry price:",
+"当前价格 {0} 位于 EMA {1} {2} 点以上。短期趋势倾向上涨。EMA 斜率：向下。入场价："
+],
+"Giá hiện tại {0} đang nằm {1} {2} {3} giá. {4} Độ dốc EMA: {5}.": [
+"Current price {0} is {1} {2} {3} points. {4} EMA slope: {5}.",
+"当前价格 {0} {1} {2} {3} 点。{4} EMA 斜率：{5}。"
+],
+"Giá mở D{0}": [
+"Open price D{0}",
+"开盘价 D{0}"
+],
+"Giá mở cửa D{0}": [
+"Opening price D{0}",
+"开盘价 D{0}"
+],
+"Giá mở cửa D{0} hôm nay": [
+"Today's opening price D{0}",
+"今日开盘价 D{0}"
+],
+"Giá mở nến đầu → giá đóng nến cuối": [
+"First candle open → last candle close",
+"首根K线开盘 → 最后K线收盘"
+],
+"Giá nằm": [
+"Price lies",
+"价格位于"
+],
+"Giá ra": [
+"Exit price",
+"退出价"
+],
+"Giá trên": [
+"Price above",
+"价格在上方"
+],
+"Giá trên EMA {0}": [
+"Price above EMA {0}",
+"价格在 EMA {0} 上方"
+],
+"Giá trên VWAP": [
+"Price above VWAP",
+"价格在 VWAP 上方"
+],
+"Giá trị {0} phải từ {1} đến {2} $.": [
+"Value {0} must be between {1} and {2} $.",
+"数值 {0} 必须在 {1} 到 {2} 美元之间。"
+],
+"Giá vào": [
+"Entry price",
+"入场价"
+],
+"Giá vào cách EMA{0}": [
+"Entry price {0} points from EMA",
+"入场价距 EMA {0} 点"
+],
+"Giá vào lệnh": [
+"Enter order",
+"进入订单"
+],
+"Giá vào lệnh cách EMA ($)": [
+"Enter order distance from EMA ($)",
+"进入订单距 EMA（$）"
+],
+"Giá vào lệnh:": [
+"Enter order:",
+"进入订单："
+],
+"Giá vào {0} quá sát giá hiện tại {1}, dùng chế độ NGAY.": [
+"Entry {0} too close to current price {1}, using INSTANT mode.",
+"入场 {0} 与当前价格 {1} 过于接近，使用即时模式。"
+],
+"Giá {0} đang": [
+"Price {0} is",
+"价格 {0} 正在"
+],
+"Giá {0} đã": [
+"Price {0} has",
+"价格 {0} 已经"
+],
+"Giá đang": [
+"Price is",
+"价格为"
+],
+"Giá đang cao hơn mức giá bình quân trong ngày (VWAP tính từ giá mở cửa D{0}, chưa có khối lượng thật nên coi các nến bằng trọng số). Theo dõi khả năng giá quay lại kiểm tra VWAP.": [
+"Price is above today’s VWAP (calculated from open D{0}, no real volume, candles weighted equally). Watch for pullback to VWAP.",
+"价格高于今日 VWAP（从开盘 D{0} 计算，暂无真实成交量，K线等权重），关注回落至 VWAP 的可能性。"
+],
+"Giá đang thấp hơn mức giá bình quân trong ngày (VWAP tính từ giá mở cửa D{0}, chưa có khối lượng thật nên coi các nến bằng trọng số). Theo dõi khả năng giá quay lại kiểm tra VWAP.": [
+"Price is below today’s VWAP (calculated from open D{0}, no real volume, candles weighted equally). Watch for rebound to VWAP.",
+"价格低于今日 VWAP（从开盘 D{0} 计算，暂无真实成交量，K线等权重），关注回升至 VWAP 的可能性。"
+],
+"Giá đang trong vùng vào lệnh (≤ {0} giá quanh EMA {1}): BUY quanh {2}.": [
+"Price in entry zone (≤ {0} points around EMA {1}): BUY near {2}.",
+"价格位于入场区间（≤ {0} 点围绕 EMA {1}）：买入靠近 {2}。"
+],
+"Giá đang trong vùng vào lệnh (≤ {0} giá quanh EMA {1}): SELL quanh {2}.": [
+"Price in entry zone (≤ {0} points around EMA {1}): SELL around {2}.",
+"价格在入场区间（≤ {0} 点 EMA {1} 附近）：SELL 于 {2}。"
+],
+"Giá đang trong vùng vào lệnh (≤ {0} giá quanh {1}): {2} quanh {3}.": [
+"Price in entry zone (≤ {0} points around {1}): {2} near {3}.",
+"价格位于入场区间（≤ {0} 点围绕 {1}）：{2} 靠近 {3}。"
+],
+"Giá đang {0} mức giá bình quân trong ngày (VWAP tính từ giá mở cửa D{1}, chưa có khối lượng thật nên coi các nến bằng trọng số). Theo dõi khả năng giá quay lại kiểm tra VWAP.": [
+"Price is {0} today’s VWAP (calculated from open D{1}, no real volume, candles weighted equally). Watch for reversal to VWAP.",
+"价格 {0} 今日 VWAP（从开盘 D{1} 计算，暂无真实成交量，K线等权重），关注回调至 VWAP。"
+],
+"Giá đã vượt cản {0} {1} nến ({2}), không đặt lệnh chờ.": [
+"Price broke resistance {0} over {1} candles ({2}), no pending order.",
+"价格突破阻力 {0}，共 {1} 根K线（{2}），不挂挂单。"
+],
+"Giãn VWAP tối đa (σ)": [
+"Max VWAP spread (σ)",
+"最大 VWAP 波幅 (σ)"
+],
+"Giả định tạm: CK tuần = P{0} đến P{1} của WPH{2}; CK ngày = {3} chu kỳ đầu ({4}-{5}h, {6}-{7}h, {8}-{9}h, {10}-{11}h, {12}-{13}h); chu kỳ tăng nếu nến đóng cao hơn giá mở của chính chu kỳ đó; hệ số cấp số nhân lấy theo ô \"Gấp lot khi đảo\". QLV, GMC giữ nguyên chữ trong sơ đồ.": [
+"Temporary assumption: weekly CK = P{0}‑P{1} of WPH{2}; daily CK = {3} initial cycles ({4}-{5}h, {6}-{7}h, {8}-{9}h, {10}-{11}h, {12}-{13}h); a cycle is up if its close > its open; multiplier taken from \"Lot x2 on reversal\" cell. QLV, GMC keep original letters in diagram.",
+"临时假设：周 CK = WPH{2} 的 P{0}‑P{1}；日 CK = {3} 个初始周期（{4}-{5}h, {6}-{7}h, {8}-{9}h, {10}-{11}h, {12}-{13}h）；若收盘价高于开盘价则该周期为上涨；倍率取自“逆转时加倍手数”单元格。QLV、GMC 在图中保持原文字。"
+],
+"Giả định: giá vào/thoát chủ động = giá đóng nến (+spread thật từng nến); nến quét cả SL và TP thì tính chạm SL trước; SL hòa vốn/trailing có hiệu lực từ nến sau. Kết quả quá khứ không bảo đảm tương lai, có thể lệch vài lệnh so với chạy thật do trượt giá và giá trong nến.": [
+"Assumption: active entry/exit = candle close (+real spread per candle); if a candle hits both SL and TP, SL counts first; breakeven/trailing SL effective from next candle. Past results don’t guarantee future performance; slippage may cause differences.",
+"假设：主动进出场 = K线收盘价（加上每根K线的实际点差）；若同一根K线同时触及 SL 与 TP，按先触 SL 计；保本/跟踪 SL 从下一根K线起生效。历史结果不保证未来，实际运行可能因滑点和K线内价格产生偏差。"
+],
+"Giảm {0} tài khoản": [
+"Reduce account by {0}",
+"账户减少 {0}"
+],
+"Giờ": [
+"Time",
+"时间"
+],
+"Giờ VN của nến có nằm trong khung giờ cài đặt không (khung qua nửa đêm vẫn được).": [
+"Does the candle’s Vietnam time fall within the configured window? (Cross‑midnight windows allowed).",
+"K线的越南时间是否在设置的时间段内？（跨午夜的时间段也可）。"
+],
+"Giờ giả lập để xem thử:": [
+"Simulation time to test:",
+"模拟时间以供测试："
+],
+"Giờ ra": [
+"Exit time",
+"退出时间"
+],
+"Giờ vào": [
+"Entry time",
+"入场时间"
+],
+"Giữ": [
+"Hold",
+"持有"
+],
+"Giữ rổ tới tín hiệu đảo chiều": [
+"Hold basket until reversal signal",
+"持仓至反转信号"
+],
+"Gom dữ liệu MT{0} → AI → lưu làm bài gần nhất của mã (gọi khi đang giữ _busy).": [
+"Collect MT{0} data → AI → save as latest script for symbol (called when _busy).",
+"收集 MT{0} 数据 → AI → 保存为该代码的最新脚本（在 _busy 时调用）。"
+],
+"Groq ({0}) báo lỗi {1}: {2}": [
+"Groq ({0}) error {1}: {2}",
+"Groq ({0}) 错误 {1}：{2}"
+],
+"Groq ({0}) không phản hồi: {1}": [
+"Groq ({0}) no response: {1}",
+"Groq ({0}) 无响应：{1}"
+],
+"Groq ({0}) không trả về nội dung.": [
+"Groq ({0}) returned no content.",
+"Groq ({0}) 未返回内容。"
+],
+"Groq trước (nếu có key), không được thì Gemini. Trả (chữ, số token, tên model).": [
+"Try Groq first (if key exists), otherwise Gemini. Return (text, token count, model name).",
+"先尝试 Groq（如果有 key），不行则使用 Gemini。返回（文本、令牌数、模型名称）。"
+],
+"Gói của bạn đang dùng tối đa": [
+"Your plan is at maximum usage",
+"您的套餐已达最大使用量"
+],
+"Gói của bạn đang dùng tối đa {0} tài khoản MT{1}. Để mở thêm tài khoản (có phí),": [
+"Your plan uses the maximum of {0} MT{1} accounts. To add more (paid),",
+"您的套餐已使用最大 {0} 个 MT{1} 账户。若需新增账户（付费），"
+],
+"Gọi thử Groq không được, chưa lưu key. {0}": [
+"Test call to Groq failed, key not saved. {0}",
+"Groq 测试调用失败，未保存 key。{0}"
+],
+"Gọi thử key Groq (dùng cho /quan-ly trước khi lưu). Trả (ok, lỗi | tên model).": [
+"Test Groq key (used for /quan-ly before saving). Return (ok, error | model name).",
+"测试 Groq key（在保存前用于 /quan-ly）。返回（ok，错误 | 模型名称）。"
+],
+"Gọi thử key Groq; chạy được mới lưu vào .env.": [
+"Test Groq key; save to .env only if it works.",
+"测试 Groq key；成功后才保存到 .env。"
+],
+"Gửi SL lên MT{0}, cách": [
+"Send SL to MT{0}, at",
+"发送 SL 到 MT{0}，距离"
+],
+"Gửi TP lên MT{0} (= ô Mục tiêu chốt)": [
+"Send TP to MT{0} (= target cell)",
+"发送 TP 到 MT{0}（= 目标单元格）"
+],
+"Gửi cho mọi tài khoản đang theo bot src (dca=True: chỉ tài khoản lấy bot này làm bot DCA).": [
+"Send to all accounts following src bot (dca=True: only accounts using this bot as DCA).",
+"发送给所有跟随 src 机器人账户（dca=True：仅使用此机器人做 DCA 的账户）。"
+],
+"Gửi link đặt lại mật khẩu": [
+"Send password reset link",
+"发送密码重置链接"
+],
+"Gửi lại thư xác nhận": [
+"Resend confirmation email",
+"重新发送确认邮件"
+],
+"Gửi lại yêu cầu": [
+"Resend request",
+"重新发送请求"
+],
+"Gửi lần lượt hàng đợi của {0} tài khoản (giữ đúng thứ tự lệnh), không chờ tài khoản khác.": [
+"Process queue of {0} accounts sequentially (preserve order), without waiting for other accounts.",
+"按顺序处理 {0} 个账户的队列（保持指令顺序），不等待其他账户。"
+],
+"Gửi lệnh {0} {1} {2} lot sang MT{3}?": [
+"Send order {0} {1} {2} lot to MT{3}?",
+"发送指令 {0} {1} {2} 手数到 MT{3}？"
+],
+"Gửi quá nhiều lần, thử lại sau {0} giờ.": [
+"Too many attempts, try again after {0} hours.",
+"尝试次数过多，请在 {0} 小时后重试。"
+],
+"Gửi thư thử bằng khóa mới; gửi được mới lưu khóa vào .env (bật xác nhận email).": [
+"Send test email with new key; save to .env only if successful (email verification enabled).",
+"使用新密钥发送测试邮件；成功后才保存到 .env（启用邮件验证）。"
+],
+"Gửi tín hiệu của": [
+"Send signal of",
+"发送信号的"
+],
+"Gửi {0} lệnh trong hàng đợi. Trả True nếu xong (bỏ khỏi hàng đợi), False nếu cần thử lại sau.": [
+"Send {0} queued orders. Return True when done (remove from queue), False to retry later.",
+"发送 {0} 条排队指令。完成后返回 True（从队列移除），需要稍后重试返回 False。"
+],
+"Hai lần nhập mật khẩu không khớp.": [
+"Passwords do not match.",
+"两次输入的密码不一致。"
+],
+"Hiện cả tin đã ra": [
+"Show all released news",
+"显示所有已发布的新闻"
+],
+"Hiện mật khẩu": [
+"Show password",
+"显示密码"
+],
+"Hoạt động": [
+"Activity",
+"活动"
+],
+"Hãy cân nhắc tìm kiếm lời khuyên từ một cố vấn tài chính độc lập, có giấy phép phù hợp.": [
+"Consider seeking advice from a licensed independent financial advisor.",
+"请考虑向持牌独立理财顾问寻求建议。"
+],
+"Hãy phân tích theo phương pháp CKG và đưa ra kịch bản giao dịch.": [
+"Analyze using the CKG method and propose a trade scenario.",
+"使用 CKG 方法进行分析并给出交易方案。"
+],
+"Hình chữ nhật": [
+"Rectangle",
+"矩形"
+],
+"Hôm nay": [
+"Today",
+"今天"
+],
+"Hướng W và D{0}": [
+"Direction W and D{0}",
+"方向 W 与 D{0}"
+],
+"Hướng chính: SELL": [
+"Main direction: SELL",
+"主要方向：SELL"
+],
+"Hướng chính: {0} {1}": [
+"Main direction: {0} {1}",
+"主要方向：{0} {1}"
+],
+"Hạn dùng": [
+"Expiration",
+"有效期"
+],
+"Hết giờ (nến)": [
+"Session end (candle)",
+"时段结束（K线）"
+],
+"Hết giờ sau": [
+"Ends after",
+"结束于"
+],
+"Hết tuần giao dịch": [
+"Trading week over",
+"交易周结束"
+],
+"HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG & CỐ VẤN AI THỰC CHIẾN": [
+"CKG MULTI‑TIMEFRAME ANALYSIS & AI STRATEGIC ADVISOR",
+"CKG 多周期分析系统 & 实战 AI 顾问"
+],
+"Họ tên": [
+"Full name",
+"姓名"
+],
+"Hỏi xác nhận trước khi gửi lệnh": [
+"Prompt confirmation before sending order",
+"发送指令前询问确认"
+],
+"Hỗ trợ: Telegram @TuanKom": [
+"Support: Telegram @TuanKom",
+"支持：Telegram @TuanKom"
+],
+"HỘI TỤ (lệnh chờ tại cản)": [
+"POOL (orders waiting at barrier)",
+"池（在阻挡处等待的指令）"
+],
+"Hủy": [
+"Cancel",
+"取消"
+],
+"KHỐI LƯỢNG MỖI LỆNH BOT": [
+"Bot Order Volume",
+"机器人每笔订单量"
+],
+"Key Groq bắt đầu bằng gsk_ (lấy ở console.groq.com → API Keys).": [
+"Groq key starts with gsk_ (obtain from console.groq.com → API Keys).",
+"Groq密钥以gsk_开头（在 console.groq.com → API Keys 获取）。"
+],
+"Khi lãi đạt +": [
+"When profit reaches +",
+"当利润达到 +"
+],
+"Khoảng": [
+"Range",
+"范围"
+],
+"Khoảng cách": [
+"Distance",
+"距离"
+],
+"Khung chỉ M{0}, M{1} hoặc M{2}.": [
+"Frame only M{0}, M{1} or M{2}.",
+"仅限 M{0}, M{1} 或 M{2} 框架。"
+],
+"Khung chỉ M{0}, M{1}, M{2} hoặc M{3} + M{4}.": [
+"Frame only M{0}, M{1}, M{2} or M{3} + M{4}.",
+"仅限 M{0}, M{1}, M{2} 或 M{3} + M{4} 框架。"
+],
+"Khung giờ dạng {0}-{1} (giờ VN).": [
+"Time window {0}-{1} (VN time).",
+"时间窗口 {0}-{1}（越南时间）。"
+],
+"Khung giờ quan sát": [
+"Observation time window",
+"观察时间窗口"
+],
+"Khung {0} của bot còn {1} lệnh mở. Đóng hết (hoặc chờ đóng) rồi mới bỏ khung {2}.": [
+"Bot {0} frame has {1} open orders. Close all (or wait) before removing frame {2}.",
+"机器人 {0} 框还有 {1} 笔未平仓订单。全部平仓（或等待）后才能移除框 {2}。"
+],
+"Khách": [
+"Customer",
+"客户"
+],
+"Khách + tài khoản MT{0} đang chọn trên trang (header X-Acc: {1}/{2}/{3}).": [
+"Customer + MT{0} account selected on page (header X-Acc: {1}/{2}/{3}).",
+"页面上选择的客户 + MT{0} 账户（header X-Acc: {1}/{2}/{3}）。"
+],
+"Khách bấm link trong thư. Trả (ok, thông báo).": [
+"Customer clicks link in email. Respond (ok, notice).",
+"客户点击邮件中的链接。回复（ok，通知）。"
+],
+"Khách quên mật khẩu, không nhận được thư: cấp mật khẩu tạm rồi gửi khách qua Zalo / Telegram": [
+"Customer forgot password, no email received: issue temporary password then send via Zalo/Telegram",
+"客户忘记密码，未收到邮件：发临时密码并通过 Zalo/Telegram 发送给客户"
+],
+"Khách quên mật khẩu: gửi link đặt lại tới email. Không tiết lộ email nào đã đăng ký. Trả (ok, thông báo).": [
+"Customer forgot password: send reset link to email. Do not reveal registered email. Respond (ok, notice).",
+"客户忘记密码：发送重置链接至邮箱。不要泄露已注册的邮箱。回复（ok，通知）。"
+],
+"Khách quên đã đăng ký bằng email nào: tìm theo số Zalo hoặc Telegram. Trả (ok, thông báo, [email đã che]).": [
+"Customer forgot which email was used: locate via Zalo or Telegram number. Respond (ok, notice, [masked email]).",
+"客户忘记使用的邮箱：通过 Zalo 或 Telegram 号码查找。回复（ok，通知，[已遮蔽邮箱]）。"
+],
+"Khách thêm / đổi tên / đổi mã / xóa tài khoản MT{0} (giới hạn theo gói, mặc định users.DEF_ACC), xin thêm (req).": [
+"Customer adds/renames/changes ID/deletes MT{0} account (plan limit, default users.DEF_ACC), request addition (req).",
+"客户添加/重命名/更改 ID/删除 MT{0} 账户（受套餐限制，默认 users.DEF_ACC），请求添加（req）。"
+],
+"Khách tự thêm / đổi tên / đổi mã / xóa tài khoản MT{0} của mình. Trả (ok, thông báo, n).": [
+"Customer self-adds/renames/changes ID/deletes own MT{0} account. Respond (ok, notice, n).",
+"客户自行添加/重命名/更改 ID/删除自己的 MT{0} 账户。回复（ok，通知，n）。"
+],
+"Khách đang dùng {0} tài khoản MT{1}, phải xóa bớt trước khi giảm.": [
+"Customer using {0} MT{1} accounts, must delete some before reducing.",
+"客户正在使用 {0} 个 MT{1} 账户，减少前必须先删除部分。"
+],
+"Khách đăng ký tại": [
+"Customer registered at",
+"客户注册于"
+],
+"Khách được chủ cho dùng bot, còn hạn, có quyền giao dịch, và đang BẬT bot.": [
+"Customer authorized by owner to use bot, active, trading rights, bot is ON.",
+"客户已获所有者授权使用机器人，仍在有效期内，拥有交易权限，且机器人已开启。"
+],
+"Khách được chủ cấp quyền giao dịch qua EA và tài khoản còn hạn.": [
+"Customer granted trading rights via EA and active account by owner.",
+"客户已获所有者通过 EA 授予交易权限，且账户在有效期内。"
+],
+"Khách được chủ duyệt dùng bot tự động (cần thêm quyền giao dịch qua EA).": [
+"Customer approved by owner for auto bot (needs EA trading rights).",
+"客户已获所有者批准使用自动机器人（需额外的 EA 交易权限）。"
+],
+"Khóa API Resend (re_...)": [
+"Resend API key (re_...)",
+"Resend API密钥（re_...）"
+],
+"Khóa API Resend bắt đầu bằng re_ và email nhận thư phải hợp lệ.": [
+"Resend API key starts with re_ and receiving email must be valid.",
+"Resend API密钥以 re_ 开头，接收邮件的邮箱必须有效。"
+],
+"Khóa tài khoản": [
+"Account lock",
+"账户锁定"
+],
+"Không (bóng {0}/{1} pip)": [
+"No (shadow {0}/{1} pip)",
+"否（影子 {0}/{1} 点）"
+],
+"Không chốt được {0}%:": [
+"Cannot take profit {0}%:",
+"无法止盈 {0}%："
+],
+"Không còn tin": [
+"No more news",
+"没有更多新闻"
+],
+"Không có bot này.": [
+"This bot does not exist.",
+"此机器人不存在。"
+],
+"Không có khách nào khớp từ khóa này.": [
+"No customer matches this keyword.",
+"没有客户匹配此关键词。"
+],
+"Không có lệnh PinYin nào đang mở trên": [
+"No PinYin orders open on",
+"在此上没有打开的 PinYin 订单"
+],
+"Không có lệnh PinYin nào đang mở trên mã này.": [
+"No PinYin orders open on this symbol.",
+"此代码上没有打开的 PinYin 订单。"
+],
+"Không có lệnh chờ.": [
+"No pending orders.",
+"没有挂单。"
+],
+"Không có lệnh mở.": [
+"No open orders.",
+"没有未平仓订单。"
+],
+"Không có quyền.": [
+"No permission.",
+"没有权限。"
+],
+"Không có tài khoản này.": [
+"Account not found.",
+"未找到此账户。"
+],
+"Không có tài khoản.": [
+"No account.",
+"没有账户。"
+],
+"Không dời SL #{0} theo SL sửa tay: {1}": [
+"Did not move SL #{0} per manual SL edit: {1}",
+"未按手动 SL 修改移动 SL #{0}：{1}"
+],
+"Không dời SL #{0} theo lệnh DCA mới: {1}": [
+"Did not move SL #{0} per new DCA order: {1}",
+"未按新 DCA 订单移动 SL #{0}：{1}"
+],
+"Không dời SL hòa vốn #{0}: {1}": [
+"Do not move breakeven SL #{0}: {1}",
+"不要移动保本止损 #{0}: {1}"
+],
+"Không gửi được": [
+"Failed to send",
+"发送失败"
+],
+"Không gửi được lệnh:": [
+"Failed to send order:",
+"发送订单失败:"
+],
+"Không gửi được thư thử, chưa lưu khóa. {0}": [
+"Cannot send test email, key not saved. {0}",
+"无法发送测试邮件，密钥未保存。{0}"
+],
+"Không kết nối được.": [
+"Unable to connect.",
+"无法连接。"
+],
+"Không nhận được thư? Nhắn": [
+"Did not receive email? Message",
+"未收到邮件？发送消息"
+],
+"Không rõ lỗi": [
+"Unknown error",
+"未知错误"
+],
+"Không thêm lệnh DCA: {0}": [
+"Failed to add DCA order: {0}",
+"添加 DCA 订单失败: {0}"
+],
+"Không tìm thấy lệnh #{0} của PinYin trên {1} (có thể đã đóng).": [
+"Order #{0} from PinYin not found on {1} (may be closed).",
+"在 {1} 上未找到 PinYin 的订单 #{0}（可能已关闭）。"
+],
+"Không tìm thấy tài khoản nào đăng ký bằng số / Telegram này. Kiểm tra lại, hoặc nhắn Telegram @TuanKom để được hỗ trợ.": [
+"No account registered with this phone/Telegram. Check again or message Telegram @TuanKom for help.",
+"未找到使用此手机号/Telegram 注册的账户。请重新检查，或联系 Telegram @TuanKom 获取帮助。"
+],
+"Không tìm thấy tài khoản.": [
+"Account not found.",
+"未找到账户。"
+],
+"Không tải được lịch tin.": [
+"Failed to load news calendar.",
+"加载新闻日历失败。"
+],
+"Không tải được lịch tin:": [
+"Failed to load news calendar:",
+"加载新闻日历失败:"
+],
+"Không tải được lịch tin: Failed to fetch": [
+"Failed to load news calendar: Failed to fetch",
+"加载新闻日历失败: 获取失败"
+],
+"Không tải được thư viện biểu đồ (kiểm tra mạng), bấm lại tab Biểu đồ để thử lại.": [
+"Failed to load chart library (check network), click the Chart tab to retry.",
+"加载图表库失败（检查网络），点击“图表”标签重试。"
+],
+"Không vào lệnh DCA: {0}": [
+"Failed to enter DCA trade: {0}",
+"进入 DCA 交易失败: {0}"
+],
+"Không xóa được Bot {0}.": [
+"Failed to delete Bot {0}.",
+"删除机器人 {0} 失败。"
+],
+"Không xóa được tài khoản chính.": [
+"Cannot delete primary account.",
+"无法删除主账户。"
+],
+"Không đóng được #{0}: {1}": [
+"Failed to close #{0}: {1}",
+"关闭 #{0} 失败: {1}"
+],
+"Không đọc được MT{0}: {1}": [
+"Failed to read MT{0}: {1}",
+"读取 MT{0} 失败: {1}"
+],
+"Không đọc được bản phân tích:": [
+"Failed to read analysis:",
+"读取分析失败:"
+],
+"Không đọc được tài khoản MT{0}.": [
+"Failed to read MT{0} account.",
+"读取 MT{0} 账户失败。"
+],
+"Không đổi khung / mã của chart gắn EA": [
+"Cannot change timeframe / symbol of EA-attached chart",
+"无法更改附加 EA 的图表时间框架/代码"
+],
+"Không ảnh hưởng nhánh": [
+"Branch not affected",
+"分支未受影响"
+],
+"Không ảnh hưởng nhánh (CK{0} tăng hay giảm đều cùng kết quả)": [
+"Branch not affected (CK{0} up or down yields same result)",
+"分支未受影响（CK{0} 上涨或下跌结果相同）"
+],
+"Khối lượng tick": [
+"Tick volume",
+"Tick 量"
+],
+"Kiểm tra số pip, BUY CK{0}": [
+"Check pip count, BUY CK{0}",
+"检查点数，BUY CK{0}"
+],
+"Kiểm tra số pip, BUY lướt sóng CK{0}": [
+"Check pip count, BUY wave ride CK{0}",
+"检查点数，BUY 乘波 CK{0}"
+],
+"Kiểm tra số pip, SELL cấp số nhân": [
+"Check pip count, SELL multiplier",
+"检查点数，SELL 倍数"
+],
+"Kiểm tra số pip, SELL lướt đầu CK{0}": [
+"Check pip count, SELL front ride CK{0}",
+"检查点数，SELL 前冲 CK{0}"
+],
+"Kiểm tra số pip, nhồi theo cấp số nhân": [
+"Check pip count, stack multiplier",
+"检查点数，按倍数堆叠"
+],
+"Kiểm tra số pip, vào lệnh cấp số nhân để về hòa": [
+"Check pip count, enter multiplier trade to breakeven",
+"检查点数，进入倍数交易以保本"
+],
+"Kiểm tra số pip, vào lệnh theo cấp số nhân": [
+"Check pip count, enter multiplier trade",
+"检查点数，进入倍数交易"
+],
+"Kiểm tra số tài khoản, mật khẩu, và tên máy chủ đúng như trong email của sàn.": [
+"Verify account number, password, and server name match the broker email.",
+"核对账户号、密码和服务器名称与经纪商邮件一致。"
+],
+"Kiểu SL không hợp lệ.": [
+"Invalid SL type.",
+"止损类型无效。"
+],
+"Kiểu TP không hợp lệ.": [
+"Invalid TP type.",
+"止盈类型无效。"
+],
+"Kết nối": [
+"Connect",
+"连接"
+],
+"Kết nối bot Telegram của chủ trước (ô token ở trên).": [
+"Connect owner's Telegram bot first (token field above).",
+"先连接所有者的 Telegram 机器人（上方的 token 框）。"
+],
+"Kết nối nhóm": [
+"Connect group",
+"连接群组"
+],
+"Kết quả trong quá khứ không phải là chỉ báo đáng tin cậy về kết quả trong tương lai. Mọi ví dụ chỉ mang tính minh họa.": [
+"Past results are not reliable indicators of future performance. All examples are illustrative.",
+"过去的结果并不能可靠预测未来表现。所有示例仅作说明。"
+],
+"Kỳ trước": [
+"Previous period",
+"上期"
+],
+"LIÊN HỆ TELEGRAM @TUANKOM": [
+"CONTACT TELEGRAM @TUANKOM",
+"联系 TELEGRAM @TUANKOM"
+],
+"Link còn dùng được không. Trả (ok, thông báo lỗi).": [
+"Is the link still usable? Respond (ok, error message).",
+"链接仍可使用吗？返回（ok，错误信息）。"
+],
+"Link xác nhận không hợp lệ.": [
+"Invalid confirmation link.",
+"确认链接无效。"
+],
+"Link xác nhận không đúng hoặc đã dùng. Vào trang gửi lại thư xác nhận.": [
+"Confirmation link incorrect or already used. Go to the page to resend confirmation email.",
+"确认链接不正确或已使用。前往页面重新发送确认邮件。"
+],
+"Link đã hết hạn (quá {0} giờ). Gửi lại yêu cầu mới.": [
+"Link expired (over {0} hours). Submit a new request.",
+"链接已过期（超过 {0} 小时）。重新提交请求。"
+],
+"Link đã hết hạn. Vào trang gửi lại thư xác nhận.": [
+"Link expired. Go to the page to resend confirmation email.",
+"链接已过期。前往页面重新发送确认邮件。"
+],
+"Link đặt lại mật khẩu không đúng hoặc đã dùng. Gửi lại yêu cầu mới.": [
+"Password reset link invalid or already used. Submit a new request.",
+"重置密码链接无效或已使用。重新提交请求。"
+],
+"Liên hệ": [
+"Contact",
+"联系"
+],
+"Lot / SL / TP không hợp lệ.": [
+"Invalid Lot / SL / TP.",
+"Lot / SL / TP 无效。"
+],
+"Lot / hệ số từ {0} đến {1}.": [
+"Lot / ratio from {0} to {1}.",
+"Lot / 系数从 {0} 到 {1}。"
+],
+"Lot không hợp lệ.": [
+"Invalid lot.",
+"Lot 无效。"
+],
+"Lot lệnh DCA sau ×": [
+"Lot of DCA order after ×",
+"DCA 订单的 Lot 在 × 之后"
+],
+"Lot tối thiểu là {0}.": [
+"Minimum lot is {0}.",
+"最小 Lot 为 {0}。"
+],
+"Lot từ {0} đến {1}.": [
+"Lot from {0} to {1}.",
+"Lot 从 {0} 到 {1}。"
+],
+"Lot {0} vượt giới hạn {1}.": [
+"Lot {0} exceeds limit {1}.",
+"Lot {0} 超过限制 {1}。"
+],
+"Lot {0} vượt mức tối đa {1} theo vốn": [
+"Lot {0} exceeds max {1} based on capital",
+"Lot {0} 超过基于资金的最大值 {1}"
+],
+"Lot {0} × {1} qua {2} lệnh DCA → lệnh cuối {3} lot, vượt giới hạn {4}": [
+"Lot {0} × {1} over {2} DCA orders → final order {3} lot, exceeds limit {4}",
+"Lot {0} × {1} 经过 {2} 笔 DCA 订单 → 最后订单 {3} lot，超过限制 {4}"
+],
+"Lot · Mục tiêu chốt (pip) · Gấp lot khi đảo": [
+"Lot · Take profit target (pip) · Multiply lot on reversal",
+"Lot · 止盈目标（pip）· 反转时加倍 lot"
+],
+"Loại": [
+"Type",
+"类型"
+],
+"Loại lệnh phải là BUY hoặc SELL.": [
+"Order type must be BUY or SELL.",
+"订单类型必须是 BUY 或 SELL。"
+],
+"Loại nến không hợp lệ.": [
+"Invalid candle type.",
+"K线类型无效。"
+],
+"Loạt nến M{0}": [
+"Candle series M{0}",
+"M{0} K线序列"
+],
+"Lãi / lỗ ròng": [
+"Net profit / loss",
+"净盈亏"
+],
+"Lãi suất Fed": [
+"Fed interest rate",
+"美联储利率"
+],
+"Lãi/lỗ": [
+"Profit/Loss",
+"盈亏"
+],
+"Lãi:": [
+"Profit:",
+"盈余："
+],
+"Lý do": [
+"Reason",
+"原因"
+],
+"Lý do cuối": [
+"Final reason",
+"最终原因"
+],
+"Lưu cài đặt": [
+"Save settings",
+"保存设置"
+],
+"Lưu mật khẩu mới": [
+"Save new password",
+"保存新密码"
+],
+"Lưu token bot Telegram, rồi tìm chat của người đã nhắn /start cho bot.": [
+"Save Telegram bot token, then find the chat of the user who sent /start to the bot.",
+"保存 Telegram 机器人 token，然后找到发送 /start 给机器人的用户聊天。"
+],
+"Lạm phát lõi CPI": [
+"Core CPI inflation",
+"核心 CPI 通胀"
+],
+"Lạm phát lõi PCE (Fed theo dõi)": [
+"Core PCE inflation (Fed monitor)",
+"核心 PCE 通胀（美联储关注）"
+],
+"Lấy lại mật khẩu": [
+"Recover password",
+"找回密码"
+],
+"Lệnh": [
+"Order",
+"订单"
+],
+"Lệnh #": [
+"Order #",
+"订单 #"
+],
+"Lệnh DCA mới có SL mới: EA dời SL mọi lệnh (cùng nhãn bot) theo lệnh mới nhất. Cần EA {0} (bản cũ: bỏ qua).": [
+"New DCA order with new SL: EA moves SL on all orders (same bot label) to the latest order. Requires EA {0} (old version: ignore).",
+"新 DCA 订单带新 SL：EA 将所有订单（同一机器人标签）的 SL 移动到最新订单。需要 EA {0}（旧版：忽略）。"
+],
+"Lệnh DCA tốt hơn ($)": [
+"Better DCA order ($)",
+"更佳 DCA 订单 ($)"
+],
+"Lệnh DCA tốt hơn (×ATR)": [
+"Better DCA order (×ATR)",
+"更佳 DCA 订单 (×ATR)"
+],
+"Lệnh DCA tốt hơn ≥": [
+"Better DCA order ≥",
+"更佳 DCA 订单 ≥"
+],
+"Lệnh bot biến mất (chạm SL/TP hoặc đóng tay trên MT{0}) → báo kết quả.": [
+"Bot order vanished (hit SL/TP or manually closed on MT{0}) → report result.",
+"机器人订单消失（触及 SL/TP 或在 MT{0} 手动关闭）→ 报告结果。"
+],
+"Lệnh khác trên tài khoản": [
+"Other order on account",
+"账户上的其他订单"
+],
+"Lệnh không hợp lệ.": [
+"Invalid order.",
+"无效订单。"
+],
+"Lệnh không thành công:": [
+"Order failed:",
+"订单失败："
+],
+"Lệnh thị trường SL/TP": [
+"Market order SL/TP",
+"市场订单 SL/TP"
+],
+"Lệnh vào chờ tối đa": [
+"Max pending order",
+"最大挂单"
+],
+"Lệnh vào tay chưa có SL/TP: gắn theo khoảng cách trong ô Dừng lỗ / Chốt lời của buồng lái.": [
+"Live order without SL/TP: attach using distance in the Stop Loss / Take Profit box of the Cockpit.",
+"实时订单未设置 SL/TP：使用交易驾驶舱的止损/止盈框中的距离进行挂单。"
+],
+"Lệnh {0} vào trực tiếp trên MT{1} (cùng tài khoản) cũng được bảo vệ: Auto BE + Trailing như trên.": [
+"Order {0} placed directly on MT{1} (same account) is also protected: Auto BE + Trailing as above.",
+"订单 {0} 直接在 MT{1}（同一账户）下单，也受保护：自动保本 + 跟踪止盈，如上所示。"
+],
+"Lệnh đang mở + lệnh chờ của buồng lái trên mã này.": [
+"Open + pending orders from Cockpit for this symbol.",
+"此代码的打开订单 + 交易驾驶舱的挂单。"
+],
+"Lệnh đang mở ở cặp khác:": [
+"Open order on another pair:",
+"其他货币对的打开订单："
+],
+"Lệnh đã gửi tới MT{0} nhưng chưa có kết quả. Kiểm tra lại trên MT{1} trước khi bấm lại.": [
+"Order sent to MT{0} but no result yet. Check MT{1} before retrying.",
+"订单已发送至 MT{0}，但尚未有结果。重试前请检查 MT{1}。"
+],
+"Lỗ:": [
+"Loss:",
+"亏损："
+],
+"Lỗi": [
+"Error",
+"错误"
+],
+"Lỗi backtest: {0}": [
+"Backtest error: {0}",
+"回测错误：{0}"
+],
+"Lỗi copy lệnh: {0}": [
+"Copy order error: {0}",
+"复制订单错误：{0}"
+],
+"Lỗi gửi lệnh copy: {0}": [
+"Copy order send error: {0}",
+"发送复制订单错误：{0}"
+],
+"Lỗi kết nối máy chủ PinYin:": [
+"PinYin server connection error:",
+"PinYin 服务器连接错误："
+],
+"Lỗi kết nối máy chủ:": [
+"Server connection error:",
+"服务器连接错误："
+],
+"Lỗi lá chắn: {0}": [
+"Shield error: {0}",
+"盾牌错误：{0}"
+],
+"Lỗi:": [
+"Error:",
+"错误："
+],
+"Lỗi: {0}": [
+"Error: {0}",
+"错误：{0}"
+],
+"Lợi nhuận (${CU})": [
+"Profit (${CU})",
+"利润（${CU}）"
+],
+"M {0} · Đ {1} · C {2} · T {3}": [
+"O {0} · C {1} · H {2} · L {3}",
+"开 {0} · 收 {1} · 高 {2} · 低 {3}"
+],
+"MT{0} chưa có nến cho": [
+"MT{0} has no candles for",
+"MT{0} 没有 K 线用于"
+],
+"MT{0} chưa có nến {1} trong tuần này.": [
+"MT{0} has no {1} candles this week.",
+"MT{0} 本周没有 {1} K 线。"
+],
+"MT{0} chưa có đủ lịch sử nến (mở biểu đồ {1} khung này trên MT{2} và kéo về quá khứ).": [
+"MT{0} lacks sufficient candle history (open {1} chart on MT{2} and scroll back).",
+"MT{0} 没有足够的 K 线历史（在 MT{2} 上打开 {1} 图表并向后滚动）。"
+],
+"MT{0} của bạn đang TẮT nút Algo Trading.": [
+"Your MT{0} has Algo Trading disabled.",
+"您的 MT{0} 已关闭算法交易按钮。"
+],
+"MT{0} không phản hồi: {1}": [
+"MT{0} not responding: {1}",
+"MT{0} 未响应：{1}"
+],
+"MT{0} không đủ lịch sử cho cả khoảng đã chọn": [
+"MT{0} lacks history for selected range",
+"MT{0} 没有所选区间的历史数据"
+],
+"MT{0} thật": [
+"Real MT{0}",
+"真实 MT{0}"
+],
+"MT{0} từ chối lệnh (mã {1}): {2}": [
+"MT{0} rejected order (code {1}): {2}",
+"MT{0} 拒绝订单（代码 {1}）：{2}"
+],
+"MT{0} đang tắt nút Algo Trading. Bật lên rồi thử lại.": [
+"MT{0} has Algo Trading off. Turn it on and retry.",
+"MT{0} 已关闭算法交易按钮。打开后再试。"
+],
+"Magic của PinYin: buồng lái {0}, Bot {1} {2}, bot phụ {3}+, và khung thêm (+{4}, +{5}).": [
+"PinYin Magic: Cockpit {0}, Bot {1} {2}, sub‑bot {3}+, extra frames (+{4}, +{5}).",
+"PinYin Magic：交易驾驶舱 {0}，机器人 {1} {2}，子机器人 {3}+，以及额外框架 (+{4}, +{5})。"
+],
+"Mua nhiều thời gian nhưng pip ít, không đủ sức tăng → nghiêng SELL (ngưỡng {0} pip, tạm đặt)": [
+"Long time but few pips, not enough upside → lean SELL (threshold {0} pips, provisional)",
+"持仓时间长但点数少，涨幅不足 → 倾向 SELL（阈值 {0} 点，暂时设置）"
+],
+"M{0} + M{1} (độc lập)": [
+"M{0} + M{1} (independent)",
+"M{0} + M{1}（独立）"
+],
+"Màu nét vẽ (đổi luôn màu hình đang chọn)": [
+"Stroke color (changes current shape color)",
+"线条颜色（立即更改当前形状颜色）"
+],
+"Máy chủ (server) vd: Exness-MT{0}Trial{1}, ICMarketsSC-Demo": [
+"Server example: Exness-MT{0}Trial{1}, ICMarketsSC-Demo",
+"服务器示例：Exness-MT{0}Trial{1}，ICMarketsSC-Demo"
+],
+"Máy chủ chưa bật gửi email. Nhắn Telegram @TuanKom hoặc Zalo để được cấp mật khẩu mới.": [
+"Server email not enabled. Message Telegram @TuanKom or Zalo for new password.",
+"服务器未启用邮件发送。请联系 Telegram @TuanKom 或 Zalo 获取新密码。"
+],
+"Máy chủ chưa đặt PINYIN_PASSWORD trong .env.": [
+"Server missing PINYIN_PASSWORD in .env.",
+"服务器的 .env 中未设置 PINYIN_PASSWORD。"
+],
+"Máy chủ không có {0}": [
+"Server missing {0}",
+"服务器缺少 {0}"
+],
+"Mã chưa hỗ trợ.": [
+"Code not supported.",
+"代码不受支持。"
+],
+"Mã giao dịch": [
+"Trade code",
+"交易代码"
+],
+"Mã hoặc khung chưa hỗ trợ.": [
+"Code or timeframe not supported.",
+"代码或周期不受支持。"
+],
+"Mã khách → (email, bản ghi) hoặc (None, None). Nhận cả mã tài khoản MT{0} phụ (abc~{1}).": [
+"Client code → (email, record) or (None, None). Also accepts secondary MT{0} account code (abc~{1}).",
+"客户代码 → (email, 记录) 或 (None, None)。也接受次要 MT{0} 账户代码 (abc~{1})。"
+],
+"Mã kết nối": [
+"Connection code",
+"连接代码"
+],
+"Mã kết nối EA → (email, bản ghi).": [
+"EA connection code → (email, record).",
+"EA 连接代码 → (email, 记录)。"
+],
+"Mã kết nối EA → (email, bản ghi, uid của đúng tài khoản MT{0} đó).": [
+"EA connection code → (email, record, uid of that MT{0} account).",
+"EA 连接代码 → (email, 记录, 那个 MT{0} 账户的 uid)。"
+],
+"Mã kết nối của bạn (giữ bí mật):": [
+"Your connection code (keep secret):",
+"您的连接代码（请保密）："
+],
+"Mã kết nối:": [
+"Connection code:",
+"连接代码："
+],
+"Mã {0} chưa được hỗ trợ.": [
+"Code {0} not supported.",
+"代码 {0} 不受支持。"
+],
+"MẤT KẾT NỐI": [
+"DISCONNECTED",
+"已断开连接"
+],
+"Mật khẩu": [
+"Password",
+"密码"
+],
+"Mật khẩu MT{0} của bạn không gửi qua PinYin. Lệnh vào trên tài khoản đang đăng nhập trong MT{1} của bạn. MT{2} phải mở thì buồng lái mới dùng được. Lá chắn BE/Trailing chạy ngay trong EA.": [
+"Your MT{0} password is not sent via PinYin. Orders must be placed on the account logged into MT{1}. MT{2} must be opened before the cockpit can be used. BE/Trailing shield runs directly in the EA.",
+"您的 MT{0} 密码不会通过 PinYin 发送。必须在已登录 MT{1} 的账户上下单。必须打开 MT{2} 才能使用交易驾驶舱。BE/Trailing 盾直接在 EA 中运行。"
+],
+"Mật khẩu chỉ gửi thẳng cho MT{0}, PinYin không lưu. Tài khoản từng đăng nhập trên VPS có thể để trống mật khẩu (MT{1} dùng mật khẩu đã lưu). Đổi tài khoản thì": [
+"Password is sent only to MT{0}, PinYin does not store it. Accounts that have logged in on VPS can leave password blank (MT{1} uses saved password). To change account:",
+"密码仅发送给 MT{0}，PinYin 不会保存。已在 VPS 登录的账户可以留空密码（MT{1} 使用已保存的密码）。更换账户时："
+],
+"Mật khẩu giao dịch": [
+"Trading password",
+"交易密码"
+],
+"Mật khẩu mới": [
+"New password",
+"新密码"
+],
+"Mật khẩu mới của {0}: {1} — gửi cho khách qua Zalo / Telegram (phiên đăng nhập cũ đã hết). Khách nên vào Quên mật khẩu để tự đổi sau.": [
+"New password for {0}: {1} — send to client via Zalo / Telegram (old session expired). Client should use Forgot Password to change later.",
+"新密码 {0}: {1} — 通过 Zalo / Telegram 发送给客户（旧会话已失效）。客户应使用忘记密码自行更改。"
+],
+"Mật khẩu tối thiểu {0} ký tự.": [
+"Minimum password length {0} characters.",
+"密码最少 {0} 个字符。"
+],
+"Mọi ngữ cảnh phải chạy: bot + khung thêm (bot chạy M{0} + M{1} → {2} chiến dịch độc lập).": [
+"All contexts must run: bot + extra timeframe (bot runs M{0}+M{1} → {2} independent campaigns).",
+"所有情境必须运行：机器人 + 额外周期（机器人运行 M{0}+M{1} → {2} 独立活动）。"
+],
+"Mỗi mã chỉ gắn {0} tài khoản MT{1}. Tắt EA bên kia (chờ {2} giây) hoặc dùng mã khác.": [
+"Each code can bind only {0} MT{1} account(s). Disable the other EA (wait {2}s) or use another code.",
+"每个代码只能绑定 {0} 个 MT{1} 账户。关闭对方 EA（等待 {2} 秒）或使用其他代码。"
+],
+"Mỗi tài khoản chỉ copy được {0} bot DCA cùng lúc ({1}). Chọn {2} bot DCA cho tài khoản này.": [
+"Each account can copy only {0} DCA bots simultaneously ({1}). Choose {2} DCA bots for this account.",
+"每个账户一次只能复制 {0} 个 DCA 机器人（{1}）。为此账户选择 {2} 个 DCA 机器人。"
+],
+"Mỗi vòng ({0} giây): SL ảo, TP{1} / TP{2} theo giá thực, dời hòa vốn.": [
+"Each round ({0}s): virtual SL, TP{1}/TP{2} at real price, move breakeven.",
+"每轮（{0} 秒）：虚拟止损，TP{1}/TP{2} 按实际价格，移动保本。"
+],
+"Một phần khóa ký cookie: đổi mật khẩu → phiên cũ tự hết.": [
+"Partial cookie lock: change password → old session expires.",
+"部分 cookie 锁定：更改密码 → 旧会话自动失效。"
+],
+"Một tỷ lệ lớn các tài khoản nhà đầu tư cá nhân thua lỗ khi giao dịch CFD. Bạn nên cân nhắc xem mình có hiểu cách thức hoạt động": [
+"A large proportion of retail CFD accounts lose money. Consider whether you understand how it works.",
+"大量散户 CFD 账户亏损。请考虑您是否了解其运作方式。"
+],
+"Mở": [
+"Open",
+"打开"
+],
+"Mở Telegram, nhắn /start cho bot @{0} rồi bấm Kết nối lại.": [
+"Open Telegram, send /start to bot @{0} then click Reconnect.",
+"打开 Telegram，向机器人 @{0} 发送 /start，然后点击重新连接。"
+],
+"Mở chart": [
+"Open chart",
+"打开图表"
+],
+"Mở chiến dịch {0}": [
+"Open campaign {0}",
+"打开活动 {0}"
+],
+"Mở thêm {0} tài khoản MT{1} (có phí)": [
+"Add {0} MT{1} accounts (fee applies)",
+"新增 {0} 个 MT{1} 账户（需付费）"
+],
+"Mở {0}h{1}{2}{3}": [
+"Open {0}h{1}{2}{3}",
+"打开 {0}h{1}{2}{3}"
+],
+"Mức khóa hòa vốn phải nhỏ hơn mức kích hoạt.": [
+"Breakeven lock level must be lower than activation level.",
+"保本锁定水平必须低于激活水平。"
+],
+"Mức vốn này: tối đa {0} lệnh, mỗi lệnh {1} lot. Đang mở {2}/{3} lệnh (tính tất cả các cặp). Giá trị pip {4}: {5} USD/lot.": [
+"Capital limit: max {0} orders, {1} lot each. Currently {2}/{3} orders open (all pairs). Pip value {4}: {5} USD/lot.",
+"资金上限：最多 {0} 笔订单，每笔 {1} 手。当前已开 {2}/{3} 笔（所有品种）。点值 {4}：{5} 美元/手。"
+],
+"Mức vốn này: tối đa {0} lệnh, mỗi lệnh {1} lot. Đang mở {2}/{3} lệnh (tính tất cả các cặp). Giá trị pip {4}: {5} USD/lot{6}.": [
+"Capital limit: max {0} orders, {1} lot each. Currently {2}/{3} orders open (all pairs). Pip value {4}: {5} USD/lot{6}.",
+"资金上限：最多 {0} 笔订单，每笔 {1} 手。当前已开 {2}/{3} 笔（所有品种）。点值 {4}：{5} 美元/手{6}。"
+],
+"Mức độ": [
+"Level",
+"级别"
+],
+"NGAY (thị trường)": [
+"NOW (market)",
+"立即（市场）"
+],
+"NGHỈ / dữ liệu cũ": [
+"PAUSE / old data",
+"暂停 / 旧数据"
+],
+"Nghiêng về GIẢM": [
+"Bias DOWN",
+"偏向下跌"
+],
+"Nghiêng về TĂNG": [
+"Bias UP",
+"偏向上涨"
+],
+"Nghỉ lễ ngân hàng": [
+"Bank holiday",
+"银行假日"
+],
+"Nghỉ, chờ hôm sau": [
+"Rest, wait until tomorrow",
+"休息，等到明天"
+],
+"Ngoài khung giờ vào lệnh": [
+"Outside entry time window",
+"超出入场时间窗口"
+],
+"Ngoài tuần": [
+"Outside week",
+"超出周范围"
+],
+"Nguy cơ mất mát cao": [
+"High loss risk",
+"高损失风险"
+],
+"Nguồn: Forex Factory, dự phòng Myfxbook · giờ Việt Nam (GMT+{0}) · 🔴 Mạnh = tin có thể làm giá biến động mạnh, 🟠 Vừa = biến động vừa. Tin USD ảnh hưởng trực tiếp tới {1}. Nên đứng ngoài hoặc dời SL trước giờ ra tin mạnh.": [
+"Source: Forex Factory, backup Myfxbook · Vietnam time (GMT+{0}) · 🔴 Strong = news may cause strong price moves, 🟠 Moderate = moderate moves. USD news directly impacts {1}. Stay out or move SL before strong news release.",
+"来源：Forex Factory，备份 Myfxbook · 越南时间 (GMT+{0}) · 🔴 强 = 可能导致价格大幅波动的新闻，🟠 中 = 中等波动。USD 新闻直接影响 {1}。建议在强新闻发布前离场或提前移动止损。"
+],
+"Ngày": [
+"Date",
+"日期"
+],
+"Ngày không hợp lệ (cần dạng YYYY-MM-DD).": [
+"Invalid date (format YYYY-MM-DD required).",
+"无效日期（需要 YYYY-MM-DD 格式）。"
+],
+"Ngày · D cạnh": [
+"Date · Adjacent D",
+"日期 · 相邻 D"
+],
+"Ngày · D cạnh SELL": [
+"Date · Adjacent D SELL",
+"日期 · 相邻 D SELL"
+],
+"Ngưỡng bóng nến mộng (pip, tạm đặt)": [
+"Dream candle shadow threshold (pip, temporary)",
+"梦幻蜡烛影子阈值（点，临时）"
+],
+"Ngưỡng {0}": [
+"Threshold {0}",
+"阈值 {0}"
+],
+"Ngắt": [
+"Break",
+"中断"
+],
+"Ngắt nhóm tín hiệu? Bot sẽ thôi gửi tin vào nhóm.": [
+"Break signal group? Bot will stop sending messages to the group.",
+"中断信号组？机器人将停止向群组发送消息。"
+],
+"Ngữ cảnh con của bot (các khung thêm đang chọn).": [
+"Bot sub‑context (selected additional frames).",
+"机器人子上下文（已选择的附加框架）。"
+],
+"Nhãn BUY / SELL theo cài đặt DCA đang lưu của bot + ENTRY / SL chung / TP của tín hiệu gần nhất (bot chỉ vào lệnh {0}, cặp khác chỉ để xem)": [
+"Label BUY/SELL per bot's saved DCA settings + common ENTRY/SL + TP of latest signal (bot only trades {0}, other pairs view‑only)",
+"根据机器人保存的 DCA 设置标记 BUY/SELL + 通用 ENTRY/SL + 最近信号的 TP（机器人仅在 {0} 上下单，其他品种仅供查看）"
+],
+"Nhãn BUY/SELL của chiến lược PinYin HA Pro trên {0} nến đã đóng gần nhất (để vẽ lên biểu đồ).": [
+"Label BUY/SELL of PinYin HA Pro strategy on the most recent closed {0} candle (for chart overlay).",
+"在最近收盘的 {0} 根蜡烛上标记 PinYin HA Pro 策略的 BUY/SELL（用于图表叠加）。"
+],
+"Nhãn lệnh trên EA: Bot {0} không nhãn (tương thích EA cũ), bot khác": [
+"EA order label: Bot {0} unlabeled (old EA compatible), other bot",
+"EA 订单标签：机器人 {0} 未标记（兼容旧 EA），其他机器人"
+],
+"Nhận định": [
+"Assessment",
+"研判"
+],
+"Nhập các giá trị cần so sánh, cách nhau dấu phẩy.": [
+"Enter values to compare, separated by commas.",
+"输入需要比较的数值，用逗号分隔。"
+],
+"Nhập họ tên.": [
+"Enter full name.",
+"输入姓名。"
+],
+"Nhập khóa API và email nhận thư thử.": [
+"Enter API key and test‑email address.",
+"输入 API 密钥和测试邮件地址。"
+],
+"Nhập lại mật khẩu": [
+"Re‑enter password",
+"重新输入密码"
+],
+"Nhập lại mật khẩu mới": [
+"Re‑enter new password",
+"重新输入新密码"
+],
+"Nhập mật khẩu chủ để xác nhận:": [
+"Enter master password to confirm:",
+"输入主密码以确认："
+],
+"Nhập số Zalo hoặc Telegram đã dùng khi đăng ký.": [
+"Enter Zalo or Telegram number used at registration.",
+"输入注册时使用的 Zalo 或 Telegram 号码。"
+],
+"Nhập số tài khoản và máy chủ.": [
+"Enter account number and server.",
+"输入账户号码和服务器。"
+],
+"Nhập tên bot.": [
+"Enter bot name.",
+"输入机器人名称。"
+],
+"Nhập tên.": [
+"Enter name.",
+"输入名称。"
+],
+"Nhật ký bot": [
+"Bot log",
+"机器人日志"
+],
+"Nhồi theo cấp số nhân": [
+"Compound fill",
+"复利填充"
+],
+"Nhồi tiếp cấp số nhân": [
+"Continue compound fill",
+"继续复利填充"
+],
+"Niềm tin người tiêu dùng": [
+"Consumer confidence",
+"消费者信心"
+],
+"Nến": [
+"Candle",
+"K线"
+],
+"Nến D{0}": [
+"D{0} candle",
+"D{0} K线"
+],
+"Nến D{0} gần nhất (nhập O/H/L/C)": [
+"Most recent D{0} candle (enter O/H/L/C)",
+"最近的 D{0} K线（输入 O/H/L/C）"
+],
+"Nến D{0} gần nhất (tự động từ MT{1})": [
+"Most recent D{0} candle (auto from MT{1})",
+"最近的 D{0} K线（自动来自 MT{1}）"
+],
+"Nến D{0}/W{1} đã đóng gần nhất theo nến của broker.": [
+"Most recent closed D{0}/W{1} candle per broker data.",
+"根据经纪商数据，最近收盘的 D{0}/W{1} K线。"
+],
+"Nến Heikin Ashi": [
+"Heikin Ashi candle",
+"Heikin Ashi K线"
+],
+"Nến H{0} #{1}/{2} · Chu kỳ {3}": [
+"H{0} candle #{1}/{2} · Cycle {3}",
+"H{0} K线 #{1}/{2} · 周期 {3}"
+],
+"Nến M{0} (giả lập)": [
+"M{0} candle (simulation)",
+"M{0} K线（模拟）"
+],
+"Nến M{0} · EMA{1} · EMA{2} · VWAP · FVG (": [
+"M{0} Candle · EMA{1} · EMA{2} · VWAP · FVG (",
+"M{0} K线 · EMA{1} · EMA{2} · VWAP · FVG ("
+],
+"Nến M{0} · giá và ngày giờ (": [
+"M{0} Candle · price & datetime (",
+"M{0} K线 · 价格和日期时间 ("
+],
+"Nến M{0} · giá và ngày giờ (giả lập)": [
+"M{0} Candle · price & datetime (simulation)",
+"M{0} K线 · 价格和日期时间（模拟）"
+],
+"Nến Nhật (như Strategy TradingView)": [
+"Japanese Candle (like TradingView Strategy)",
+"日线 K线（如 TradingView 策略）"
+],
+"Nến W": [
+"W Candle",
+"W K线"
+],
+"Nến mới đóng: thoát chủ động, mở chiến dịch / thêm lệnh DCA, cập nhật TP.": [
+"New closed candle: proactive exit, start campaign / add DCA order, update TP.",
+"新收盘 K线：主动退出，开启活动/添加 DCA 订单，更新止盈。"
+],
+"Nến xanh (tăng)": [
+"Green candle (up)",
+"绿色 K线（上涨）"
+],
+"Nến đỏ (giảm)": [
+"Red candle (down)",
+"红色 K线（下跌）"
+],
+"Nến đứng (mở = đóng)": [
+"Doji (open = close)",
+"十字星（开盘=收盘）"
+],
+"Nếu CK{0} giảm: Buy nhồi để thuận lệnh": [
+"If CK{0} drops: BUY to add and follow",
+"如果 CK{0} 下跌：买入加仓以顺势"
+],
+"Nếu CK{0} giảm: Chốt lời": [
+"If CK{0} drops: Take profit",
+"如果 CK{0} 下跌：止盈"
+],
+"Nếu CK{0} giảm: Chốt lời hoặc SL+": [
+"If CK{0} drops: Take profit or SL+",
+"如果 CK{0} 下跌：止盈或 SL+"
+],
+"Nếu CK{0} giảm: Chốt lời trong ngày": [
+"If CK{0} drops: Take profit today",
+"如果 CK{0} 下跌：当天止盈"
+],
+"Nếu CK{0} giảm: Chốt lời trong ngày, có thể Buy lướt sóng": [
+"If CK{0} drops: Intraday TP, may BUY wave",
+"如果 CK{0} 下跌：日内止盈，可买入波段"
+],
+"Nếu CK{0} giảm: Chốt lời và nghỉ": [
+"If CK{0} drops: Take profit and stop",
+"如果 CK{0} 下跌：止盈并停止"
+],
+"Nếu CK{0} giảm: Kiểm tra số pip, BUY lướt sóng CK{1}": [
+"If CK{0} drops: Check pips, BUY wave CK{1}",
+"如果 CK{0} 下跌：检查点数，买入波段 CK{1}"
+],
+"Nếu CK{0} giảm: {1}": [
+"If CK{0} drops: {1}",
+"如果 CK{0} 下跌：{1}"
+],
+"Nếu CK{0} giảm: Đứng ngoài quan sát, không vào lệnh CK{1}": [
+"If CK{0} drops: Observe, no entry CK{1}",
+"如果 CK{0} 下跌：观望，不入场 CK{1}"
+],
+"Nếu CK{0} tăng: Chốt lời và nghỉ": [
+"If CK{0} rises: Take profit and rest",
+"如果 CK{0} 上涨：止盈并休息"
+],
+"Nếu CK{0} tăng: Cắt hết lệnh, chờ hôm sau": [
+"If CK{0} rises: Close all orders, wait for next day",
+"如果 CK{0} 上涨：平掉所有订单，等待次日"
+],
+"Nếu CK{0} tăng: Kiểm tra số pip, SELL cấp số nhân": [
+"If CK{0} rises: Check pips, SELL multiplier",
+"如果 CK{0} 上涨：检查点数，卖出乘数"
+],
+"Nếu CK{0} tăng: Kiểm tra số pip, nhồi theo cấp số nhân": [
+"If CK{0} rises: Check pips, scale in exponentially",
+"如果 CK{0} 上涨：检查点数，指数加仓"
+],
+"Nếu CK{0} tăng: Nghỉ, chờ hôm sau": [
+"If CK{0} rises: Pause, wait for next day",
+"如果 CK{0} 上涨：暂停，等待次日"
+],
+"Nếu CK{0} tăng: Nhồi tiếp cấp số nhân": [
+"If CK{0} rises: Continue exponential scaling",
+"如果 CK{0} 上涨：继续指数加仓"
+],
+"Nếu CK{0} tăng: Qua giá mở cửa và cắn SL+: nghỉ. Chưa qua và không cần SL: có thể nhồi thêm": [
+"If CK{0} rises: Passed open price & hit SL+: rest. Not passed, no SL needed: may add",
+"如果 CK{0} 上涨：已超过开盘价并触及 SL+：休息。未超过且无需 SL：可加仓"
+],
+"Nếu CK{0} tăng: SELL CK{1}": [
+"If CK{0} rises: SELL CK{1}",
+"如果 CK{0} 上涨：卖出 CK{1}"
+],
+"Nếu CK{0} tăng: SELL CK{1}, kiểm tra số pip": [
+"If CK{0} rises: SELL CK{1}, check pips",
+"如果 CK{0} 上涨：卖出 CK{1}，检查点数"
+],
+"Nếu CK{0} tăng: Sell thuận lệnh": [
+"If CK{0} rises: SELL to follow",
+"如果 CK{0} 上涨：卖出顺势"
+],
+"Nếu CK{0} tăng: {1}": [
+"If CK{0} rises: {1}",
+"如果 CK{0} 上涨：{1}"
+],
+"Nếu {0} đang chờ xác nhận, thư mới đã được gửi. Kiểm tra hộp thư và mục Spam.": [
+"If {0} is pending confirmation, a new email was sent. Check inbox and Spam folder.",
+"如果 {0} 正在等待确认，已发送新邮件。检查收件箱和垃圾邮件文件夹。"
+],
+"Nếu {0} đã đăng ký, thư đặt lại mật khẩu đã được gửi. Mở hộp thư (xem cả mục Spam / Quảng cáo)": [
+"If {0} is registered, password reset email sent. Open inbox (including Spam/Ads).",
+"如果 {0} 已注册，已发送密码重置邮件。打开收件箱（包括垃圾邮件/广告）。"
+],
+"Nội dung ghi chú:": [
+"Note:",
+"备注："
+],
+"Nội dung trên PinYin CKG chỉ dành cho mục đích giáo dục, tham khảo và hỗ trợ, không phải là lời khuyên đầu tư.": [
+"Content on PinYin CKG is for educational, reference and support purposes only, not investment advice.",
+"PinYin CKG 上的内容仅用于教育、参考和支持目的，不构成投资建议。"
+],
+"PMI dịch vụ": [
+"Service PMI",
+"服务 PMI"
+],
+"PMI dịch vụ ISM": [
+"ISM Service PMI",
+"ISM 服务 PMI"
+],
+"PMI sản xuất": [
+"Manufacturing PMI",
+"制造业 PMI"
+],
+"PMI sản xuất ISM": [
+"ISM Manufacturing PMI",
+"ISM 制造业 PMI"
+],
+"Phiên Mỹ (New York)": [
+"US Session (New York)",
+"美洲时段（纽约）"
+],
+"Phiên Á (Tokyo)": [
+"Asia Session (Tokyo)",
+"亚洲时段（东京）"
+],
+"Phiên Âu (London)": [
+"Europe Session (London)",
+"欧洲时段（伦敦）"
+],
+"Phiên Âu – Mỹ (giao thoa, biến động mạnh)": [
+"EU‑US Overlap (high volatility)",
+"欧美交叉（波动剧烈）"
+],
+"Phát biểu / họp báo": [
+"Statement / Press conference",
+"声明 / 新闻发布会"
+],
+"Phát biểu Fed": [
+"Fed Statement",
+"美联储声明"
+],
+"Phân Tích AI cần chạy từ máy chủ PinYin (mở trang qua /ckg/ hoặc link từ xa).": [
+"AI Analysis must run on PinYin server (open via /ckg/ or remote link).",
+"AI 分析需在 PinYin 服务器上运行（通过 /ckg/ 或远程链接打开）。"
+],
+"Phân tích chi tiết các chỉ báo · {0} (": [
+"Detailed indicator analysis · {0} (",
+"详细指标分析 · {0} ("
+],
+"Phân tích lúc": [
+"Analyze at",
+"分析时间"
+],
+"Phí mỗi lot": [
+"Fee per lot",
+"每手费用"
+],
+"Phóng to": [
+"Zoom in",
+"放大"
+],
+"PinYin CKG Lab · giao dịch": [
+"PinYin CKG Lab · Trading",
+"PinYin CKG 实验室 · 交易"
+],
+"PinYin CKG · Phân Tích AI": [
+"PinYin CKG · AI Analysis",
+"PinYin CKG · AI分析"
+],
+"PinYin CKG · bot tự động": [
+"PinYin CKG · Auto Bot",
+"PinYin CKG · 自动机器人"
+],
+"PinYin CKG · buồng lái nhanh": [
+"PinYin CKG · Fast Cockpit",
+"PinYin CKG · 快速驾驶舱"
+],
+"PinYin CKG · thư thử": [
+"PinYin CKG · Test Email",
+"PinYin CKG · 测试邮件"
+],
+"PinYin HA Pro DCA (bot đang chạy)": [
+"PinYin HA Pro DCA (bot running)",
+"PinYin HA Pro DCA（机器人运行中）"
+],
+"PinYin HA Pro DCA ({0}, {1}) · {2} · tối đa {3} lệnh · {4}": [
+"PinYin HA Pro DCA ({0}, {1}) · {2} · max {3} orders · {4}",
+"PinYin HA Pro DCA（{0}, {1}）· {2}· 最多 {3} 单 · {4}"
+],
+"PinYin cũng đã gửi thư nhắc vào email đó (xem cả mục Spam).": [
+"PinYin also sent a reminder email (check Spam folder).",
+"PinYin 已发送提醒邮件（请检查垃圾邮件）。"
+],
+"PinYin · Gửi lại thư xác nhận": [
+"PinYin · Resend confirmation email",
+"PinYin · 重发确认邮件"
+],
+"PinYin · Miễn trừ trách nhiệm": [
+"PinYin · Disclaimer",
+"PinYin · 免责声明"
+],
+"PinYin · Quên email đăng nhập": [
+"PinYin · Forgot login email",
+"PinYin · 忘记登录邮箱"
+],
+"PinYin · Quên mật khẩu": [
+"PinYin · Forgot password",
+"PinYin · 忘记密码"
+],
+"PinYin · Quản lý khách hàng": [
+"PinYin · Customer Management",
+"PinYin · 客户管理"
+],
+"PinYin · Xác nhận email": [
+"PinYin · Email verification",
+"PinYin · 邮箱验证"
+],
+"PinYin · cầu nối EA khách": [
+"PinYin · EA client bridge",
+"PinYin · EA 客户桥接"
+],
+"PinYin · khách hàng": [
+"PinYin · Customer",
+"PinYin · 客户"
+],
+"PinYin · Đăng ký": [
+"PinYin · Sign Up",
+"PinYin · 注册"
+],
+"PinYin · Đăng nhập": [
+"PinYin · Log In",
+"PinYin · 登录"
+],
+"PinYin · Đặt lại mật khẩu": [
+"PinYin · Reset password",
+"PinYin · 重置密码"
+],
+"Pip ngược chiều (tăng) từ giá mở": [
+"Pip opposite direction (up) from open price",
+"从开盘价起逆向点数（上涨）"
+],
+"Pip ngược chiều ({0}) từ giá mở": [
+"Pip opposite direction ({0}) from open price",
+"从开盘价起逆向点数（{0}）"
+],
+"Pip tăng từ lúc cắt lệnh trước": [
+"Pip up since last cut order",
+"自上次平仓后点数上升"
+],
+"Pip tối đa lên / xuống": [
+"Max pip up / down",
+"最大点数上/下"
+],
+"Pip {0} từ lúc cắt lệnh trước": [
+"Pip {0} since last cut order",
+"自上次平仓后点数 {0}"
+],
+"Pip đủ lớn, theo hướng chính (ngưỡng {0} pip, tạm đặt)": [
+"Pip large enough, aligns with main direction (threshold {0} pip, provisional)",
+"点数足够大，符合主要方向（阈值 {0} 点，暂定）"
+],
+"P{0} Quan sát": [
+"P{0} Observe",
+"P{0} 观察"
+],
+"P{0} Xác nhận": [
+"P{0} Confirm",
+"P{0} 确认"
+],
+"P{0} Ưu tiên": [
+"P{0} Priority",
+"P{0} 优先"
+],
+"Qua giá mở cửa và cắn SL+: nghỉ. Chưa qua và không cần SL: có thể nhồi thêm": [
+"Cross open price and hit SL+: stop. Not crossed and no SL needed: can add more",
+"穿过开盘价并触及止损+：停止。未穿且无需止损：可继续加仓"
+],
+"Quan sát": [
+"Observe",
+"观察"
+],
+"Quan sát CK{0} (chưa vào lệnh)": [
+"Observe CK{0} (no order yet)",
+"观察 CK{0}（未下单）"
+],
+"Quan sát CK{0}: giảm → Buy CK{1}; tăng → Sell CK{2}": [
+"Observe CK{0}: down → Buy CK{1}; up → Sell CK{2}",
+"观察 CK{0}：下跌 → 买入 CK{1}；上涨 → 卖出 CK{2}"
+],
+"Quan sát CK{0}: tăng → Sell CK{1}; giảm → Buy CK{2}": [
+"Observe CK{0}: up → Sell CK{1}; down → Buy CK{2}",
+"观察 CK{0}：上涨 → 卖出 CK{1}；下跌 → 买入 CK{2}"
+],
+"Quanh đường giữa": [
+"Around the middle road",
+"中间道路附近"
+],
+"Quyết định lãi suất": [
+"Interest rate decision",
+"利率决议"
+],
+"Quên email?": [
+"Forgot email?",
+"忘记邮箱？"
+],
+"Quên luôn mật khẩu?": [
+"Forgot password completely?",
+"忘记密码？"
+],
+"Quên mật khẩu?": [
+"Forgot password?",
+"忘记密码？"
+],
+"Quên mật khẩu? Nhập email đã đăng ký, PinYin gửi link để bạn đặt mật khẩu mới.": [
+"Forgot password? Enter your registered email, PinYin will send a link to set a new password.",
+"忘记密码？输入已注册的邮箱，PinYin 将发送链接让您设置新密码。"
+],
+"Quên đã đăng ký bằng email nào? Nhập số Zalo (hoặc Telegram) đã dùng khi đăng ký.": [
+"Forgot which email you registered with? Enter the Zalo (or Telegram) number used at registration.",
+"忘记注册的邮箱？请输入注册时使用的 Zalo（或 Telegram）号码。"
+],
+"Quản lý khách hàng": [
+"Customer Management",
+"客户管理"
+],
+"R, chốt": [
+"R, close",
+"R, 平仓"
+],
+"R|id|{0}/thông báo": [
+"R|id|{0}/notification",
+"R|id|{0}/通知"
+],
+"Rê chuột: dấu cộng hiện giá · 📏 Đo (hoặc Shift + kéo): đo khoảng giá / số nến · Kéo biểu đồ để dời ngang/dọc · lăn chuột hoặc chụm {0} ngón để thu phóng · kéo cột giá để giãn giá, kéo trục thời gian để giãn nến · nhấp đúp cột giá = giá tự động, nhấp đúp biểu đồ = mặc định": [
+"Mouse tip: + shows price · 📏 Measure (or Shift+drag): measure price range / candle count · Drag chart to pan horizontally/vertically · Scroll wheel or pinch {0} fingers to zoom · Drag price column to stretch price, drag time axis to stretch candles · Double‑click price column = auto price, double‑click chart = reset",
+"鼠标提示：+ 显示价格 · 📏 测量（或 Shift+拖动）：测量价格区间/蜡烛数量 · 拖动图表平移水平/垂直 · 滚轮或捏合 {0} 指缩放 · 拖动价格列拉伸价格，拖动时间轴拉伸蜡烛 · 双击价格列=自动价格，双击图表=默认"
+],
+"Ròng:": [
+"Net:",
+"净值："
+],
+"Rủi ro TỔNG": [
+"TOTAL risk",
+"总体风险"
+],
+"Rủi ro tổng (%)": [
+"Total risk (%)",
+"总体风险（%）"
+],
+"SELL (EMA{0} cắt xuống EMA{1})": [
+"SELL (EMA{0} crosses below EMA{1})",
+"SELL (EMA{0} 下穿 EMA{1})"
+],
+"SELL CK{0}, kiểm tra số pip": [
+"SELL CK{0}, check pip count",
+"SELL CK{0}，检查点数"
+],
+"SELL cấp số nhân, lot x{0}": [
+"SELL multiplier, lot x{0}",
+"SELL 乘数，手数 x{0}"
+],
+"SELL cấp số nhân, lot x{0} → Chốt lãi khi hết CK (không chốt thì SL+, chờ TP hoặc cán SL)": [
+"SELL exponential, lot x{0} → Take profit when CK exhausted (if not, SL+, wait TP or hit SL)",
+"SELL 指数，手数 x{0} → CK 用尽时止盈（若未止盈则 SL+，等待 TP 或触及 SL）"
+],
+"SELL cấp số nhân, lot x{0} → Quan sát CK{1}, CK{2} tuần sau và tiếp tục theo đuổi mục tiêu": [
+"SELL exponential, lot x{0} → Monitor CK{1}, CK{2} next week and keep target",
+"SELL 指数，手数 x{0} → 观察下周 CK{1}、CK{2} 并继续追目标"
+],
+"SELL cấp số nhân, lot x{0} → ngược hướng, sang CK{1} nhân tiếp": [
+"SELL exponential, lot x{0} → Reverse direction, move to CK{1} multiplier",
+"SELL 指数，手数 x{0} → 反向，转至 CK{1} 倍数"
+],
+"SELL ở {0}": [
+"SELL at {0}",
+"SELL 于 {0}"
+],
+"SL (đáy/đỉnh {0} nến)": [
+"SL (bottom/top of {0} candles)",
+"SL（{0} 根蜡烛的底部/顶部）"
+],
+"SL chung dời theo lệnh DCA mới": [
+"Common SL moves with new DCA order",
+"通用止损随新 DCA 订单移动"
+],
+"SL chung dời theo lệnh DCA {0}: {1} → {2} ({3}).": [
+"Common SL moves with DCA {0}: {1} → {2} ({3}).",
+"通用止损随 DCA {0} 移动：{1} → {2}（{3}）。"
+],
+"SL cộng thêm": [
+"Add to SL",
+"SL 加点"
+],
+"SL cộng thêm ($)": [
+"Add to SL ($)",
+"SL 加点（$）"
+],
+"SL cộng thêm từ {0} đến {1}.": [
+"Add to SL from {0} to {1}.",
+"SL 加点从 {0} 到 {1}。"
+],
+"SL mềm (σ)": [
+"Soft SL (σ)",
+"软止损 (σ)"
+],
+"SL mềm VWAP": [
+"Soft SL VWAP",
+"软止损 VWAP"
+],
+"SL mềm: đóng khi nến đóng xuyên VWAP ± {0}σ": [
+"Soft SL: close when candle closes crossing VWAP ± {0}σ",
+"软止损：当蜡烛收盘穿越 VWAP ± {0}σ 时平仓"
+],
+"Sai email hoặc mật khẩu.": [
+"Incorrect email or password.",
+"邮箱或密码错误。"
+],
+"Sai mật khẩu chủ.": [
+"Incorrect owner password.",
+"管理员密码错误。"
+],
+"Sai mật khẩu.": [
+"Incorrect password.",
+"密码错误。"
+],
+"Sai quá nhiều lần. Thử lại sau {0} phút.": [
+"Too many failed attempts. Try again after {0} minutes.",
+"尝试次数过多。请在 {0} 分钟后重试。"
+],
+"Sau TP{0} dời SL về giá TB": [
+"After TP{0} move SL to breakeven price",
+"TP{0} 后将止损移至保本价"
+],
+"Sell thuận lệnh": [
+"Sell with order flow",
+"顺势卖出"
+],
+"So sánh thông số": [
+"Compare parameters",
+"比较参数"
+],
+"So sánh: chọn thông số hợp lệ và {0}–{1} giá trị.": [
+"Compare: select valid parameters and {0}–{1} values.",
+"比较：选择有效参数和 {0}–{1} 值。"
+],
+"So sánh: giá trị phải là số.": [
+"Compare: value must be numeric.",
+"比较：值必须是数字。"
+],
+"Swing {0} nến": [
+"Swing {0} candles",
+"Swing {0} 根蜡烛"
+],
+"Sáng tăng nhẹ so với giá mở cửa": [
+"Morning up slightly vs open price",
+"早盘轻微上涨相对开盘价"
+],
+"Sáng {0} nhẹ so với giá mở cửa": [
+"Morning {0} slight vs open price",
+"早盘 {0} 轻微相对开盘价"
+],
+"Số": [
+"Number",
+"数量"
+],
+"Số Zalo hoặc Telegram": [
+"Zalo or Telegram number",
+"Zalo 或 Telegram 号码"
+],
+"Số lần": [
+"Count",
+"次数"
+],
+"Số lệnh tối đa": [
+"Maximum orders",
+"最大订单数"
+],
+"Số lệnh tối đa của chiến dịch: ô 'Số lệnh' (theo % rủi ro) hoặc thêm giới hạn của bảng vốn.": [
+"Maximum orders for campaign: 'Orders' field (by % risk) or add limit from capital table.",
+"活动的最大订单数：'订单'字段（按%风险）或从资金表添加限制。"
+],
+"Số lệnh:": [
+"Orders:",
+"订单："
+],
+"Số ngày không hợp lệ.": [
+"Invalid number of days.",
+"天数无效。"
+],
+"Số ngày từ {0} đến {1}.": [
+"Days from {0} to {1}.",
+"天数范围 {0} 到 {1}。"
+],
+"Số người nhận trợ cấp": [
+"Number of beneficiaries",
+"受助人数"
+],
+"Số nến SL từ {0} đến {1}.": [
+"SL candle count from {0} to {1}.",
+"止损K线数量 {0} 到 {1}。"
+],
+"Số pip": [
+"Pip count",
+"点数"
+],
+"Số tài khoản (login)": [
+"Account number (login)",
+"账户号码（登录）"
+],
+"Số {0}": [
+"Number {0}",
+"编号 {0}"
+],
+"Số điện thoại Zalo": [
+"Zalo phone number",
+"Zalo电话号码"
+],
+"Số điện thoại Zalo không hợp lệ.": [
+"Invalid Zalo phone number.",
+"Zalo电话号码无效。"
+],
+"Sụt vốn tối đa": [
+"Maximum drawdown",
+"最大回撤"
+],
+"TB thắng / thua": [
+"Avg win / loss",
+"平均盈亏"
+],
+"THẬT": [
+"TRUE",
+"TRUE"
+],
+"TMA (dải bot)": [
+"TMA (bottom band)",
+"TMA（底部带）"
+],
+"TMA dưới": [
+"TMA lower",
+"TMA下限"
+],
+"TMA giữa": [
+"TMA middle",
+"TMA中线"
+],
+"TMA trên": [
+"TMA upper",
+"TMA上限"
+],
+"TP (có thể Sell lướt CK{0}, mạo hiểm)": [
+"TP (may Sell quick CK{0}, risky)",
+"止盈（可快速卖出 CK{0}，风险）"
+],
+"TP chỉ {0} đến {1}.": [
+"TP only {0} to {1}.",
+"止盈仅 {0} 到 {1}。"
+],
+"TP hoặc SL+": [
+"TP or SL+",
+"止盈或止损+"
+],
+"TRÊN giá mở D{0}": [
+"ABOVE open price D{0}",
+"在开盘价 D{0} 之上"
+],
+"TRÊN {0}": [
+"ABOVE {0}",
+"在 {0} 之上"
+],
+"Telegram (không bắt buộc)": [
+"Telegram (optional)",
+"Telegram（可选）"
+],
+"Telegram không hợp lệ (vd: @tennguoidung), hoặc để trống.": [
+"Invalid Telegram (e.g., @username) or leave blank.",
+"Telegram无效（如：@用户名），或留空。"
+],
+"Thang giá tự động": [
+"Auto price scale",
+"自动价格刻度"
+],
+"Thao tác không hợp lệ.": [
+"Invalid operation.",
+"操作无效。"
+],
+"Thay đổi ròng": [
+"Net change",
+"净变动"
+],
+"Thay đổi việc làm": [
+"Change of employment",
+"工作变动"
+],
+"Theo dõi CK{0}": [
+"Track CK{0}",
+"跟踪 CK{0}"
+],
+"Theo dõi CK{0}: giảm → Buy CK{1}; tăng → quan sát CK{2}": [
+"Track CK{0}: down → Buy CK{1}; up → watch CK{2}",
+"跟踪 CK{0}：下跌 → 买入 CK{1}；上涨 → 观察 CK{2}"
+],
+"Theo dõi CK{0}: tăng → Sell CK{1}; giảm → quan sát CK{2}": [
+"Track CK{0}: up → Sell CK{1}; down → watch CK{2}",
+"跟踪 CK{0}：上涨 → 卖出 CK{1}；下跌 → 观察 CK{2}"
+],
+"Theo lý do đóng lệnh": [
+"By close reason",
+"按平仓原因"
+],
+"Theo tháng": [
+"By month",
+"按月"
+],
+"Thiếu tài khoản.": [
+"Account missing.",
+"缺少账户。"
+],
+"Thu nhập bình quân": [
+"Average income",
+"平均收入"
+],
+"Thu nhỏ": [
+"Minimize",
+"最小化"
+],
+"Thua liên tiếp": [
+"Consecutive losses",
+"连续亏损"
+],
+"Thua liên tiếp dài nhất": [
+"Longest losing streak",
+"最长连败"
+],
+"Thành tích trong quá khứ": [
+"Past performance",
+"过去业绩"
+],
+"Tháng": [
+"Month",
+"月份"
+],
+"Thêm bot [{name or f'Bot {0}'}] (magic {1}).": [
+"Add bot [{name or f'Bot {0}'}] (magic {1}).",
+"添加机器人 [{name or f'Bot {0}'}] (magic {1})。"
+],
+"Thêm lệnh DCA {0}/{1} {2}": [
+"Add DCA order {0}/{1} {2}",
+"添加 DCA 订单 {0}/{1} {2}"
+],
+"Thêm lệnh DCA: SL chung = SL của lệnh mới, dời SL mọi lệnh trước theo (TP{0}/TP{1} tính lại theo SL mới).": [
+"Add DCA order: common SL = SL of new order, shift SL of all previous orders according to (TP{0}/TP{1} recalculated with new SL).",
+"添加 DCA 订单：统一止损 = 新订单的止损，按（TP{0}/TP{1} 依据新止损重新计算）移动所有之前订单的止损。"
+],
+"Thêm tài khoản vào lệnh [{0}].": [
+"Add account to order [{0}].",
+"将账户添加到订单 [{0}]。"
+],
+"Thông báo EA tự gửi lên (vd: sàn đã chốt TP{0}, EA dời hòa vốn).": [
+"EA auto‑notification (e.g., platform closed TP{0}, EA moves to breakeven).",
+"EA 自动通知（例如：平台已止盈 TP{0}，EA 移动保本）。"
+],
+"Thước đo: bấm rồi kéo trên biểu đồ (hoặc giữ Shift + kéo)": [
+"Ruler: click‑drag on chart (or hold Shift + drag)",
+"尺子：在图表上点击并拖动（或按住 Shift + 拖动）"
+],
+"Thước đo: kéo để đo khoảng giá / pip / số nến": [
+"Ruler: drag to measure price / pip / candle count",
+"尺子：拖动以测量价格 / 点 / K线数量"
+],
+"Thấp nhất": [
+"Lowest",
+"最低"
+],
+"Thấp {0} nến {1}: {2} · biên độ {3} pip": [
+"Low {0} candles {1}: {2} · range {3} pip",
+"低 {0} 根 K线 {1}: {2} · 波幅 {3} 点"
+],
+"Thắng": [
+"Win",
+"赢"
+],
+"Thắng/Thua:": [
+"Win/Loss:",
+"盈亏："
+],
+"Thị trường nhà ở": [
+"Housing market",
+"住房市场"
+],
+"Thị trường đóng cửa (cuối tuần)": [
+"Closed market (weekend)",
+"收盘市场（周末）"
+],
+"Thống kê chu kỳ H{0} trong ngày": [
+"H{0} cycle stats today",
+"今日 H{0} 周期统计"
+],
+"Thống kê {0} nến M{1} gần nhất": [
+"Last {0} M{1} candles stats",
+"最近 {0} 根 M{1} K线统计"
+],
+"Thống kê {0} nến {1} gần nhất": [
+"Last {0} {1} candles stats",
+"最近 {0} 根 {1} K线统计"
+],
+"Thời gian giữ": [
+"Holding time",
+"持仓时间"
+],
+"Thời gian trên / dưới giá mở": [
+"Time above / below open price",
+"高于/低于开盘价的时间"
+],
+"Thời hạn lệnh vào từ {0} đến {1} giây.": [
+"Order entry window: {0}‑{1} seconds.",
+"下单时间窗口：{0}‑{1} 秒。"
+],
+"Thứ {0}": [
+"{W0}",
+"{W0}"
+],
+"Thứ {0} {1} → Thứ {2} {3}": [
+"{W0} {1} → {W2} {3}",
+"{W0} {1} → {W2} {3}"
+],
+"Thứ {0} {1} → Thứ {2} {3} · {4} nến H{5}": [
+"{W0} {1} → {W2} {3} · {4} H{5} candles",
+"{W0} {1} → {W2} {3} · {4} 根 H{5} K线"
+],
+"Thứ {0} {1} → {2}": [
+"{W0} {1} → {2}",
+"{W0} {1} → {2}"
+],
+"Thứ {0} {1} → {2} · {3} nến H{4}": [
+"{W0} {1} → {2} · {3} H{4} candles",
+"{W0} {1} → {2} · {3} 根 H{4} K线"
+],
+"Tia: đường xu hướng kéo dài": [
+"Ray: extended trend line",
+"射线：延伸趋势线"
+],
+"Tiếp tục giảm, xem xét vào lệnh": [
+"Continue down, consider entry",
+"继续下跌，考虑入场"
+],
+"Tiếp tục {0}, xem xét vào lệnh": [
+"Continue {0}, consider entry",
+"继续 {0}，考虑入场"
+],
+"Tiền tệ": [
+"Currency",
+"货币"
+],
+"Token không đúng.": [
+"Invalid token.",
+"令牌无效。"
+],
+"Toàn màn hình (phím F)": [
+"Full screen (F key)",
+"全屏（F 键）"
+],
+"Trong dải · dưới giữa": [
+"In band · lower middle",
+"在区间·下中"
+],
+"Trong dải · trên giữa": [
+"In band · upper middle",
+"在区间·上中"
+],
+"Trên TMA trên": [
+"Above upper TMA",
+"在上方 TMA 之上"
+],
+"Trên VWAP": [
+"Above VWAP",
+"在 VWAP 之上"
+],
+"Trước phiên Âu có đợt tăng mạnh {0}-{1} pip rồi giảm": [
+"Before EU session a strong rise of {0}-{1} pip then fall",
+"欧盘前出现 {0}-{1} 点强劲上涨后回落"
+],
+"Trước phiên Âu có đợt {0} mạnh {1}-{2} pip rồi {3}": [
+"Before EU session a strong {0} of {1}-{2} pip then {3}",
+"欧盘前出现 {0} 强劲 {1}-{2} 点后 {3}"
+],
+"Trước: {0}{1}": [
+"Before: {0}{1}",
+"之前：{0}{1}"
+],
+"Trượt giá tối đa từ {0} đến {1}$.": [
+"Max slippage from {0} to {1}$.",
+"最大滑点从 {0} 到 {1}$。"
+],
+"Trạng thái": [
+"Status",
+"状态"
+],
+"Trạng thái biến động": [
+"Volatility status",
+"波动状态"
+],
+"Trạng thái thực tế: cho / ok / khoa / het (hết hạn).": [
+"Actual status: active / ok / locked / expired.",
+"实际状态：活跃 / ok / 锁定 / 已过期。"
+],
+"Trả (mốc giờ, [mã]) khi vừa sang giờ mới theo giờ máy chủ MT{0}; H{1} = giờ máy chủ chia hết cho {2}.": [
+"Return (timestamp, [code]) when the new hour begins according to MT server time {0}; H{1}=server hour divisible by {2}.",
+"返回（时间戳, [代码]）当新小时开始，依据 MT 服务器时间 {0}；H{1}=服务器小时能被 {2} 整除。"
+],
+"Trả lời ngắn gọn bằng tiếng Việt.": [
+"Reply briefly in Vietnamese.",
+"请用越南语简短回复。"
+],
+"Tuyên bố miễn trừ trách nhiệm về rủi ro": [
+"Risk disclaimer",
+"风险免责声明"
+],
+"Tuần này": [
+"This week",
+"本周"
+],
+"Tuần · W cạnh": [
+"Week · Adjacent W",
+"周 · 相邻 W"
+],
+"Tuần · W cạnh SELL": [
+"Week · Adjacent W SELL",
+"周 · 相邻 W SELL"
+],
+"TÀI KHOẢN THẬT": [
+"REAL ACCOUNT",
+"真实账户"
+],
+"Tài khoản": [
+"Account",
+"账户"
+],
+"Tài khoản MT{0} là tài khoản THẬT và đang bị chặn vào lệnh. Bấm nút 🔒 Lệnh THẬT: TẮT trên buồng lái để bật.": [
+"MT{0} account is a REAL account and is blocked from trading. Press 🔒 REAL Order: OFF on the cockpit to enable.",
+"MT{0} 账户为真实账户，已被阻止下单。点击🔒 真实订单：关闭 在交易驾驶舱上以启用。"
+],
+"Tài khoản MT{0}:": [
+"MT{0} account:",
+"MT{0} 账户："
+],
+"Tài khoản cent (USC, USc, UScent, EUC...).": [
+"Cent account (USC, USc, UScent, EUC...).",
+"分币账户（USC、USc、UScent、EUC…）。"
+],
+"Tài khoản chưa được cấp quyền giao dịch. Liên hệ Telegram @TuanKom.": [
+"Account not authorized for trading. Contact Telegram @TuanKom.",
+"账户未获交易授权。联系 Telegram @TuanKom。"
+],
+"Tài khoản chưa được duyệt dùng bot. Liên hệ Telegram @TuanKom.": [
+"Account not approved for bot use. Contact Telegram @TuanKom.",
+"账户未获机器人使用批准。联系 Telegram @TuanKom。"
+],
+"Tài khoản chỉ xem: chỉ đọc được bản phân tích AI gần nhất, không yêu cầu phân tích mới.": [
+"Read‑only account: can only view the latest AI analysis, cannot request new analysis.",
+"只读账户：只能查看最新 AI 分析，不能请求新分析。"
+],
+"Tài khoản chỉ xem: không có quyền vào lệnh hoặc xem tài khoản MT{0}.": [
+"Read‑only account: no permission to trade or view MT{0} account.",
+"只读账户：无交易或查看 MT{0} 账户的权限。"
+],
+"Tài khoản hết hạn ngày {0}. Liên hệ Telegram @TuanKom để gia hạn.": [
+"Account expires on {0}. Contact Telegram @TuanKom to renew.",
+"账户于 {0} 到期。联系 Telegram @TuanKom 续费。"
+],
+"Tài khoản không cho phép giao dịch tự động.": [
+"Account does not allow automated trading.",
+"账户不允许自动交易。"
+],
+"Tài khoản theo bot src (kể cả khung thêm của bot đó, vd": [
+"Account follows src bot (including its added timeframes, e.g.",
+"账户跟随 src 机器人（包括其添加的时间框架，例如"
+],
+"Tài khoản tín hiệu không còn chiến dịch / khác chiều mà tài khoản vào lệnh vẫn còn lệnh EA → đóng.": [
+"Signal account has no active campaign / opposite direction; existing EA orders will be closed.",
+"信号账户无活动策略/方向相反，仍在的 EA 订单将被关闭。"
+],
+"Tài khoản vào lệnh": [
+"Trading account",
+"交易账户"
+],
+"Tài khoản {0}": [
+"Account {0}",
+"账户 {0}"
+],
+"Tài khoản đang chờ duyệt. Liên hệ Telegram @TuanKom để được duyệt nhanh.": [
+"Account pending approval. Contact Telegram @TuanKom for fast approval.",
+"账户待审批。联系 Telegram @TuanKom 加速审批。"
+],
+"Tài khoản đã bị khóa. Liên hệ Telegram @TuanKom.": [
+"Account locked. Contact Telegram @TuanKom.",
+"账户已被锁定。联系 Telegram @TuanKom。"
+],
+"Tài khoản đăng ký bằng số / Telegram này dùng email:": [
+"Account registered with this phone/Telegram uses email:",
+"此手机号/Telegram 注册的账户使用以下邮箱："
+],
+"Tên bot mới (vd: DCA M{0}):": [
+"New bot name (e.g., DCA M{0}):",
+"新机器人名称（例如 DCA M{0}）："
+],
+"Tên mới cho": [
+"New name for",
+"新名称为"
+],
+"Tên tài khoản (vd: Exness Cent, Exness Thật):": [
+"Account name (e.g., Exness Cent, Exness Real):",
+"账户名称（例如 Exness Cent，Exness 真實）："
+],
+"Tên tài khoản MT{0} mới (vd: Exness chiến lược M{1}):": [
+"New MT{0} account name (e.g., Exness strategy M{1}):",
+"新 MT{0} 账户名称（例如 Exness 策略 M{1}）："
+],
+"Tìm email đăng nhập": [
+"Find login email",
+"查找登录邮箱"
+],
+"Tìm quá nhiều lần, thử lại sau {0} giờ hoặc nhắn Telegram @TuanKom.": [
+"Too many attempts, try again after {0} hours or message Telegram @TuanKom.",
+"尝试次数过多，请 {0} 小时后重试或联系 Telegram @TuanKom。"
+],
+"Tín hiệu": [
+"Signal",
+"信号"
+],
+"Tín hiệu DCA": [
+"DCA Signal",
+"DCA 信号"
+],
+"Tín hiệu DCA (bot)": [
+"DCA Signal (bot)",
+"DCA 信号（机器人）"
+],
+"Tín hiệu DCA {0}{1} {2} @ {3}": [
+"DCA Signal {0}{1} {2} @ {3}",
+"DCA 信号 {0}{1} {2} @ {3}"
+],
+"Tín hiệu DCA{0}": [
+"DCA Signal{0}",
+"DCA 信号{0}"
+],
+"Tín hiệu EMA{0} × EMA{1}": [
+"EMA{0} × EMA{1} Signal",
+"EMA{0} × EMA{1} 信号"
+],
+"Tín hiệu HA Pro v{0}": [
+"HA Pro Signal v{0}",
+"HA Pro 信号 v{0}"
+],
+"Tín hiệu chỉ để tham khảo, không phải lời khuyên đầu tư: https://pinyin.id.vn/mien-tru-trach-nhiem": [
+"Signal for reference only, not investment advice: https://pinyin.id.vn/mien-tru-trach-nhiem",
+"信号仅供参考，不构成投资建议：https://pinyin.id.vn/mien-tru-trach-nhiem"
+],
+"Tín hiệu ngược: đảo chiều luôn": [
+"Reverse signal: always opposite direction",
+"逆向信号：始终相反方向"
+],
+"Tín hiệu {0}{1} {2} @ {3}": [
+"Signal {0}{1} {2} @ {3}",
+"信号 {0}{1} {2} @ {3}"
+],
+"Tín hiệu ▲▼": [
+"Signal ▲▼",
+"信号 ▲▼"
+],
+"Tính lại TP{0}/TP{1} theo giá trung bình thật của các lệnh và SL chung (chỉ khi chưa chốt TP{2}).": [
+"Recalculate TP{0}/TP{1} using true average price of orders and shared SL (only if TP{2} not taken).",
+"重新计算 TP{0}/TP{1}，使用订单的真实平均价和统一止损（仅在 TP{2} 未平仓时）。"
+],
+"Tính trên": [
+"Calculate on",
+"在此计算"
+],
+"Tóm tắt cho trang quản lý của chủ.": [
+"Summary for owner's admin page",
+"管理员页面摘要"
+],
+"TĂNG": [
+"UP",
+"上涨"
+],
+"TĂNG ↗": [
+"UP ↗",
+"上涨 ↗"
+],
+"Tăng trưởng GDP": [
+"GDP growth",
+"GDP 增长"
+],
+"Tăng/giảm": [
+"Up/Down",
+"上涨/下跌"
+],
+"Tạo mật khẩu và khóa bí mật ngẫu nhiên trong .env nếu chưa có. Trả về mật khẩu mới (nếu vừa tạo).": [
+"Generate random password and secret key in .env if missing. Return new password (if created).",
+"如果不存在，在 .env 中生成随机密码和密钥。返回新密码（若刚创建）。"
+],
+"Tạo nhóm (hoặc kênh) Telegram cho khách → thêm bot Telegram của sếp vào nhóm (kênh: thêm làm": [
+"Create Telegram group (or channel) for client → add boss's Telegram bot to group (channel: add as",
+"为客户创建 Telegram 群组（或频道）→ 将老板的 Telegram 机器人加入群组（频道：添加为"
+],
+"Tất cả nội dung trên PinYin CKG — bao gồm các bài viết, công cụ tính toán, dữ liệu thị trường": [
+"All content on PinYin CKG — articles, calculators, market data",
+"PinYin CKG 上的所有内容——文章、计算工具、市场数据"
+],
+"Tất cả nội dung trên PinYin CKG — bao gồm các bài viết, công cụ tính toán, dữ liệu thị trường và đánh giá về các nhà môi giới — chỉ được cung cấp cho mục đích giáo dục và thông tin chung. Nội dung này không xem xét mục tiêu, tình hình tài chính hoặc nhu cầu của bạn, và không phải là lời khuyên mua hoặc bán bất kỳ công cụ tài chính nào. Hãy cân nhắc tìm kiếm lời khuyên từ một cố vấn tài chính độc lập, có giấy phép phù hợp.": [
+"All PinYin CKG content — articles, calculators, market data and broker reviews — provided for education and general information only. It does not consider your goals, financial situation or needs, and is not investment advice. Consider seeking advice from a licensed independent financial advisor.",
+"PinYin CKG 上的所有内容——包括文章、计算工具、市场数据和经纪商评估——仅用于教育和一般信息目的。内容不考虑您的目标、财务状况或需求，也不构成买卖任何金融工具的建议。请考虑向持牌独立理财顾问寻求建议。"
+],
+"TẮT": [
+"OFF",
+"关闭"
+],
+"TẮT bot. Lệnh bot đang mở vẫn giữ SL trên MT{0}.": [
+"Turn OFF bot. Open bot orders keep SL on MT{0}.",
+"关闭机器人。已打开的机器人订单在 MT{0} 上保留止损。"
+],
+"TẮT bot? Lệnh bot đang mở vẫn giữ nguyên trên MT{0} (SL/TP vẫn chạy).": [
+"Turn OFF bot? Open bot orders remain unchanged on MT{0} (SL/TP still active).",
+"关闭机器人？已打开的机器人订单在 MT{0} 上保持不变（止损/止盈仍在运行）。"
+],
+"TẮT copy {0} cho {1}? Lệnh copy của {2} đang mở trên tài khoản này (nếu có) sẽ được TỰ ĐÓNG. Lệnh của các bot khác giữ nguyên.": [
+"Turn OFF copy {0} for {1}? Open copy orders of {2} on this account (if any) will be AUTO‑CLOSED. Other bots unchanged.",
+"关闭 {0} 的复制给 {1}？此账户上 {2} 的复制订单（若存在）将自动关闭。其他机器人的订单保持不变。"
+],
+"Tắt bot trước khi xóa.": [
+"Stop bot before deleting.",
+"删除前请先停止机器人。"
+],
+"Tắt mọi bot (đổi tài khoản MT{0}...).": [
+"Turn OFF all bots (switch MT{0} account...).",
+"关闭所有机器人（切换 MT{0} 账户...）。"
+],
+"Tối đa {0} bot.": [
+"Maximum {0} bots.",
+"最多 {0} 个机器人。"
+],
+"Tối đa {0} tài khoản MT{1}.": [
+"Maximum {0} MT{1} accounts.",
+"最多 {0} 个 MT{1} 账户。"
+],
+"Tối đa {0} tài khoản vào lệnh.": [
+"Maximum {0} accounts in trade.",
+"最多 {0} 个账户持仓。"
+],
+"Tổng biên độ các nến": [
+"Total candle range",
+"K线总波幅"
+],
+"Tổng hợp ngày": [
+"Daily summary",
+"每日汇总"
+],
+"Tổng hợp tuần": [
+"Weekly summary",
+"每周汇总"
+],
+"Tổng pip:": [
+"Total pips:",
+"总点数："
+],
+"Tự gắn SL/TP theo ô Dừng lỗ / Chốt lời nếu lệnh chưa có": [
+"Auto set SL/TP from Stop Loss / Take Profit fields if order lacks them",
+"如果订单未设置止损/止盈，自动从止损/止盈栏位填入"
+],
+"Tự lấy từ MT{0}: equity {1} {2} × {3} ≈": [
+"Auto fetch from MT{0}: equity {1} {2} × {3} ≈",
+"自动从 MT{0} 获取：权益 {1} {2} × {3} ≈"
+],
+"Tỷ giá thật để tính giá trị pip (cặp JPY) và quy đổi vốn tài khoản sang USD.": [
+"Actual rate for pip value (JPY pair) and convert account equity to USD.",
+"用于计算点值（JPY 货币对）并将账户资金换算为 USD 的实际汇率。"
+],
+"Tỷ lệ thất nghiệp": [
+"Unemployment rate",
+"失业率"
+],
+"Tỷ lệ thắng": [
+"Win rate",
+"胜率"
+],
+"VWAP ±σ đúng như bot DCA đang dùng": [
+"VWAP ±σ as used by DCA bot",
+"VWAP ±σ 与 DCA 机器人使用的相同"
+],
+"Việc làm ADP": [
+"ADP employment",
+"ADP 就业"
+],
+"Vào BUY lệnh đầu (QLV) → Chốt lãi khi hết CK (không chốt thì SL+, chờ TP hoặc cán SL)": [
+"Enter first BUY (QLV) → Take profit when CK exhausted (if not, SL+, wait TP or hit SL)",
+"进入首个 BUY (QLV) → CK 用尽时止盈（若未止盈则 SL+，等待 TP 或触及 SL）"
+],
+"Vào BUY lệnh đầu (QLV) → ngược hướng, sang CK{0} nhân tiếp": [
+"Enter BUY first order (QLV) → reverse, move to CK{0} for next multiplier",
+"进入 BUY 首单（QLV）→ 反向，转至 CK{0} 继续乘倍"
+],
+"Vào SELL lệnh đầu (QLV)": [
+"Enter SELL first order (QLV)",
+"进入 SELL 首单（QLV）"
+],
+"Vào SELL lệnh đầu (QLV) → Chốt lãi khi hết CK (không chốt thì SL+, chờ TP hoặc cán SL)": [
+"Enter SELL first order (QLV) → take profit when CK exhausted (if not, SL+, wait TP or hit SL)",
+"进入 SELL 首单（QLV）→ CK 用尽时止盈（若未止盈则加 SL，等待 TP 或触发 SL）"
+],
+"Vào SELL lệnh đầu (QLV) → ngược hướng, sang CK{0} nhân tiếp": [
+"Enter first SELL (QLV) → Reverse, move to CK{0} multiplier",
+"进入首个 SELL (QLV) → 反向，转至 CK{0} 倍数"
+],
+"Vào {0} lệnh đầu (QLV)": [
+"Enter {0} first order (QLV)",
+"进入 {0} 首单（QLV）"
+],
+"Vẫn không nhớ? Nhắn": [
+"Can't recall? Message",
+"仍不记得？发送消息"
+],
+"Về mặc định": [
+"Reset to default",
+"恢复默认"
+],
+"Về nến mới nhất": [
+"Go to latest candle",
+"返回最新 K 线"
+],
+"Về trang chính": [
+"Go to home page",
+"返回主页"
+],
+"Về trang đăng nhập": [
+"Back to login page",
+"返回登录页面"
+],
+"Vị trí giá": [
+"Price position",
+"价格位置"
+],
+"Vốn (USD) để kiểm giới hạn": [
+"Capital (USD) for limit check",
+"用于限制检查的资本（USD）"
+],
+"Vốn / phí / lot không hợp lệ.": [
+"Invalid capital / fee / lot.",
+"资本/费用/手数无效。"
+],
+"Vốn ban đầu": [
+"Initial capital",
+"初始资本"
+],
+"Vốn dưới {0} USD: bảng quản lý vốn chưa có mức phù hợp.": [
+"Capital below {0} USD: capital management table lacks suitable level.",
+"资本低于 {0} 美元：资本管理表未提供合适的水平。"
+],
+"Với DCA, bot tự quản SL chung / TP{0} / TP{1} / hòa vốn / trail theo giá trung bình.": [
+"With DCA, bot auto-manages shared SL / TP{0} / TP{1} / breakeven / trailing by average price.",
+"使用 DCA，机器人自动管理共享止损 / TP{0} / TP{1} / 保本 / 按平均价跟踪止盈。"
+],
+"XU HƯỚNG GIẢM": [
+"DOWN TREND",
+"下跌趋势"
+],
+"XU HƯỚNG TĂNG": [
+"UP TREND",
+"上涨趋势"
+],
+"Xa hơn: VWAP − k×ATR hoặc swing": [
+"Further: VWAP − k×ATR or swing",
+"更远：VWAP − k×ATR 或 swing"
+],
+"Xanh": [
+"Green",
+"绿色"
+],
+"Xem ngày": [
+"View day",
+"查看日"
+],
+"Xu hướng ngắn hạn nghiêng về phía": [
+"Short‑term trend leaning towards",
+"短期趋势倾向于"
+],
+"X|Mã kết nối không đúng. Lấy lại mã trên trang pinyin.id.vn.": [
+"X|Invalid connection code. Retrieve code from pinyin.id.vn.",
+"X|连接码无效。请从 pinyin.id.vn 获取代码。"
+],
+"X|Mã kết nối này đang dùng cho MT{0} #{1} ({2}).": [
+"X|This connection code is used for MT{0} #{1} ({2}).",
+"X|此连接码正用于 MT{0} #{1}（{2}）。"
+],
+"X|Tài khoản PinYin hết hạn hoặc chưa được cấp quyền giao dịch. Liên hệ Telegram @TuanKom.": [
+"X|PinYin account expired or not authorized for trading. Contact Telegram @TuanKom.",
+"X|PinYin 账户已过期或未获交易授权。联系 Telegram @TuanKom。"
+],
+"Xác nhận": [
+"Confirm",
+"确认"
+],
+"Xác nhận email": [
+"Confirm email",
+"确认邮箱"
+],
+"Xác nhận email đăng ký PinYin CKG": [
+"Confirm PinYin CKG registration email",
+"确认 PinYin CKG 注册邮箱"
+],
+"Xóa": [
+"Delete",
+"删除"
+],
+"Xóa hình đang chọn (phím Delete)": [
+"Delete selected drawing (Delete key)",
+"删除选中图形（Delete 键）"
+],
+"Xóa hết": [
+"Delete all",
+"全部删除"
+],
+"Xóa hết hình vẽ của {0}": [
+"Delete all drawings of {0}",
+"删除 {0} 的所有图形"
+],
+"Xóa hết hình vẽ trên": [
+"Delete all drawings above",
+"删除上方所有图形"
+],
+"Xóa lịch sử": [
+"Clear history",
+"清除历史"
+],
+"Xóa tài khoản": [
+"Delete account",
+"删除账户"
+],
+"[Bot {0}, bot phụ...] — đồng bộ với tệp danh sách bot.": [
+"[Bot {0}, sub‑bot...] — synced with bot list file.",
+"[Bot {0}, 子机器人...] — 与机器人列表文件同步。"
+],
+"[{0}] EA đã kết nối lại.": [
+"[{0}] EA reconnected.",
+"[{0}] EA 已重新连接。"
+],
+"[{0}] còn {1} lệnh bot nhưng {2} → tự đóng.": [
+"[{0}] has {1} bot orders but {2} → auto‑close.",
+"[{0}] 还有 {1} 条机器人订单，但 {2} → 自动关闭。"
+],
+"[{0}] còn {1} lệnh copy của [{2}] nhưng {3} → tự đóng.": [
+"[{0}] has {1} copy orders from [{2}] but {3} → auto‑close.",
+"[{0}] 还有 {1} 条来自 [{2}] 的复制订单，但 {3} → 自动关闭。"
+],
+"[⚠️ TÀI KHOẢN THẬT]": [
+"[⚠️ REAL ACCOUNT]",
+"[⚠️ 真账户]"
+],
+"\\\"Xác nhận email\\\" để hoàn tất đăng ký. Link có hiệu lực {0} giờ.": [
+"\"Confirm email\" to complete registration. Link valid for {0} hours.",
+"“确认邮箱”以完成注册。链接有效期 {0} 小时。"
+],
+"bot khách": [
+"client bot",
+"客户机器人"
+],
+"bot không còn chiến dịch": [
+"bot has no campaign",
+"机器人无活动"
+],
+"bot không còn lệnh": [
+"bot has no orders",
+"机器人无订单"
+],
+"bot tự động sẽ TẮT": [
+"auto bot will TURN OFF",
+"自动机器人将关闭"
+],
+"bản {0}": [
+"version {0}",
+"版本 {0}"
+],
+"bấm Xin thêm tài khoản để nhắn Telegram @TuanKom.": [
+"Tap Request more accounts to message Telegram @TuanKom.",
+"点击“请求更多账户”以联系 Telegram @TuanKom。"
+],
+"bằng lot bot": [
+"by bot lot",
+"按机器人手数"
+],
+"bỏ tick các ô \"Disable algorithmic trading when…\"": [
+"uncheck \"Disable algorithmic trading when…\" boxes",
+"取消勾选“当…时禁用算法交易”复选框"
+],
+"chiến dịch": [
+"campaign",
+"活动"
+],
+"chiến dịch đã kết thúc trên tài khoản tín hiệu": [
+"campaign ended on signal account",
+"信号账户上的活动已结束"
+],
+"chưa có": [
+"none",
+"暂无"
+],
+"chưa lãi đủ để khóa hòa vốn.": [
+"insufficient profit to breakeven",
+"利润不足以保本"
+],
+"chưa tới": [
+"not yet",
+"尚未"
+],
+"chạm SL": [
+"hit SL",
+"触及止损"
+],
+"chạm TP": [
+"hit TP",
+"触及止盈"
+],
+"chạy lại đúng luật của bot trên nến MT{0} đã qua · lệnh giả, không gửi lệnh": [
+"re‑run bot rule on completed MT{0} candle · simulated order, no real order sent",
+"在已完成的 MT{0} K线上重新运行机器人规则·模拟订单，不发送真实订单"
+],
+"chạy trên máy chủ": [
+"run on server",
+"在服务器上运行"
+],
+"chốt TP{0}": [
+"close TP{0}",
+"平仓 TP{0}"
+],
+"chốt {0}": [
+"close {0}",
+"平仓 {0}"
+],
+"chờ": [
+"wait",
+"等待"
+],
+"copytrade gắn sẵn bot nguồn: chỉ tài khoản copy chọn bot này mới nhận lệnh.": [
+"pre‑linked source bot copytrade: only copy accounts that select this bot receive orders",
+"预绑定源机器人复制交易：仅选择此机器人的复制账户会收到订单"
+],
+"các giá trị": [
+"values",
+"数值"
+],
+"cách": [
+"points",
+"点"
+],
+"cách ≥": [
+"points ≥",
+"点 ≥"
+],
+"cân bằng": [
+"balance",
+"余额"
+],
+"còn": [
+"remaining",
+"剩余"
+],
+"còn mở cuối kỳ": [
+"still open at period end",
+"期末仍未平仓"
+],
+"còn {0}": [
+"remaining {0}",
+"剩余 {0}"
+],
+"có được cơ quan quản lý tại quốc gia của bạn cấp phép hay không, và đọc kỹ các điều khoản và điều kiện rủi ro của họ trước khi mở tài khoản.": [
+"whether you are licensed by your country's regulator, and read their risk terms carefully before opening an account.",
+"是否获得您所在国家监管机构的许可，并在开设账户前仔细阅读其风险条款。"
+],
+"cố định": [
+"fixed",
+"固定"
+],
+"của": [
+"of",
+"的"
+],
+"của các sản phẩm này hay không và liệu mình có đủ khả năng chấp nhận rủi ro cao khi mất tiền hay không.": [
+"whether these products are allowed and if you can tolerate high risk of loss.",
+"这些产品是否被允许，以及您是否能承受高风险损失。"
+],
+"của tài khoản → bật Algo Trading.": [
+"account → enable Algo Trading.",
+"账户 → 启用算法交易。"
+],
+"dán Mã kết nối bên dưới → tab Common tích": [
+"paste connection code below → Common tab",
+"在下方粘贴连接码 → Common 选项卡"
+],
+"dời SL hòa vốn": [
+"move SL to breakeven",
+"将止损移动至保本"
+],
+"dời SL theo lệnh DCA mới": [
+"move SL per new DCA order",
+"根据新 DCA 订单移动止损"
+],
+"f: dict form. Trả (ok, thông báo).": [
+"f: dict form. Return (ok, message).",
+"f: dict 形式。返回（ok，消息）。"
+],
+"giá cao hơn": [
+"higher price",
+"更高价格"
+],
+"giá dưới": [
+"lower price",
+"更低价格"
+],
+"giá mở D{0}": [
+"open price D{0}",
+"开盘价 D{0}"
+],
+"giá thấp hơn": [
+"lower price",
+"更低价格"
+],
+"giá trên": [
+"upper price",
+"上限价格"
+],
+"giá trị": [
+"value",
+"数值"
+],
+"giây · bỏ nếu giá chạy ngược quá": [
+"seconds · skip if price reverses too much",
+"秒 · 若价格逆转过大则跳过"
+],
+"giả lập": [
+"simulation",
+"模拟"
+],
+"giảm": [
+"decrease",
+"下降"
+],
+"giảm.": [
+"decrease.",
+"下降。"
+],
+"giờ": [
+"hour",
+"小时"
+],
+"hoa hồng, phí hoán đổi và trượt giá. Dữ liệu thị trường được cung cấp bởi bên thứ ba và có thể bị chậm trễ.": [
+"commission, swap fees and slippage. Market data provided by third‑party and may be delayed.",
+"佣金、掉期费用和滑点。市场数据由第三方提供，可能存在延迟。"
+],
+"hết giờ": [
+"time's up",
+"时间到"
+],
+"k ATR của SL": [
+"k ATR of SL",
+"k ATR的止损"
+],
+"khoảng cách giá": [
+"price distance",
+"价格距离"
+],
+"khác chiều chiến dịch của bot": [
+"different bot campaign direction",
+"不同的机器人活动方向"
+],
+"khác chiều lệnh của bot": [
+"different bot order direction",
+"不同的机器人订单方向"
+],
+"khác chiều tài khoản tín hiệu": [
+"different signal account direction",
+"不同的信号账户方向"
+],
+"không SL (giữ tới tín hiệu đảo chiều)": [
+"no SL (hold until reversal signal)",
+"无止损（持有至反转信号）"
+],
+"không còn mở.": [
+"no longer open.",
+"不再打开。"
+],
+"không có": [
+"none",
+"无"
+],
+"không có lệnh mở.": [
+"no open orders.",
+"没有未平仓订单。"
+],
+"không gửi được": [
+"cannot send",
+"发送失败"
+],
+"không phải lời khuyên đầu tư": [
+"not investment advice",
+"非投资建议"
+],
+"không rõ lỗi": [
+"unknown error",
+"未知错误"
+],
+"không đặt": [
+"not set",
+"未设置"
+],
+"khỏi PinYin? Bot của tài khoản này sẽ TẮT. Lệnh đang mở trên MT{0} đó giữ nguyên (SL/TP vẫn chạy). Gỡ EA khỏi MT{1} đó.": [
+"Leaving PinYin? This account's bot will STOP. Open orders on MT{0} remain unchanged (SL/TP still active). Remove EA from MT{1}.",
+"离开PinYin？此账户的机器人将停止。MT{0}上的未平仓订单保持不变（止损/止盈仍生效）。从MT{1}移除EA。"
+],
+"kèm họ tên + số Zalo.": [
+"include full name + Zalo number.",
+"附上姓名+Zalo号码。"
+],
+"kết nối sàn": [
+"connect exchange",
+"连接交易所"
+],
+"là tài khoản THẬT. Bật copy lệnh bot sang tài khoản này?": [
+"It's a REAL account. Enable bot order copy to this account?",
+"这是真实账户。启用机器人订单复制到此账户？"
+],
+"lá chắn": [
+"shield",
+"盾牌"
+],
+"lên": [
+"up",
+"上升"
+],
+"lần cuối": [
+"last time",
+"上次"
+],
+"lệnh": [
+"order",
+"订单"
+],
+"lệnh MT{0}": [
+"order MT{0}",
+"订单 MT{0}"
+],
+"lệnh mở.": [
+"open order.",
+"未平仓订单。"
+],
+"magic → tên nguồn lệnh: Buồng lái (vào tay) hoặc tên bot (+ khung thêm). Gồm cả magic bot cũ / khung đã bỏ.": [
+"magic → order source name: Cockpit (manual) or bot name (+ extra frame). Includes old magic bots / removed frames.",
+"magic → 订单来源名称：交易驾驶舱（手动）或机器人名称（+额外框架）。包括旧的magic机器人/已移除的框架。"
+],
+"mạnh": [
+"strong",
+"强"
+],
+"mạnh/vừa": [
+"strong/medium",
+"强/中"
+],
+"mất kết nối máy chủ": [
+"server connection lost",
+"服务器连接丢失"
+],
+"mọi hành động": [
+"any action",
+"任何操作"
+],
+"mộng": [
+"dream",
+"梦"
+],
+"nghiêng về giảm": [
+"biased down",
+"倾向下跌"
+],
+"nghiêng về tăng": [
+"biased up",
+"倾向上涨"
+],
+"ngoài khung giờ vào lệnh": [
+"outside order time window",
+"超出下单时间窗口"
+],
+"ngoài tuần giao dịch": [
+"outside trading week",
+"超出交易周"
+],
+"ngày": [
+"day",
+"日"
+],
+"nhân tiếp": [
+"multiply",
+"乘以"
+],
+"nhóm": [
+"group",
+"组"
+],
+"nào": [
+"which",
+"哪个"
+],
+"nên giá {0} sàn lệch nhau không sao. Cách gắn:": [
+"price {0} floor offset is fine. Attachment method:",
+"价格 {0} 盘口偏差无妨。挂单方式："
+],
+"nến": [
+"candle",
+"K线"
+],
+"nến D{0} {1} {2} · nến W tuần {3}": [
+"D{0} {1} {2} Candle · Weekly W Candle {3}",
+"D{0} {1} {2} K线 · 周期 W K线 {3}"
+],
+"nến H{0}": [
+"H{0} Candle",
+"H{0} K线"
+],
+"nến chưa TP{0}": [
+"Candle without TP{0}",
+"未止盈 K线{0}"
+],
+"nến ·": [
+"Candle ·",
+"K线 ·"
+],
+"phía trên (khung, lot, thông số DCA). Sửa số ở trên rồi chạy lại để so sánh, chưa cần bấm Lưu.": [
+"above (frame, lot, DCA params). Adjust above numbers and rerun to compare, no need to Save yet.",
+"上方（框架、手数、DCA 参数）。修改上面的数值后重新运行比较，无需立即保存。"
+],
+"phút": [
+"min",
+"分钟"
+],
+"quá nhỏ để chia đôi.": [
+"Too small to split.",
+"太小，无法拆分。"
+],
+"quản trị viên": [
+"Administrator",
+"管理员"
+],
+"rằng nội dung đó đầy đủ, chính xác hoặc hiện hành. Kết quả tính toán chỉ là ước tính, không bao gồm các chi phí như chênh lệch giá,": [
+"that the content is complete, accurate or current. Calculations are estimates, excluding costs like price spread,",
+"内容完整、准确或最新。计算结果仅为估算，不包括价差等费用，"
+],
+"s trước": [
+"s before",
+"s 前"
+],
+"sụt vốn thấp": [
+"low equity drawdown",
+"低资金回撤"
+],
+"theo vốn.": [
+"by equity.",
+"按资金。"
+],
+"theo vốn:": [
+"by equity:",
+"按资金："
+],
+"this.textContent='✅ Đã chép')\">📋 Chép mã": [
+"this.textContent='✅ Copied')\">📋 Copy Code",
+"this.textContent='✅ 已复制')\">📋 复制代码"
+],
+"thắng ·": [
+"Win ·",
+"胜 ·"
+],
+"trang chính": [
+"Home",
+"首页"
+],
+"trong dải TMA": [
+"within TMA band",
+"在 TMA 区间内"
+],
+"trong tuần. Bật \"Hiện cả tin đã ra\" để xem lại.": [
+"this week. Enable \"Show all released news\" to review.",
+"本周。打开“显示所有已发布新闻”以查看。"
+],
+"trên chart gắn EA → tab Common → tích": [
+"on chart attach EA → Common tab → check",
+"在图表上挂载 EA → Common 选项卡 → 勾选"
+],
+"trên thanh công cụ MT{0} (màu xanh). Góc chart hiện \"✅ Đã kết nối PinYin\" là xong.": [
+"on MT{0} toolbar (green). Chart corner shows \"✅ PinYin Connected\" when done.",
+"在 MT{0} 工具栏（绿色）。图表角落显示“✅ PinYin 已连接”即完成。"
+],
+"trên thanh công cụ MT{0}, rồi bấm": [
+"on MT{0} toolbar, then click",
+"在 MT{0} 工具栏上，然后点击"
+],
+"tuancom@gmail.com → tu*****@gmail.com (tên miền lạ cũng che: c***.vn).": [
+"tuancom@gmail.com → tu*****@gmail.com (obscured domain: c***.vn).",
+"tuancom@gmail.com → tu*****@gmail.com（域名已遮蔽：c***.vn）。"
+],
+"tài khoản MT{0}. Để mở thêm tài khoản (có phí), bấm OK: Telegram sẽ mở khung chat với @TuanKom, tin nhắn đã soạn sẵn, bạn chỉ cần bấm Gửi.": [
+"MT{0} account. To add another account (fee applies), click OK: Telegram opens chat with @TuanKom, pre‑filled message, just press Send.",
+"MT{0} 账户。若需开通新账户（需付费），点击 OK：Telegram 将打开与 @TuanKom 的聊天窗口，已预填消息，直接发送即可。"
+],
+"tài khoản không còn copy bot này": [
+"account no longer copies this bot",
+"账户不再复制此机器人"
+],
+"tài khoản tín hiệu": [
+"signal account",
+"信号账户"
+],
+"tài khoản tín hiệu không còn lệnh": [
+"signal account has no orders",
+"信号账户无订单"
+],
+"tài khoản). Anh báo phí giúp em ạ.": [
+"account). Please inform me of the fee.",
+"账户）。请告知费用。"
+],
+"tình hình tài chính hoặc nhu cầu của bạn, và không phải là lời khuyên mua hoặc bán bất kỳ công cụ tài chính nào.": [
+"your financial situation or needs, and is not investment advice.",
+"您的财务状况或需求，并非买卖任何金融工具的建议。"
+],
+"tín hiệu ngược": [
+"counter signal",
+"反向信号"
+],
+"tăng": [
+"up",
+"上涨"
+],
+"tăng.": [
+"up.",
+"上涨。"
+],
+"tạm nghỉ": [
+"pause",
+"暂停"
+],
+"tải EA PinYinBridge": [
+"Download PinYinBridge EA",
+"下载 PinYinBridge EA"
+],
+"tải EA mới": [
+"Download new EA",
+"下载新 EA"
+],
+"tốt nhất": [
+"best",
+"最佳"
+],
+"tổng lãi ÷ tổng lỗ (≥{0} là tốt)": [
+"total profit ÷ total loss (≥{0} is good)",
+"总盈 ÷ 总亏（≥{0} 为佳）"
+],
+"từ MT{0}…": [
+"from MT{0}…",
+"来自 MT{0}…"
+],
+"user = email. Trả (mã khách | None, lỗi).": [
+"user = email. Return (client code | None, error).",
+"user = email。返回（客户代码 | None，错误）。"
+],
+"và": [
+"and",
+"和"
+],
+"và bấm \\\"Đặt lại mật khẩu\\\". Link có hiệu lực {0} giờ.": [
+"and click \\\"Reset Password\\\". Link valid for {0} hours.",
+"并点击\\\"重置密码\\\"。链接有效期 {0} 小时。"
+],
+"và bật xác nhận email.": [
+"and enable email verification.",
+"并启用电子邮件验证。"
+],
+"và đánh giá về các nhà môi giới — chỉ được cung cấp cho mục đích giáo dục và thông tin chung. Nội dung này không xem xét mục tiêu,": [
+"and broker reviews — for educational and general information only. This content does not consider objectives,",
+"以及经纪商评估——仅供教育和一般信息使用。此内容不考虑目标，"
+],
+"vào chart → tab": [
+"go to chart → tab",
+"进入图表 → 选项卡"
+],
+"vào nhóm (vào lệnh, đóng lệnh, dời SL — không có số tài khoản, không có số tiền)": [
+"enter group (enter order, close order, move SL — no account number, no amount)",
+"进入组（入单、平单、移动止损 — 无账户号，无金额）"
+],
+"vào tay": [
+"manual",
+"手动"
+],
+"vào {0}": [
+"enter {0}",
+"进入 {0}"
+],
+"vượt lên trên TMA trên {0} giá": [
+"break above TMA by {0} points",
+"突破 TMA 上方 {0} 点"
+],
+"vượt mức": [
+"exceed level",
+"超出水平"
+],
+"x: dict từ trang (tf, lot, lot_auto, dca{...}, on). Kiểm tra giống bot chủ.": [
+"x: dict from page (tf, lot, lot_auto, dca{...}, on). Check matches main bot.",
+"x：来自页面的字典（tf、lot、lot_auto、dca{...}、on）。检查是否与主机器人相同。"
+],
+"xuống": [
+"down",
+"下跌"
+],
+"xuống dưới TMA dưới {0} giá": [
+"break below TMA by {0} points",
+"突破 TMA 下方 {0} 点"
+],
+"{0} #{1}: không {2}: {3}": [
+"{0} #{1}: no {2}: {3}",
+"{0} #{1}：没有 {2}：{3}"
+],
+"{0} (bóng {1}/{2} pip)": [
+"{0} (shadow {1}/{2} pip)",
+"{0}（影线 {1}/{2} 点）"
+],
+"{0} (ngưỡng {1} pip, tạm đặt)": [
+"{0} (threshold {1} pip, temporary)",
+"{0}（阈值 {1} 点，临时）"
+],
+"{0} (theo lệnh DCA {1})": [
+"{0} (per DCA order {1})",
+"{0}（根据 DCA 订单 {1}）"
+],
+"{0} EA bản {1} chưa copy được nhiều bot, cần EA {2}. Bỏ lệnh: {3}.": [
+"{0} EA version {1} couldn't copy many bots, needs EA {2}. Cancel order: {3}.",
+"{0} EA 版本 {1} 未能复制多个机器人，需要 EA {2}。取消订单：{3}。"
+],
+"{0} EA bản {1} chưa hỗ trợ bot, cần EA {2}. Bỏ lệnh: {3}.": [
+"{0} EA version {1} doesn't support bot, needs EA {2}. Cancel order: {3}.",
+"{0} EA 版本 {1} 不支持机器人，需要 EA {2}。取消订单：{3}。"
+],
+"{0} EA offline quá {1} giây, bỏ lệnh: {2}.": [
+"{0} EA offline for over {1}s, cancel order: {2}.",
+"{0} EA 离线超过 {1} 秒，取消订单：{2}。"
+],
+"{0} EA {1} chưa hỗ trợ: {2} (cần EA {3}).": [
+"{0} EA {1} doesn't support: {2} (needs EA {3}).",
+"{0} EA {1} 不支持：{2}（需要 EA {3}）。"
+],
+"{0} chạy {1} (các khung độc lập)": [
+"{0} runs {1} (independent frames)",
+"{0} 运行 {1}（独立框架）"
+],
+"{0} copy lệnh bot sang [{1}].": [
+"{0} copy bot orders to [{1}].",
+"{0} 将机器人订单复制到 [{1}]。"
+],
+"{0} copy lệnh sang tài khoản THẬT [{1}].": [
+"{0} copy orders to REAL account [{1}].",
+"{0} 将订单复制到真实账户 [{1}]。"
+],
+"{0} cấp số nhân, lot x{1}": [
+"{0} multiplier, lot x{1}",
+"{0} 乘数，手数 x{1}"
+],
+"{0} giá đã chạy ngược {1}$ (> {2}$) sau {3} giây, bỏ lệnh vào.": [
+"{0} points reversed {1}$ (> {2}$) after {3}s, cancel entry.",
+"{0} 点在 {3} 秒后逆转 {1}$（> {2}$），取消入场。"
+],
+"{0} hoặc @tennguoidung": [
+"{0} or @username",
+"{0} 或 @用户名"
+],
+"{0} không hợp lệ.": [
+"{0} is invalid.",
+"{0} 无效。"
+],
+"{0} là CHÍNH tài khoản tín hiệu #{1} — không copy sang chính nó (sẽ gấp đôi lệnh). Gắn EA vào tài khoản khác.": [
+"{0} is the MAIN signal account #{1} — do not copy to itself (would double orders). Attach EA to another account.",
+"{0} 是主信号账户 #{1} — 不要复制到自身（会导致订单翻倍）。将 EA 附加到其他账户。"
+],
+"{0} là tài khoản THẬT nhưng chưa cho phép lệnh thật (bấm 🔒 Cho phép lệnh THẬT trên thẻ tài khoản này ở mục Tài khoản vào lệnh), không {1}.": [
+"{0} is a REAL account but real orders not allowed (tap 🔒 Allow REAL orders on this account card in Account → Orders), no {1}.",
+"{0} 是真实账户，但未允许真实订单（在账户 → 入单页面点击 🔒 允许真实订单），没有 {1}。"
+],
+"{0} lúc": [
+"{0} at",
+"{0} 于"
+],
+"{0} lần gọi Groq (API kiểu OpenAI). Trả (chữ, số token). Lỗi tạm thời → _Skip.": [
+"{0} Groq calls (OpenAI‑style API). Returns (text, token count). Temporary error → _Skip.",
+"{0} 次 Groq 调用（OpenAI 风格 API）。返回（文本，令牌数）。临时错误 → _Skip。"
+],
+"{0} lệnh": [
+"{0} orders",
+"{0} 订单"
+],
+"{0} lệnh vào đã chờ {1} giây (quá {2} giây), bỏ để không vào lệnh trễ.": [
+"{0} entry orders waited {1}s (over {2}s), cancel to avoid delay.",
+"{0} 入场订单等待 {1} 秒（超过 {2} 秒），取消以避免延迟。"
+],
+"{0} ngày": [
+"{0} days",
+"{0} 天"
+],
+"{0} năm": [
+"{0} years",
+"{0} 年"
+],
+"{0} nến tăng, {1} pip (cần {2}-{3} nến, {4}-{5} pip, rồi nến đảo)": [
+"{0} up candles, {1} pip (need {2}-{3} candles, {4}-{5} pip, then reversal candle)",
+"{0} 上涨K线，{1} 点（需要 {2}-{3} 根K线，{4}-{5} 点，然后出现反转K线）"
+],
+"{0} nến tăng, {1} pip, nến kết thúc lực xuất hiện": [
+"{0} rising candles, {1} pips, candle ends with force appearance",
+"{0} 根上涨 K 线，{1} 点，K 线以力度结束"
+],
+"{0} nến xanh, {1} nến đỏ trong {2} nến M{3} gần nhất →": [
+"{0} green candles, {1} red candles in last {2} M{3} candles →",
+"最近 {2} 根 M{3} K线中，{0} 根绿K线，{1} 根红K线 →"
+],
+"{0} nến xanh, {1} nến đỏ{2} trong {3} nến {4} gần nhất →": [
+"{0} green, {1} red{2} in last {3} {4} candles →",
+"最近 {3} 根 {4} K线中，{0} 根绿，{1} 根红{2} →"
+],
+"{0} nến {1}, {2} pip{3}": [
+"{0} {1} candles, {2} pip{3}",
+"{0} 根 {1} K线，{2} 点{3}"
+],
+"{0} tháng": [
+"{0} months",
+"{0} 月"
+],
+"{0} thì dùng khoảng cách theo giá ($) thay cho × ATR. Vd {1} = giá phải tốt hơn lệnh trước ít nhất {2}$.\">hoặc ≥": [
+"{0} use price distance ($) instead of × ATR. E.g., {1} = price must be at least {2}$ better than previous order.\">or ≥",
+"{0} 使用价格距离（$）代替 × ATR。例如 {1} = 价格必须比前一单好至少 {2}$。\">或 ≥"
+],
+"{0} tin · nguồn {1} · cập nhật {2}:{3}": [
+"{0} news · source {1} · updated {2}:{3}",
+"{0} 新闻 · 来源 {1} · 更新 {2}:{3}"
+],
+"{0} vòng kiểm tra: vừa sang giờ mới thì phân tích lần lượt các mã đến lượt.": [
+"{0} check cycle: at the new hour it analyzes symbols sequentially.",
+"{0} 检查周期：新小时到来时依次分析代码。"
+],
+"{0} · Chu kỳ tuần H{1} (tuần bắt đầu Thứ {2} {3})": [
+"{0} · Weekly H{1} cycles (week starts {W2} {3})",
+"{0} · H{1} 周周期（每周从{W2} {3} 开始）"
+],
+"{0} · Hướng chính (W và D{1})": [
+"{0} · Main direction (W and D{1})",
+"{0} · 主要方向（W 和 D{1}）"
+],
+"{0} · Kịch bản theo cây quyết định ({1} sơ đồ tư duy)": [
+"{0} · Decision‑tree scenario ({1} mind map)",
+"{0} · 决策树场景（{1} 思维导图）"
+],
+"{0} · Nhịp trong ngày ({1} chu kỳ)": [
+"{0} · Intraday rhythm ({1} cycles)",
+"{0} · 日内节奏（{1} 周期）"
+],
+"{0} · Số pip và thời gian": [
+"{0} · Pip count and time",
+"{0} · 点数和时间"
+],
+"{0} · cài đặt đang chạy:": [
+"{0} · Settings running:",
+"{0} · 正在运行的设置："
+],
+"{0} · Điều kiện vào lệnh": [
+"{0} · Entry conditions",
+"{0} · 入场条件"
+],
+"{0} đơn vị khoảng cách: vàng = {1}$ giá, FX = {2} pip ({3} point).": [
+"{0} distance unit: gold = {1}$ price, FX = {2} pip ({3} point).",
+"{0} 距离单位：黄金 = {1}$ 价格，外汇 = {2} 点（{3} 点）。"
+],
+"{0} đường giữa {1} giá": [
+"{0} mid‑line of {1} points",
+"{0} {1} 点的中线"
+],
+"{0} ở {1}": [
+"{0} at {1}",
+"{0} 在 {1}"
+],
+"{0}. CHỌN KHỐI LƯỢNG GIAO DỊCH (LOT)": [
+"{0}. SELECT TRADE VOLUME (LOT)",
+"{0}。选择交易手数（LOT）"
+],
+"{0}: không chốt được #{1}: {2}": [
+"{0}: cannot close #{1}: {2}",
+"{0}：无法平仓 #{1}：{2}"
+],
+"{0}: khối lượng {1} lot quá nhỏ để chốt {2}% (tối thiểu {3}), giữ nguyên lệnh.": [
+"{0}: volume {1} lot too small to close {2}% (min {3}), keep order.",
+"{0}：{1} 手过小，无法平仓 {2}%（最低 {3}），保持订单。"
+],
+"{0}: {1} lot @ {res.price:.{2}f} · không SL / TP, đóng cả rổ khi có tín hiệu ngược": [
+"{0}: {1} lot @ {res.price:.{2}f} · no SL/TP, close all when opposite signal",
+"{0}：{1} 手 @ {res.price:.{2}f} · 无止损/止盈，出现相反信号时全部平仓"
+],
+"{0}: được dùng {1} tài khoản MT{2}.": [
+"{0}: using {1} MT{2} account.",
+"{0}：使用 {1} MT{2} 账户。"
+],
+"{0}{1} #{2} lãi {3} → chốt {4}% ({5} lot)": [
+"{0}{1} #{2} profit {3} → close {4}% ({5} lot)",
+"{0}{1} #{2} 利润 {3} → 平仓 {4}%（{5} 手）"
+],
+"{0}{1} #{2} lãi {3} → dời SL hòa vốn {4}": [
+"{0}{1} #{2} profit {3} → move SL to breakeven {4}",
+"{0}{1} #{2} 利润 {3} → 将止损移至保本 {4}"
+],
+"{0}{1} {2} {3} lot · {4} Giá vào ≈ {5} · SL {6}{7} · TP {8}{9}": [
+"{0}{1} {2} {3} lot · {4} Entry ≈ {5} · SL {6}{7} · TP {8}{9}",
+"{0}{1} {2} {3} 手数 · {4} 入场 ≈ {5} · SL {6}{7} · TP {8}{9}"
+],
+"· DCA: chưa đủ nến": [
+"· DCA: insufficient candles",
+"· DCA：蜡烛不足"
+],
+"· Gemini làm dự phòng": [
+"· Gemini as backup",
+"· Gemini 作为备份"
+],
+"· Tổng:": [
+"· Total:",
+"· 总计："
+],
+"· bỏ qua {0} (quá nhỏ)": [
+"· skip {0} (too small)",
+"· 跳过 {0}（太小）"
+],
+"· giá nguồn": [
+"· source price",
+"· 源价"
+],
+"· giá nguồn OANDA, có thể lệch vài pip so với MT{0}": [
+"· OANDA source price, may differ by a few pips from MT{0}",
+"· OANDA 源价，可能与 MT{0} 相差几点"
+],
+"· giá và ngày giờ (": [
+"· price and datetime (",
+"· 价格和日期时间（"
+],
+"· gần nhất:": [
+"· latest:",
+"· 最近："
+],
+"· hạn đến {0}": [
+"· expires {0}",
+"· 到期 {0}"
+],
+"· lệnh thật": [
+"· live order",
+"· 实盘订单"
+],
+"· mức kích hoạt {0}": [
+"· activation level {0}",
+"· 激活水平 {0}"
+],
+"· so sánh": [
+"· compare",
+"· 对比"
+],
+"· sàn ghi: {0}": [
+"· floor record: {0}",
+"· 记录层：{0}"
+],
+"· tín hiệu gần nhất:": [
+"· latest signal:",
+"· 最近信号："
+],
+"· tệ nhất": [
+"· worst",
+"· 最差"
+],
+"· vốn": [
+"· capital",
+"· 资本"
+],
+"· {0} lệnh · lot đầu {1} · SL chung": [
+"· {0} orders · first lot {1} · shared SL",
+"· {0} 订单 · 首手 {1} · 统一止损"
+],
+"· {0} · Số dư": [
+"· {0} · Balance",
+"· {0} · 余额"
+],
+"· {0} · {1} → {2} ({3} nến) · lot {4}{5} · spread TB {6}$ · {7} lot × {8}$ = {9} {10}": [
+"· {0} · {1} → {2} ({3} candles) · lot {4}{5} · avg spread {6}$ · {7} lot × {8}$ = {9} {10}",
+"· {0} · {1} → {2}（{3} 根蜡烛）· 手 {4}{5} · 平均点差 {6}$ · {7} 手 × {8}$ = {9} {10}"
+],
+"· đang BẬT": [
+"· ON",
+"· 开"
+],
+"· đang tắt": [
+"· turning off",
+"· 正在关闭"
+],
+"· đã kết nối": [
+"· connected",
+"· 已连接"
+],
+"ĐAN XEN": [
+"MIXED",
+"交错"
+],
+"ĐANG BẬT": [
+"TURNED ON",
+"已开启"
+],
+"ĐANG RA": [
+"EXITING",
+"正在退出"
+],
+"ĐANG TẮT": [
+"TURNING OFF",
+"正在关闭"
+],
+"ĐC": [
+"ADDRESS",
+"地址"
+],
+"ĐC*": [
+"ADDRESS*",
+"地址*"
+],
+"ĐI NGANG ↔": [
+"MOVE HORIZONTALLY ↔",
+"水平移动 ↔"
+],
+"Đang chạy {0}. Chạy nhiều bot cùng lúc cần tài khoản HEDGING": [
+"Running {0}. Running multiple bots simultaneously requires a HEDGING account",
+"正在运行 {0}。同时运行多个机器人需要对冲账户"
+],
+"Đang cài đặt": [
+"Installing",
+"正在安装"
+],
+"Đang còn {0} lệnh bot mở. Đóng hết (hoặc chờ đóng) rồi mới đổi chiến lược.": [
+"{0} bot orders still open. Close all (or wait) before changing strategy",
+"仍有 {0} 条机器人订单未关闭。关闭全部（或等待）后再更换策略。"
+],
+"Đang dùng đúng tài khoản này rồi.": [
+"Using the correct account already",
+"已使用正确账户"
+],
+"Đang gọi thử Groq...": [
+"Testing Groq call...",
+"正在测试 Groq 调用..."
+],
+"Đang gửi thư thử...": [
+"Sending test email...",
+"正在发送测试邮件..."
+],
+"Đang hướng lên": [
+"Moving up",
+"向上移动"
+],
+"Đang hướng xuống": [
+"Moving down",
+"向下移动"
+],
+"Đang lấy dải TMA từ máy chủ…": [
+"Fetching TMA band from server…",
+"正在从服务器获取 TMA 带…"
+],
+"Đang theo dõi {0} · nến đóng {1}": [
+"Tracking {0} · closed candle {1}",
+"正在跟踪 {0} · 收盘蜡烛 {1}"
+],
+"Đang tải": [
+"Loading",
+"加载中"
+],
+"Đang tải lịch tin…": [
+"Loading news calendar…",
+"正在加载新闻日历…"
+],
+"Đang tải nến": [
+"Loading candles",
+"加载蜡烛"
+],
+"Đang tải tình trạng máy chủ…": [
+"Loading server status…",
+"正在加载服务器状态…"
+],
+"Đang tải…": [
+"Loading…",
+"加载中…"
+],
+"Đang tắt": [
+"Shutting down",
+"正在关闭"
+],
+"Đang xem và điều khiển": [
+"Viewing and controlling",
+"正在查看并控制"
+],
+"Đang đăng nhập và nạp dữ liệu sàn mới…": [
+"Logging in and loading new exchange data…",
+"正在登录并加载新交易所数据…"
+],
+"Đi ngang": [
+"Move sideways",
+"横向移动"
+],
+"Điểm vào · SL · TP": [
+"Entry · SL · TP",
+"入场 · 止损 · 止盈"
+],
+"Đo thời gian xử lý từng request (cho /quan-ly: tìm chỗ làm máy chủ chậm).": [
+"Measure processing time per request (for /quan-ly: locate slow server).",
+"测量每个请求的处理时间（用于 /quan-ly：定位慢服务器）。"
+],
+"Đây không phải là lời khuyên đầu tư": [
+"This is not investment advice",
+"这不是投资建议"
+],
+"Đã báo chủ PinYin. Nhắn Telegram @TuanKom để được báo phí và mở thêm tài khoản.": [
+"Notified PinYin owner. Message Telegram @TuanKom for fees and extra accounts.",
+"已通知 PinYin 所有者。请联系 Telegram @TuanKom 获取费用信息并开通额外账户。"
+],
+"Đã cho {0} dùng bot tự động.": [
+"Granted {0} auto‑bot usage.",
+"已授予 {0} 使用自动机器人。"
+],
+"Đã cho {0} giao dịch qua EA.": [
+"Granted {0} EA trading access.",
+"已授予 {0} EA 交易权限。"
+],
+"Đã có": [
+"Exists",
+"已存在"
+],
+"Đã có tài khoản?": [
+"Account exists?",
+"已有账户？"
+],
+"Đã cấp mã kết nối EA mới cho {0} (mã cũ hết dùng).": [
+"Issued new EA connection code for {0} (old code deprecated).",
+"已为 {0} 发放新 EA 连接码（旧码已失效）。"
+],
+"Đã duyệt {0}, hạn đến {1}.": [
+"Approved {0}, expires {1}.",
+"已批准 {0}，截至 {1}。"
+],
+"Đã gia hạn {0} thêm {1} ngày, hạn đến {2}.": [
+"Extended {0} by {1} days, expires {2}.",
+"已将 {0} 延长 {1} 天，截止 {2}。"
+],
+"Đã gửi lại thư xác nhận tới {0}. Kiểm tra hộp thư và mục Spam.": [
+"Resent confirmation email to {0}. Check inbox and Spam folder.",
+"已重新发送确认邮件至 {0}。请检查收件箱和垃圾邮件文件夹。"
+],
+"Đã gửi thư xác nhận tới {0}. Mở hộp thư (xem cả mục Spam / Quảng cáo) và bấm": [
+"Confirmation email sent to {0}. Open inbox (including Spam/Ads) and click",
+"已向 {0} 发送确认邮件。打开收件箱（包括垃圾邮件/广告）并点击"
+],
+"Đã gửi yêu cầu rồi, chủ PinYin sẽ liên hệ bạn. Cần gấp: Telegram @TuanKom.": [
+"Request sent, PinYin owner will contact you. Urgent: Telegram @TuanKom.",
+"请求已发送，PinYin 所有者会联系您。紧急：Telegram @TuanKom。"
+],
+"Đã hủy {0} lệnh chờ.": [
+"Cancelled {0} pending orders.",
+"已取消 {0} 条挂单。"
+],
+"Đã khóa {0}.": [
+"{0} locked.",
+"{0} 已锁定。"
+],
+"Đã kết nối bot @": [
+"Bot @ connected",
+"已连接机器人 @"
+],
+"Đã lưu lá chắn cho": [
+"Shield saved for",
+"已保存盾牌给"
+],
+"Đã lưu. Bot dùng cài đặt mới từ tín hiệu tiếp theo.": [
+"Saved. Bot will use new settings from next signal.",
+"已保存。机器人将在下一个信号使用新设置。"
+],
+"Đã mở khóa {0}, hạn đến {1}.": [
+"Unlocked {0}, expires {1}.",
+"已解锁 {0}，截至 {1}。"
+],
+"Đã quay lại tài khoản cũ #{0}.": [
+"Returned to previous account #{0}.",
+"已返回到旧账户 #{0}。"
+],
+"Đã ra": [
+"Exited",
+"已退出"
+],
+"Đã thêm {0}. Gắn EA vào MT{1} đó với mã kết nối mới.": [
+"Added {0}. Attach EA to MT{1} with new connection code.",
+"已添加 {0}。将 EA 附加到 MT{1} 并使用新连接码。"
+],
+"Đã tạo. Mã kết nối:": [
+"Created. Connection code:",
+"已创建。连接码："
+],
+"Đã tắt bot tự động của {0} (bot dừng, lệnh đang mở giữ SL trên MT{1}).": [
+"Auto bot for {0} stopped (bot off, open orders keep SL on MT{1}).",
+"已停止 {0} 的自动机器人（机器人关闭，MT{1} 上的未平仓订单保留止损）。"
+],
+"Đã tắt quyền giao dịch (và bot) của {0}.": [
+"Trading rights (and bot) for {0} disabled.",
+"已禁用 {0} 的交易权限（以及机器人）。"
+],
+"Đã vào": [
+"Entered",
+"已进入"
+],
+"Đã xác nhận email {0}! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được ngay khi được duyệt.": [
+"Email {0} confirmed! Account pending approval, you can log in once approved.",
+"已确认邮箱 {0}！账户待审核，审核通过后即可登录。"
+],
+"Đã xóa tài khoản. Lệnh đang mở trên MT{0} đó giữ nguyên (SL/TP vẫn chạy).": [
+"Account deleted. Open orders on MT{0} remain (SL/TP still active).",
+"账户已删除。MT{0} 上的未平仓订单保持不变（止损/止盈仍在运行）。"
+],
+"Đã xóa {0}.": [
+"Deleted {0}.",
+"已删除 {0}。"
+],
+"Đã đóng {0} lệnh.": [
+"Closed {0} orders.",
+"已关闭 {0} 条订单。"
+],
+"Đã đăng nhập #{0} · {1} · {2} · vốn {3} {4}. Bot tự động đã được tắt, bật lại khi sẵn sàng.": [
+"Logged in #{0} · {1} · {2} · capital {3} {4}. Auto bot disabled, re‑enable when ready.",
+"已登录 #{0} · {1} · {2} · 资本 {3} {4}。自动机器人已关闭，准备好后重新启用。"
+],
+"Đã đặt lệnh chờ": [
+"Pending order placed",
+"已下挂单"
+],
+"Đã đặt mật khẩu mới. Đăng nhập lại bằng email và mật khẩu mới.": [
+"New password set. Log in again with email and new password.",
+"已设置新密码。使用邮箱和新密码重新登录。"
+],
+"Đã đổi mã kết nối. EA đang gắn phải dán mã mới.": [
+"Connection code changed. EA now uses the new code.",
+"连接码已更改。EA 正在使用新代码。"
+],
+"Đã đổi tài khoản MT{0} → #{1} {2} ({3}, {4} {5}). Bot tự động đã TẮT.": [
+"Switched MT{0} account → #{1} {2} ({3}, {4} {5}). Auto bot OFF.",
+"已切换 MT{0} 账户 → #{1} {2}（{3}, {4} {5}）。自动机器人已关闭。"
+],
+"Đã đổi tên.": [
+"Name changed.",
+"已更改名称。"
+],
+"Đòn bẩy có thể gây bất lợi cũng như có lợi cho bạn, và bạn có thể mất nhiều hơn số tiền gửi ban đầu với một số nhà cung cấp.": [
+"Leverage can be both beneficial and risky; you may lose more than your initial deposit with some providers.",
+"杠杆既可能带来收益，也可能带来风险；某些提供商可能导致您亏损超过初始存款。"
+],
+"Đón hồi EMA{0}": [
+"Catch EMA{0} rebound",
+"捕捉 EMA{0} 反弹"
+],
+"Đón tại cản {0} nến": [
+"Catch at {0}-candle resistance",
+"在 {0} 根K线阻力位捕捉"
+],
+"Đóng": [
+"Close",
+"关闭"
+],
+"Đóng #{0} {1} {2} lot @ {3} ({4}), lãi/lỗ {5}": [
+"Close #{0} {1} {2} lot @ {3} ({4}), P/L {5}",
+"平仓 #{0} {1} {2} 手 @ {3}（{4}），盈亏 {5}"
+],
+"Đóng chiến dịch ({0})": [
+"Close campaign ({0})",
+"关闭活动（{0}）"
+],
+"Đóng cửa": [
+"Close door",
+"关闭"
+],
+"Đăng ký": [
+"Register",
+"注册"
+],
+"Đăng ký khách (/dang-ky), quản lý khách (/quan-ly, chỉ chủ) và thông tin phiên (/api/me).": [
+"Register client (/dang-ky), manage clients (/quan-ly, owner only) and session info (/api/me).",
+"注册客户 (/dang-ky)，管理客户 (/quan-ly，仅所有者) 和会话信息 (/api/me)。"
+],
+"Đăng ký thành công! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được sau khi được duyệt.": [
+"Registration successful! Account pending approval, you can log in after approval.",
+"注册成功！账户待审核，审核通过后即可登录。"
+],
+"Đăng ký tài khoản xem phân tích. Tài khoản cần được duyệt trước khi dùng.": [
+"Register for analysis view account. Account must be approved before use.",
+"注册分析查看账户。使用前需通过审核。"
+],
+"Đăng nhập": [
+"Log in",
+"登录"
+],
+"Đăng nhập MT{0} tài khoản #{1} ({2})? Bot tự động sẽ TẮT. Lệnh đang mở của tài khoản cũ vẫn giữ nguyên trên sàn.": [
+"Log in to MT{0} account #{1} ({2})? Auto bot will be OFF. Existing orders on old account remain.",
+"登录 MT{0} 账户 #{1}（{2}）？自动机器人将关闭。旧账户的未平仓订单保持不变。"
+],
+"Đăng nhập thất bại ({0} {1}).{2}{3}": [
+"Login failed ({0} {1}).{2}{3}",
+"登录失败（{0} {1}）。{2}{3}"
+],
+"Đăng nhập để xem phân tích.": [
+"Log in to view analysis.",
+"登录以查看分析。"
+],
+"Đăng xuất": [
+"Log out",
+"退出登录"
+],
+"Đơn hàng hàng bền": [
+"Persistent order",
+"持久订单"
+],
+"Đơn xin trợ cấp thất nghiệp": [
+"Unemployment benefit application",
+"失业救济申请"
+],
+"Đưa lệnh vào hàng chờ cho EA, đợi EA báo kết quả.": [
+"Queue order for EA, wait for EA result.",
+"将订单加入EA等待队列，等待EA报告结果。"
+],
+"Đường dọc": [
+"Vertical line",
+"垂直线"
+],
+"Đường giữa đang {0}.": [
+"Middle line is {0}.",
+"中线正在{0}。"
+],
+"Đường ngang": [
+"Horizontal line",
+"水平线"
+],
+"Đường xu hướng (kéo, hoặc bấm {0} điểm)": [
+"Trend line (drag or click {0} points)",
+"趋势线（拖动，或点击{0}点）"
+],
+"Đặt lại mật khẩu": [
+"Reset password",
+"重置密码"
+],
+"Đặt lại mật khẩu PinYin CKG": [
+"Reset PinYin CKG password",
+"重置PinYin CKG密码"
+],
+"Đặt mật khẩu mới cho": [
+"Set new password for",
+"为...设置新密码"
+],
+"Đọc tài khoản tín hiệu (MT{0} máy chủ) mỗi {1} giây, kể cả khi bot đang tắt.": [
+"Read signal account (MT{0} server) every {1}s, even when bot is off.",
+"每{1}秒读取信号账户（MT{0}服务器），即使机器人关闭。"
+],
+"Đọc đầy đủ Tuyên bố miễn trừ trách nhiệm": [
+"Read full disclaimer",
+"阅读完整免责声明"
+],
+"Đỏ": [
+"Red",
+"红色"
+],
+"Đỏ → SELL · {0} pip": [
+"Red → SELL · {0} pip",
+"红 → SELL · {0} 点"
+],
+"Đổi cài đặt: {0} · {1}": [
+"Change settings: {0} · {1}",
+"更改设置：{0} · {1}"
+],
+"Đổi mã": [
+"Change code",
+"更改代码"
+],
+"Độ chính xác của thông tin": [
+"Information accuracy",
+"信息准确性"
+],
+"Độ dốc EMA": [
+"EMA slope",
+"EMA斜率"
+],
+"Độ dốc đường giữa": [
+"Middle line slope",
+"中线斜率"
+],
+"Đợt giảm kéo dài đến {0}": [
+"Downtrend lasting until {0}",
+"下跌阶段持续至{0}"
+],
+"Đợt {0} kéo dài đến {1}": [
+"Phase {0} lasting until {1}",
+"阶段{0}持续至{1}"
+],
+"Đứng ngoài quan sát, không vào lệnh CK{0}": [
+"Standby, no entry CK{0}",
+"观望，不入场 CK{0}"
+],
+"đang chạy": [
+"Running",
+"运行中"
+],
+"đi ngang (lệch": [
+"go sideways (off",
+"横向（偏"
+],
+"đi ngang quanh đường giữa": [
+"go sideways around middle line",
+"围绕中线横向移动"
+],
+"đã hủy": [
+"Cancelled",
+"已取消"
+],
+"đóng": [
+"Close",
+"关闭"
+],
+"đóng chiến dịch": [
+"Close campaign",
+"关闭活动"
+],
+"đóng chiến dịch ({0})": [
+"Close campaign ({0})",
+"关闭活动（{0}）"
+],
+"đóng lệnh ({0})": [
+"Close order ({0})",
+"关闭订单（{0}）"
+],
+"đóng lệnh lệch": [
+"Close offset order",
+"关闭偏差订单"
+],
+"đảo chiều": [
+"Reverse",
+"反转"
+],
+"để lấy Mã kết nối.": [
+"to get Connection Code.",
+"获取连接码。"
+],
+"để được cấp mật khẩu mới.": [
+"to receive new password.",
+"获取新密码。"
+],
+"đỏ": [
+"red",
+"红"
+],
+"đỏ (SELL)": [
+"red (SELL)",
+"红 (SELL)"
+],
+"đổi tài khoản MT{0}": [
+"switch MT{0} account",
+"切换MT{0}账户"
+],
+"Ưu tiên": [
+"Priority",
+"优先级"
+],
+"ảo": [
+"virtual",
+"虚拟"
+],
+"Ẩn mật khẩu": [
+"Hide password",
+"隐藏密码"
+],
+"— chưa có key nào": [
+"— no key yet",
+"— 尚无密钥"
+],
+"… (thường {0}-{1} giây)": [
+"… (usually {0}-{1} seconds)",
+"…（通常 {0}-{1} 秒）"
+],
+"← Về trang phân tích": [
+"← Back to analysis page",
+"← 返回分析页"
+],
+"→ Chốt lãi khi hết CK (không chốt thì SL+, chờ TP hoặc cán SL)": [
+"→ Take profit when CK ends (if not, SL+, wait TP or hit SL)",
+"→ CK 结束时止盈（若未止盈则 SL+，等待 TP 或触发 SL）"
+],
+"→ OK. Hay bị do đổi khung / mã của chart gắn EA: vào Tools → Options → Expert Advisors bỏ tích các ô \"Disable algorithmic trading when…\".": [
+"→ OK. May be caused by changing timeframe / symbol of EA‑attached chart: go to Tools → Options → Expert Advisors and uncheck \"Disable algorithmic trading when…\".",
+"→ 好的。可能是更改了附加 EA 的图表周期/代码：进入 Tools → Options → Expert Advisors，取消勾选 \"Disable algorithmic trading when…\"。"
+],
+"→ Quan sát CK{0}, CK{1} tuần sau và tiếp tục theo đuổi mục tiêu": [
+"→ Observe CK{0}, CK{1} next week and keep pursuing the target",
+"→ 观察 CK{0}、CK{1} 下周并继续追踪目标"
+],
+"→ bước dịch": [
+"→ shift step",
+"→ 移动步长"
+],
+"→ bấm chuột phải": [
+"→ right‑click",
+"→ 右键点击"
+],
+"→ chép file vào": [
+"→ copy file to",
+"→ 复制文件至"
+],
+"→ chép vào MQL{0}\\Experts của MT{1} sàn đó → Tools › Options › Expert Advisors: tick": [
+"→ copy to MQL{0}\\Experts of MT{1} platform → Tools › Options › Expert Advisors: tick",
+"→ 复制到 MT{1} 平台的 MQL{0}\\Experts → Tools › Options › Expert Advisors：勾选"
+],
+"→ chờ duyệt ở đây (Telegram báo khi có người đăng ký). Khách chỉ có quyền XEM: không vào lệnh, không thấy tài khoản MT{0}, không thấy bot.": [
+"→ waiting for approval here (Telegram notifies when someone registers). Customers have VIEW‑ONLY rights: cannot trade, cannot see MT{0} account or bot.",
+"→ 在此等待审核（Telegram 有人注册时会通知）。客户仅有查看权限：不能下单，不能看到 MT{0} 账户，也看不到机器人。"
+],
+"→ dời SL khóa +": [
+"→ move locked SL +",
+"→ 移动锁定的 SL +"
+],
+"→ kéo EA vào chart vàng, dán": [
+"→ drag EA onto gold chart, paste",
+"→ 将 EA 拖入金图表，粘贴"
+],
+"→ ngược hướng, sang CK": [
+"→ reverse direction, to CK",
+"→ 反向，切换至 CK"
+],
+"→ thêm": [
+"→ add",
+"→ 添加"
+],
+"→ trong MT{0} bấm": [
+"→ in MT{0} click",
+"→ 在 MT{0} 中点击"
+],
+"→ tích": [
+"→ check",
+"→ 勾选"
+],
+"∞ (chưa có lệnh lỗ)": [
+"∞ (no losing order yet)",
+"∞（暂无亏损订单）"
+],
+"⌛ Hết hạn": [
+"⌛ Expired",
+"⌛ 已过期"
+],
+"⏭ Tin {0} tiếp theo:": [
+"⏭ Next news {0}:",
+"⏭ 下条新闻 {0}："
+],
+"⏳ Chờ duyệt": [
+"⏳ Awaiting approval",
+"⏳ 等待审核"
+],
+"⏳ Đang chạy": [
+"⏳ Running",
+"⏳ 正在运行"
+],
+"⏳ Đang chạy backtest": [
+"⏳ Running backtest",
+"⏳ 正在回测"
+],
+"⏸ Dừng": [
+"⏸ Pause",
+"⏸ 暂停"
+],
+"⏹ Tắt bot": [
+"⏹ Stop bot",
+"⏹ 停止机器人"
+],
+"▲ Đã xong · TĂNG": [
+"▲ Completed · UP",
+"▲ 已完成 · 上涨"
+],
+"▶ Bật bot": [
+"▶ Enable bot",
+"▶ 启用机器人"
+],
+"▶ Chạy": [
+"▶ Run",
+"▶ 运行"
+],
+"▶ Chạy backtest": [
+"▶ Run backtest",
+"▶ 运行回测"
+],
+"▼ Đã xong · GIẢM": [
+"▼ Completed · DOWN",
+"▼ 已完成 · 下跌"
+],
+"● Chưa gắn EA": [
+"● EA not attached",
+"● 未附加 EA"
+],
+"● TRỰC TIẾP": [
+"● LIVE",
+"● 实时"
+],
+"● Đang chạy": [
+"● Running",
+"● 正在运行"
+],
+"● ĐỒNG BỘ GIÁ SỐNG": [
+"● LIVE PRICE SYNC",
+"● 实时价格同步"
+],
+"⚖️ AUTO DỜI HÒA (BE)": [
+"⚖️ AUTO BREAKEVEN (BE)",
+"⚖️ 自动保本 (BE)"
+],
+"⚖️ So sánh": [
+"⚖️ Compare",
+"⚖️ 对比"
+],
+"⚙️ CHẾ ĐỘ BÓP CÒ LỆNH": [
+"⚙️ ORDER‑BATCH MODE",
+"⚙️ 批量下单模式"
+],
+"⚠ Bot chạy khung": [
+"⚠ Bot running on timeframe",
+"⚠ 机器人运行在周期上"
+],
+"⚠️ Chưa quay lại được tài khoản cũ #{0}, đăng nhập lại trên trang này.": [
+"⚠️ Unable to retrieve old account #{0}, please log in again on this page.",
+"⚠️ 无法恢复旧账户 #{0}，请在此页面重新登录。"
+],
+"⚠️ EA PinYinBridge trên MT{0} của bạn đang OFFLINE: bot không vào lệnh được. Mở MT{1} và kiểm tra EA (tab 🚀 Buồng lái › 🔑 Mã EA).": [
+"⚠️ Your PinYinBridge EA on MT{0} is OFFLINE: bot cannot place trades. Open MT{1} and check the EA (tab 🚀 Cockpit › 🔑 EA Code).",
+"⚠️ 您的 PinYinBridge EA 在 MT{0} 上离线：机器人无法下单。打开 MT{1} 并检查 EA（标签 🚀 交易驾驶舱 › 🔑 EA 代码）。"
+],
+"⚠️ EA của bạn là bản {0}, bot cần": [
+"⚠️ Your EA is version {0}, bot requires",
+"⚠️ 您的 EA 为版本 {0}，机器人需要"
+],
+"⚠️ EA trên MT{0} của bạn là bản {1}, bản mới là {2}. Lá chắn cho lệnh vào tay cần bản mới:": [
+"⚠️ EA on MT{0} is version {1}, latest is {2}. Shield for manual orders requires the new version:",
+"⚠️ 您的 MT{0} 上的 EA 为版本 {1}，最新版本为 {2}。手动下单的防护需要新版："
+],
+"⚠️ Giao dịch ngoại hối và CFD ký quỹ có rủi ro cao, bạn có thể mất nhiều hơn số tiền gửi ban đầu. Nội dung, tín hiệu, bot và công cụ trên PinYin CKG chỉ dành cho mục đích giáo dục, tham khảo và hỗ trợ,": [
+"⚠️ Forex and margin CFD trading carry high risk; you may lose more than your initial deposit. All content, signals, bots and tools on PinYin CKG are for education, reference and support only,",
+"⚠️ 外汇及保证金 CFD 交易风险高，您可能会损失超过初始存款。PinYin CKG 上的内容、信号、机器人和工具仅用于教育、参考和支持，"
+],
+"⚠️ Không gửi được thư xác nhận tới {0}: {1}": [
+"⚠️ Failed to send confirmation email to {0}: {1}",
+"⚠️ 无法向 {0} 发送确认邮件：{1}"
+],
+"⚠️ Không gửi được thư đặt lại mật khẩu tới {0}: {1}": [
+"⚠️ Failed to send password reset email to {0}: {1}",
+"⚠️ 无法向 {0} 发送密码重置邮件：{1}"
+],
+"⚠️ Link xác nhận không hợp lệ.": [
+"⚠️ Invalid confirmation link.",
+"⚠️ 确认链接无效。"
+],
+"⚠️ MT{0} của bạn là TÀI KHOẢN THẬT (tiền thật). Bot sẽ tự vào lệnh bằng tiền thật. Giao dịch vàng/CFD ký quỹ rủi ro cao, có thể mất toàn bộ vốn. Kết quả trong quá khứ không đảm bảo tương lai; bot và tín hiệu chỉ là công cụ hỗ trợ, không phải lời khuyên đầu tư. Bạn tự chịu trách nhiệm với lệnh trên tài khoản của mình. Tiếp tục?": [
+"⚠️ MT{0} is a REAL account (live funds). The bot will trade with real money. Gold/CFD margin trading is high risk and may wipe out your capital. Past results do not guarantee future performance; bots and signals are tools, not investment advice. You are fully responsible for any trades. Continue?",
+"⚠️ MT{0} 为真实账户（真实资金）。机器人将使用真实资金下单。黄金/CFD 保证金交易风险高，可能导致全部亏损。历史业绩不代表未来表现；机器人和信号仅为工具，非投资建议。您需自行承担账户交易风险。继续？"
+],
+"⚠️ MT{0} của bạn đang TẮT quyền giao dịch tự động, EA KHÔNG vào / đóng lệnh được. Bật nút": [
+"⚠️ MT{0} has auto‑trading disabled; EA cannot place or close orders. Enable the button",
+"⚠️ MT{0} 已关闭自动交易，EA 无法下单或平仓。请打开按钮"
+],
+"⚠️ Miễn trừ trách nhiệm về rủi ro": [
+"⚠️ Risk disclaimer",
+"⚠️ 风险免责声明"
+],
+"⚠️ Tuyên bố miễn trừ trách nhiệm về rủi ro": [
+"⚠️ Risk disclaimer statement",
+"⚠️ 风险免责声明声明"
+],
+"⚠️ TÀI KHOẢN THẬT": [
+"⚠️ REAL ACCOUNT",
+"⚠️ 真实账户"
+],
+"⚠️ [{0}] EA MẤT KẾT NỐI khi đang có {1} lệnh. Kiểm tra MT{2} / mạng của máy chạy EA (SL trên MT{3} vẫn chạy).": [
+"⚠️ [{0}] EA lost connection while {1} orders were open. Check MT{2} or the EA host network (SL on MT{3} still active).",
+"⚠️ [{0}] EA 在有 {1} 笔订单时失去连接。检查 MT{2} 或运行 EA 的机器网络（MT{3} 上的止损仍在运行）。"
+],
+"⚠️ [{0}] MT{1} đang TẮT giao dịch tự động: EA vẫn kết nối nhưng KHÔNG vào / đóng lệnh được": [
+"⚠️ [{0}] MT{1} has auto‑trading off: EA stays connected but cannot place/close orders",
+"⚠️ [{0}] MT{1} 已关闭自动交易：EA 仍保持连接，但无法下单/平仓"
+],
+"⚠️ Đây là tài khoản THẬT, máy chủ đang CHẶN vào lệnh (buồng lái, bot, lá chắn tự gắn SL/TP). Bấm 🔒 Lệnh THẬT: TẮT để bật.": [
+"⚠️ This is a REAL account; the server is blocking orders (cockpit, bot, auto SL/TP shield). Tap 🔒 Real Orders: OFF to enable.",
+"⚠️ 这是真实账户，服务器正在阻止下单（交易驾驶舱、机器人、自动止盈/止损防护）。点击 🔒 真实订单：关闭 以启用。"
+],
+"⚡ Giả lập loạt nến M{0} kết thúc lực": [
+"⚡ Simulated M{0} candle series ended",
+"⚡ 模拟 M{0} K线序列结束"
+],
+"⚡ Phân tích ngay": [
+"⚡ Analyze now",
+"⚡ 立即分析"
+],
+"⚪ LIVE MT{0} · thị trường nghỉ, tick cuối": [
+"⚪ LIVE MT{0} · market closed, final tick",
+"⚪ LIVE MT{0} · 市场休市，最后一次报价"
+],
+"⚪ chưa nối EA": [
+"⚪ EA not linked yet",
+"⚪ 尚未连接 EA"
+],
+"⛔ Bị khóa": [
+"⛔ Locked",
+"⛔ 已锁定"
+],
+"⛔ Đã chạm SL": [
+"⛔ SL hit",
+"⛔ 已触发 SL"
+],
+"⛔ Đóng toàn bộ": [
+"⛔ Close all",
+"⛔ 关闭全部"
+],
+"⛶ Toàn màn hình": [
+"⛶ Full screen",
+"⛶ 全屏"
+],
+"✂️ Chốt {0}% khối lượng": [
+"✂️ Close {0}% of volume",
+"✂️ 平仓 {0}% 头寸"
+],
+"✅ EA trên MT{0} của bạn đang online · bot vào lệnh trên tài khoản của bạn (ghi chú \"PinYin BOT\"), không đụng lệnh bạn vào tay.": [
+"✅ EA on MT{0} is online – bot trades on your account (note \"PinYin BOT\"), without affecting manual orders.",
+"✅ 您的 MT{0} 上的 EA 已在线 – 机器人在您的账户上交易（备注 “PinYin BOT”），不干扰手动下单。"
+],
+"✅ Groq chạy được (": [
+"✅ Groq running (",
+"✅ Groq 正在运行 ("
+],
+"✅ Gửi email từ PinYin CKG hoạt động. Xác nhận email khi khách đăng ký đã được bật.": [
+"✅ PinYin CKG email sending works. Confirmation emails for new registrations are enabled.",
+"✅ PinYin CKG 邮件发送正常。已启用新用户注册的邮件确认。"
+],
+"✅ Nhóm này sẽ nhận tín hiệu vào / đóng lệnh của bot PinYin.": [
+"✅ This group will receive PinYin bot entry/exit signals.",
+"✅ 本群将接收 PinYin 机器人进出场信号。"
+],
+"✅ PinYin AUTO đã kết nối. Bot sẽ báo mọi lệnh vào/đóng ở đây.": [
+"✅ PinYin AUTO connected. Bot will report all entries/exits here.",
+"✅ PinYin AUTO 已连接。机器人将在此报告所有进出场。"
+],
+"✅ [{0}] MT{1} đã BẬT lại giao dịch tự động.": [
+"✅ [{0}] MT{1} auto‑trading re‑enabled.",
+"✅ [{0}] MT{1} 已重新开启自动交易。"
+],
+"✅ Đang dùng": [
+"✅ In use",
+"✅ 正在使用"
+],
+"✅ Đã chép link đăng ký": [
+"✅ Registration link copied",
+"✅ 已复制注册链接"
+],
+"✅ Đã gửi thư thử tới": [
+"✅ Test email sent to",
+"✅ 已向发送测试邮件至"
+],
+"✅ Đã kết nối Telegram, bot báo mọi lệnh vào/đóng.": [
+"✅ Telegram connected; bot reports all entries/exits.",
+"✅ 已连接 Telegram，机器人报告所有进出场。"
+],
+"✅ Đã kết nối nhóm \"": [
+"✅ Connected group \"",
+"✅ 已连接群组 \""
+],
+"✅ Đã qua TP{0}": [
+"✅ Passed TP{0}",
+"✅ 已通过 TP{0}"
+],
+"✅ Đăng ký thành công! Tài khoản đang chờ duyệt, bạn sẽ đăng nhập được sau khi được duyệt.": [
+"✅ Registration successful! Account pending approval; you can log in once approved.",
+"✅ 注册成功！账户待审核，审核通过后即可登录。"
+],
+"✋ SL lệnh #{0} đã bị gỡ bằng tay (SL bot: {want:.{1}f}). Bot để nguyên, không đặt lại.": [
+"✋ Order #{0} SL was manually removed (bot SL: {want:.{1}f}). Bot will keep it unchanged.",
+"✋ 订单 #{0} 的止损已被手动移除（机器人止损：{want:.{1}f}）。机器人保持不变。"
+],
+"✔ Kết luận: Buy nhồi để thuận lệnh": [
+"✔ Conclusion: Buy to fill order flow",
+"✔ 结论：买入以顺应订单流"
+],
+"✔ Kết luận: Chốt lời": [
+"✔ Conclusion: Take profit",
+"✔ 结论：止盈"
+],
+"✔ Kết luận: Chốt lời trong ngày": [
+"✔ Conclusion: Take profit today",
+"✔ 结论：当天止盈"
+],
+"✔ Kết luận: Chốt lời trong ngày, có thể Buy lướt sóng": [
+"✔ Conclusion: Take profit today, may Buy for swing",
+"✔ 结论：当日止盈，可买入波段"
+],
+"✔ Kết luận: Chốt lời và nghỉ": [
+"✔ Conclusion: Take profit and stop",
+"✔ 结论：止盈并停止"
+],
+"✔ Kết luận: Cắt hết lệnh, chờ hôm sau": [
+"✔ Conclusion: Close all orders, wait for next day",
+"✔ 结论：平掉所有订单，等待次日"
+],
+"✔ Kết luận: Nghỉ, chờ hôm sau": [
+"✔ Conclusion: Rest, wait for tomorrow",
+"✔ 结论：休息，等待明日"
+],
+"✔ Kết luận: Nhồi tiếp cấp số nhân": [
+"✔ Conclusion: Exponential scaling",
+"✔ 结论：指数级加仓"
+],
+"✔ Kết luận: Sell thuận lệnh": [
+"✔ Conclusion: Sell with the trend",
+"✔ 结论：顺势卖出"
+],
+"✔ Kết luận: {0}": [
+"✔ Conclusion: {0}",
+"✔ 结论：{0}"
+],
+"✕ Đóng": [
+"✕ Close",
+"✕ 关闭"
+],
+"⟲ Về hiện tại": [
+"⟲ Return to current",
+"⟲ 返回当前"
+],
+"⬇️ Tải EA PinYinBridge.ex{0}": [
+"⬇️ Download EA PinYinBridge.ex{0}",
+"⬇️ 下载 EA PinYinBridge.ex{0}"
+],
+"＋ Thêm bot ({0}/{1})": [
+"＋ Add bot ({0}/{1})",
+"＋ 添加机器人 ({0}/{1})"
+],
+"＋ Thêm tài khoản": [
+"＋ Add account",
+"＋ 添加账户"
+],
+"＋ Thêm tài khoản ({0}/{1})": [
+"＋ Add account ({0}/{1})",
+"＋ 添加账户 ({0}/{1})"
+],
+"＋ Xin thêm tài khoản (có phí)": [
+"＋ Request extra account (paid)",
+"＋ 请求额外账户（付费）"
+],
+"🎯 Cản {0} nến {1}: {2} / {3}": [
+"🎯 Block {0} candles {1}: {2} / {3}",
+"🎯 阻挡 {0} 根蜡烛 {1}: {2} / {3}"
+],
+"🎯 HỘI TỤ": [
+"🎯 GATHER",
+"🎯 聚合"
+],
+"🎯 Mục tiêu:": [
+"🎯 Target:",
+"🎯 目标："
+],
+"🎯 Tài khoản {0} ({1}):": [
+"🎯 Account {0} ({1}):",
+"🎯 账户 {0} ({1})："
+],
+"🏆 = lãi nhiều nhất. Nên chọn giá trị vừa lãi vừa": [
+"🏆 = highest profit. Choose balanced value",
+"🏆 = 最高利润。请选择平衡值"
+],
+"👤 Khách mới đăng ký chờ duyệt: {0} · Zalo {1} · {2}": [
+"👤 New customer pending approval: {0} · Zalo {1} · {2}",
+"👤 新客户待审核：{0} · Zalo {1} · {2}"
+],
+"👥 Khách hàng{0}": [
+"👥 Customers{0}",
+"👥 客户{0}"
+],
+"📈 Phân tích CKG": [
+"📈 CKG Analysis",
+"📈 CKG分析"
+],
+"📈 TRAILING & CHỐT {0}%": [
+"📈 TRAILING & TAKE PROFIT {0}%",
+"📈 追踪止盈 {0}%"
+],
+"📈 Đường vốn": [
+"📈 Equity curve",
+"📈 资本曲线"
+],
+"📊 Biểu đồ": [
+"📊 Chart",
+"📊 图表"
+],
+"📊 Biểu đồ PinYin": [
+"📊 PinYin Chart",
+"📊 PinYin图表"
+],
+"📊 Nhịp {0} M{1}:": [
+"📊 Rhythm {0} M{1}:",
+"📊 节奏 {0} M{1}："
+],
+"📊 Nhịp {0} {1}: {2}": [
+"📊 Rhythm {0} {1}: {2}",
+"📊 节奏 {0} {1}：{2}"
+],
+"📊 Thống kê chu kỳ H{0} trong tuần (pip)": [
+"📊 Weekly H{0} cycle stats (pip)",
+"📊 本周 H{0} 周期统计（点）"
+],
+"📊 VỊ THẾ ĐANG MỞ (": [
+"📊 OPEN POSITIONS (",
+"📊 持仓中 ("
+],
+"📊 Đang đọc thị trường…": [
+"📊 Reading market…",
+"📊 正在读取市场…"
+],
+"📋 Chép link đăng ký": [
+"📋 Copy registration link",
+"📋 复制注册链接"
+],
+"📏 Đo": [
+"📏 Measure",
+"📏 测量"
+],
+"📜 Lịch sử lệnh (như History của MT{0})": [
+"📜 Order history (like MT{0} History)",
+"📜 订单历史（如 MT{0} 历史）"
+],
+"📡 Tài khoản vào lệnh (copy lệnh bot qua EA)": [
+"📡 Account entry (copy bot orders via EA)",
+"📡 账户入场（通过 EA 复制机器人订单）"
+],
+"📢 Nhóm tín hiệu cho khách": [
+"📢 Signal group for customers",
+"📢 客户信号组"
+],
+"📧 Chưa xác nhận email": [
+"📧 Email not verified",
+"📧 邮箱未验证"
+],
+"📨 Báo Telegram: tạo bot ở": [
+"📨 Telegram alert: create bot at",
+"📨 Telegram 通知：在此创建机器人"
+],
+"📩 Khách {0} ({1}, Zalo {2}) xin THÊM tài khoản MT{3}": [
+"📩 Customer {0} ({1}, Zalo {2}) requests ADD MT{3} account",
+"📩 客户 {0}（{1}, Zalo {2}）请求添加 MT{3} 账户"
+],
+"📩 khách xin thêm": [
+"📩 Customer request add",
+"📩 客户请求添加"
+],
+"📰 Lịch tin kinh tế trong tuần": [
+"📰 Weekly economic calendar",
+"📰 本周经济日历"
+],
+"📰 Tin tức tuần": [
+"📰 Weekly news",
+"📰 每周新闻"
+],
+"📱 Lệnh vào tay {0} #{1} {2} {3} lot → tự gắn SL {4} · TP {5}": [
+"📱 Manual order {0} #{1} {2} {3} lot → auto SL {4} · TP {5}",
+"📱 手动订单 {0} #{1} {2} {3} 手数 → 自动止损 {4} · 止盈 {5}"
+],
+"📱 ÁP DỤNG CHO LỆNH VÀO TAY (MT{0} điện thoại / máy khác)": [
+"📱 APPLY TO MANUAL ORDERS (MT{0} phone/other device)",
+"📱 应用于手动订单（MT{0} 手机/其他设备）"
+],
+"🔄 Phân tích lại": [
+"🔄 Re‑analyze",
+"🔄 重新分析"
+],
+"🔄 ĐĂNG NHẬP TÀI KHOẢN MT{0} KHÁC": [
+"🔄 Log in to a different MT{0} account",
+"🔄 登录其他 MT{0} 账户"
+],
+"🔌 KẾT NỐI MT{0} CỦA BẠN": [
+"🔌 Your MT{0} connection",
+"🔌 您的 MT{0} 连接"
+],
+"🔎 Tìm khách: tên, số Zalo, email, Telegram…": [
+"🔎 Find client: name, Zalo, email, Telegram…",
+"🔎 查找客户：姓名、Zalo、邮箱、Telegram…"
+],
+"🔐 Đăng nhập vào MT{0}": [
+"🔐 Log in to MT{0}",
+"🔐 登录 MT{0}"
+],
+"🔑 Khách {0} vừa tự đặt lại mật khẩu qua email.": [
+"🔑 Client {0} just reset password via email.",
+"🔑 客户 {0} 刚通过邮箱重置密码。"
+],
+"🔒 CHẾ ĐỘ DEMO": [
+"🔒 DEMO MODE",
+"🔒 演示模式"
+],
+"🔒 Đã CHẶN vào lệnh tài khoản THẬT (chỉ Demo).": [
+"🔒 REAL account orders blocked (Demo only).",
+"🔒 已阻止真实账户下单（仅演示）。"
+],
+"🔓 ĐÃ CHO PHÉP vào lệnh tài khoản THẬT.": [
+"🔓 REAL account orders allowed.",
+"🔓 已允许真实账户下单。"
+],
+"🔴 Chỉ tin mạnh": [
+"🔴 Strong signal only",
+"🔴 仅强信号"
+],
+"🔴 DỪNG LỖ (SL)": [
+"🔴 STOP LOSS (SL)",
+"🔴 止损 (SL)"
+],
+"🔴 LIVE · mất tín hiệu MT{0}": [
+"🔴 LIVE · lost MT{0} signal",
+"🔴 实时 · 丢失 MT{0} 信号"
+],
+"🔴 MẠNH": [
+"🔴 STRONG",
+"🔴 强"
+],
+"🔴 SELL (BÁN)": [
+"🔴 SELL",
+"🔴 SELL (卖出)"
+],
+"🔴 Thanh khoản:": [
+"🔴 Liquidity:",
+"🔴 流动性："
+],
+"🔴🟠 Mạnh + Vừa": [
+"🔴🟠 Strong + Recent",
+"🔴🟠 强 + 最近"
+],
+"🔵 Chốt một phần {0} @ {1} ({2}) · {3} giá": [
+"🔵 Partial close {0} @ {1} ({2}) · {3} points",
+"🔵 部分平仓 {0} @ {1} ({2}) · {3} 点"
+],
+"🔵 {0} {1} @ {2} · {3} giá": [
+"🔵 {0} {1} @ {2} · {3} points",
+"🔵 {0} {1} @ {2} · {3} 点"
+],
+"🔵 Đóng {0} @ {1} ({2}) · {3} giá": [
+"🔵 Close {0} @ {1} ({2}) · {3} points",
+"🔵 平仓 {0} @ {1} ({2}) · {3} 点"
+],
+"🚀 BUỒNG LÁI THAO TÁC LỆNH (ĐIỀU KHIỂN MT{0} TỪ XA)": [
+"🚀 Cockpit command (remote control MT{0})",
+"🚀 交易驾驶舱指令（远程控制 MT{0}）"
+],
+"🚀 Buồng lái": [
+"🚀 Cockpit",
+"🚀 交易驾驶舱"
+],
+"🚀 Buồng lái · MT{0}": [
+"🚀 Cockpit · MT{0}",
+"🚀 交易驾驶舱 · MT{0}"
+],
+"🚀 Buồng lái · mô phỏng (tài khoản chỉ xem, không vào được lệnh MT{0})": [
+"🚀 Cockpit · simulation (view‑only account, no orders MT{0})",
+"🚀 交易驾驶舱 · 模拟（仅查看账户，无法下单 MT{0}）"
+],
+"🚀 Buồng lái · {0} tài khoản (mô phỏng)": [
+"🚀 Cockpit · {0} account (simulation)",
+"🚀 交易驾驶舱 · {0} 账户（模拟）"
+],
+"🛡 Buồng lái ·": [
+"🛡 Cockpit ·",
+"🛡 交易驾驶舱 ·"
+],
+"🛡 Chạm TP{0} → dời SL về hòa vốn {1}": [
+"🛡 Hit TP{0} → move SL to breakeven {1}",
+"🛡 达到 TP{0} → 将 SL 移至保本 {1}"
+],
+"🛡 CẤU HÌNH BỘ {0} LÁ CHẮN (SL · TP · AUTO BE · TRAILING)": [
+"🛡 CONFIGURE {0} LAYER (SL·TP·AUTO BE·TRAILING)",
+"🛡 配置 {0} 层（SL·TP·自动保本·跟踪）"
+],
+"🛡 DỜI SL HÒA VỐN (BE) NGAY SANG MT{0}": [
+"🛡 MOVE SL TO BREAKEVEN (BE) IMMEDIATELY TO MT{0}",
+"🛡 立即将 SL 移至保本 (BE) 到 MT{0}"
+],
+"🛡 SL chung dời theo lệnh DCA {0}: {1}": [
+"🛡 Common SL shifted with DCA order {0}: {1}",
+"🛡 公共 SL 随 DCA 订单 {0} 移动：{1}"
+],
+"🟠 Máy chủ OK · MT{0} chưa có dữ liệu": [
+"🟠 Server OK · MT{0} has no data yet",
+"🟠 服务器正常 · MT{0} 暂无数据"
+],
+"🟠 VỪA": [
+"🟠 JUST NOW",
+"🟠 刚刚"
+],
+"🟡 DEMO · giá giả lập": [
+"🟡 DEMO · simulated price",
+"🟡 演示 · 模拟价格"
+],
+"🟡 Giả lập: nhập tay nến D{0} và chọn màu nến W": [
+"🟡 Simulation: manually input D{0} candle and choose W color",
+"🟡 模拟：手动输入 D{0} K线并选择 W 颜色"
+],
+"🟢 BUY (MUA)": [
+"🟢 BUY",
+"🟢 BUY (买入)"
+],
+"🟢 CHỐT LỜI (TP)": [
+"🟢 TAKE PROFIT (TP)",
+"🟢 止盈 (TP)"
+],
+"🟢 Thanh khoản:": [
+"🟢 Liquidity:",
+"🟢 流动性："
+],
+"🟢 Tự động từ MT{0}": [
+"🟢 Auto from MT{0}",
+"🟢 自动来自 MT{0}"
+],
+"🟢 {0} {1} @ {res.price:.{2}f} · không SL, giữ tới tín hiệu đảo chiều": [
+"🟢 {0} {1} @ {res.price:.{2}f} · no SL, hold until reversal signal",
+"🟢 {0} {1} @ {res.price:.{2}f} · 无 SL，持有至反转信号"
+],
+"🤖 Bot tự động": [
+"🤖 Auto bot",
+"🤖 自动机器人"
+],
+"🤖 Bot tự động vào lệnh {0}": [
+"🤖 Auto bot enters {0} order",
+"🤖 自动机器人下 {0} 订单"
+],
+"🤖 Phân Tích AI": [
+"🤖 AI Analysis",
+"🤖 AI分析"
+],
+"🤖 Phân Tích AI ·": [
+"🤖 AI Analysis ·",
+"🤖 AI分析 ·"
+],
+"🧩 CHIẾN DỊCH DCA": [
+"🧩 DCA Campaign",
+"🧩 DCA活动"
+],
+"🧪 Backtest lịch sử": [
+"🧪 Historical Backtest",
+"🧪 历史回测"
+]
+}

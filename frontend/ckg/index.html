@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" data-theme="dark">
 <head>
+<script src="/static/i18n.js?v=68970aa284"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PinYin CKG</title>
@@ -149,7 +150,7 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="w">
 <div class="hero">
 <div class="hrow1"><div class="hbrand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="htitle">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div><div class="hstat" id="hstat">📊 Đang đọc thị trường…</div></div>
-<div class="hside"><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div class="btns" id="thb" style="display:none"></div><span id="meb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></span></div></div>
+<div class="hside"><span id="langsw"></span><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div class="btns" id="thb" style="display:none"></div><span id="meb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></span></div></div>
 <div class="hrow2"><div class="hpx"><div><div class="hsym"><span id="nm">XAUUSD</span> · SPREAD <span id="hspr">-</span></div><div class="px" id="px">-</div></div>
 <div class="hba">Bid: <b id="hbid">-</b><br>Ask: <b id="hask">-</b></div></div>
 <div class="htime"><div id="clk"></div><div id="hses" class="mut"></div></div>
@@ -1062,10 +1063,10 @@ function aiShow(r){if(!r||!r.co){$('aiout').innerHTML='';$('aist').textContent='
  $('aist').innerHTML=`Phân tích lúc <b>${r.gio}</b> · model ${aiEsc(r.model||'')}${r.auto?' · 🔄 tự cập nhật (mỗi nến '+(r.sym=='XAUUSD'?'H1':'H4')+')':''}${r.tu_bo_nho?' · bản lưu (dưới 60 giây)':''}${r.tokens?' · '+r.tokens+' token':''}`;$('aiout').innerHTML=aiMd(r.text||'')}
 async function aiLoad(){$('ais').textContent=cs;[$('aib'),$('aib2')].forEach(b=>b.style.display=VIEW?'none':'');
  if(!LV){$('aist').textContent='Phân Tích AI cần chạy từ máy chủ PinYin (mở trang qua /ckg/ hoặc link từ xa).';$('aiout').innerHTML='';return}
- try{aiShow(await jget('api/ai/last?sym='+cs))}catch(e){$('aist').textContent='Không đọc được bản phân tích: '+e.message}}
+ try{aiShow(await jget('api/ai/last?sym='+cs+'&lang='+(window.PY_LANG||'vi'),60000))}catch(e){$('aist').textContent='Không đọc được bản phân tích: '+e.message}}
 async function aiRun(fresh){if(AIBUSY||!LV)return;AIBUSY=true;const s0=cs;[$('aib'),$('aib2')].forEach(b=>b.disabled=true);
  $('aist').innerHTML='<span class="spin"></span>AI đang đọc dữ liệu MT5 đa khung và phân tích '+s0+'… (thường 10-40 giây)';
- try{const r=await jpost('api/ai',{sym:s0,lam_moi:!!fresh});
+ try{const r=await jpost('api/ai',{sym:s0,lam_moi:!!fresh,lang:window.PY_LANG||'vi'});
   if(s0!=cs)return;if(r&&r.ok)aiShow(r);else $('aist').innerHTML='<span class="no">'+aiEsc((r&&r.loi)||'Không rõ lỗi')+'</span>'}
  catch(e){$('aist').innerHTML='<span class="no">Lỗi kết nối máy chủ: '+aiEsc(e.message)+'</span>'}
  finally{AIBUSY=false;[$('aib'),$('aib2')].forEach(b=>b.disabled=false)}}
