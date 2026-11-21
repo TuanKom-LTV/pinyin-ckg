@@ -539,6 +539,10 @@
 "Toggle EMA {0}",
 "切换 EMA {0}"
 ],
+"Bật/tắt PinYin STC": [
+"Toggle PinYin STC",
+"开/关 PinYin STC"
+],
 "Bật/tắt TMA": [
 "Toggle TMA",
 "切换 TMA"
@@ -2970,6 +2974,10 @@
 "PinYin HA Pro DCA ({0}, {1}) · {2} · tối đa {3} lệnh · {4}": [
 "PinYin HA Pro DCA ({0}, {1}) · {2} · max {3} orders · {4}",
 "PinYin HA Pro DCA（{0}, {1}）· {2}· 最多 {3} 单 · {4}"
+],
+"PinYin STC (Schaff Trend Cycle {0} / {1} / {2}): khung dưới nến, chấm đỏ = đỉnh trên {3}, chấm xanh = đáy dưới {4}": [
+"PinYin STC (Schaff Trend Cycle {0} / {1} / {2}): panel below candles, red dot = peak above {3}, green dot = trough below {4}",
+"PinYin STC（Schaff 趋势周期 {0} / {1} / {2}）：K线下方面板，红点 = {3} 以上的顶部，绿点 = {4} 以下的底部"
 ],
 "PinYin cũng đã gửi thư nhắc vào email đó (xem cả mục Spam).": [
 "PinYin also sent a reminder email (check Spam folder).",

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" data-theme="dark">
 <head>
-<script src="/static/i18n.js?v=68970aa284"></script>
+<script src="/static/i18n.js?v=d53c38e906"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PinYin CKG</title>
@@ -30,7 +30,7 @@ body.v-chart .w>*:not(#menu):not(#fcp){display:none!important}body.v-chart{overf
 .fcbar button:hover{background:var(--bg);color:var(--tx)}.fcbar button.on{color:var(--acc);background:var(--bg)}
 .fcbar .fcr{margin-left:auto;display:flex;gap:2px}
 #fcdw button{min-width:30px;display:inline-flex;align-items:center;justify-content:center}#fcdw input[type=color]{width:26px;height:24px;padding:0 2px;border:0;background:none;cursor:pointer;vertical-align:middle}
-.fcwrap{position:relative;flex:1;min-height:0}#fcbox{position:absolute;inset:0}
+.fcwrap{position:relative;flex:1;min-height:0}#fcbox{position:absolute;inset:0}#fcstcw{position:absolute;left:0;right:0;bottom:0;height:24%;border-top:1px solid var(--bd);display:none}#fcstcbox{position:absolute;inset:0}#fcstcl{position:absolute;left:10px;top:4px;z-index:3;font-size:12px;font-weight:700;color:var(--mut);pointer-events:none}
 #fcleg{position:absolute;left:10px;top:8px;z-index:3;display:flex;gap:4px 12px;flex-wrap:wrap;align-items:baseline;font-size:13px;pointer-events:none;font-variant-numeric:tabular-nums;max-width:calc(100% - 90px)}
 #fcleg .fcs{font-size:15px}.fce{display:inline-flex;gap:5px;align-items:center;color:var(--mut)}.fce i{width:12px;height:3px;border-radius:2px;display:inline-block;margin-left:6px}
 #fcmsg{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);z-index:4;padding:10px 16px;border-radius:10px;background:var(--card);border:1px solid var(--bd);color:var(--mut);font-size:14px;text-align:center;max-width:90%}
@@ -162,10 +162,10 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <div class="menu" id="menu"><button data-v="ckg" class="on" onclick="setView('ckg')">📈 Phân tích CKG</button><button data-v="ai" onclick="setView('ai')">🤖 Phân Tích AI</button><button data-v="news" onclick="setView('news')">📰 Tin tức tuần</button><button data-v="chart" onclick="setView('chart')">📊 Biểu đồ</button><button data-v="ck" id="cktab" style="display:none" onclick="setView('ck')">🚀 Buồng lái</button><button data-v="bot" id="bottab" style="display:none" onclick="setView('bot')">🤖 Bot tự động</button></div>
 <div id="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
 <div id="fcp"><div class="fcbar"><select id="fcsym" onchange="fcSym(this.value)" aria-label="Cặp tiền"></select><span class="sp"></span><div class="fcg" id="fctf"></div><span class="sp"></span>
-<div class="fcg"><button id="fcha" onclick="fcTog('ha')" title="Nến Heikin Ashi">Heikin Ashi</button></div><span class="sp"></span><div class="fcg"><button id="fcdca" onclick="fcTog('dca')" title="Nhãn BUY / SELL theo cài đặt DCA đang lưu của bot + ENTRY / SL chung / TP của tín hiệu gần nhất (bot chỉ vào lệnh XAUUSD, cặp khác chỉ để xem)">Tín hiệu DCA</button><button id="fcbvw" onclick="fcTog('bvw')" title="VWAP ±σ đúng như bot DCA đang dùng">VWAP ±σ</button><button id="fctma" onclick="fcTog('tma')" title="Dải TMA trên / giữa / dưới của bot DCA">TMA</button><button id="fce9" onclick="fcTog('e9')">EMA 9</button><button id="fce21" onclick="fcTog('e21')">EMA 21</button><button id="fcvol" onclick="fcTog('vol')" title="Khối lượng tick">Volume</button></div>
+<div class="fcg"><button id="fcha" onclick="fcTog('ha')" title="Nến Heikin Ashi">Heikin Ashi</button></div><span class="sp"></span><div class="fcg"><button id="fcdca" onclick="fcTog('dca')" title="Nhãn BUY / SELL theo cài đặt DCA đang lưu của bot + ENTRY / SL chung / TP của tín hiệu gần nhất (bot chỉ vào lệnh XAUUSD, cặp khác chỉ để xem)">Tín hiệu DCA</button><button id="fcbvw" onclick="fcTog('bvw')" title="VWAP ±σ đúng như bot DCA đang dùng">VWAP ±σ</button><button id="fctma" onclick="fcTog('tma')" title="Dải TMA trên / giữa / dưới của bot DCA">TMA</button><button id="fce9" onclick="fcTog('e9')">EMA 9</button><button id="fce21" onclick="fcTog('e21')">EMA 21</button><button id="fcstc" onclick="fcTog('stc')" title="PinYin STC (Schaff Trend Cycle 80 / 20 / 50): khung dưới nến, chấm đỏ = đỉnh trên 75, chấm xanh = đáy dưới 25">PinYin STC</button><button id="fcvol" onclick="fcTog('vol')" title="Khối lượng tick">Volume</button></div>
 <span class="sp"></span><div class="fcg" id="fcdw"></div>
 <div class="fcr"><button onclick="fcFit()" title="Về nến mới nhất">⟲ Về hiện tại</button><button onclick="fcFull()" title="Toàn màn hình (phím F)">⛶ Toàn màn hình</button></div></div>
-<div class="fcwrap"><div id="fcbox"></div><canvas id="fcov" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2"></canvas><div id="fcleg"></div><div id="fcmsg" style="display:none"></div></div></div>
+<div class="fcwrap"><div id="fcstcw"><div id="fcstcbox"></div><div id="fcstcl">PinYin STC (80, 20, 50)</div></div><div id="fcbox"></div><canvas id="fcov" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2"></canvas><div id="fcleg"></div><div id="fcmsg" style="display:none"></div></div></div>
 
 
 <div class="c" id="newsp"><div class="top" style="margin-bottom:8px"><h2 style="margin:0">📰 Lịch tin kinh tế trong tuần</h2><span id="nwupd" class="mut" style="font-size:12px"></span></div>
@@ -466,12 +466,12 @@ function hline(f,v,col,dash,txt,right){const x=f.x,top=f.y(f.hi),bot=f.y(f.lo),y
  if(!out){x.strokeStyle=col;x.setLineDash(dash);x.beginPath();x.moveTo(0,yy);x.lineTo(f.pw,yy);x.stroke();x.setLineDash([])}
  x.globalAlpha=.85;x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--card');x.fillRect(lx-4,ly-12,tw+8,15);x.globalAlpha=1;x.fillStyle=col;x.fillText(tx,lx,ly)}
 function frame(lo,hi,n,absOf){const cv=$('cv'),r=devicePixelRatio||1,Wd=cv.clientWidth,Hd=cv.clientHeight;cv.width=Wd*r;cv.height=Hd*r;const x=cv.getContext('2d');x.scale(r,r);
- const s=getComputedStyle(document.documentElement),g=k=>s.getPropertyValue(k),M=g('--mut'),BD=g('--bd'),R=66,Bm=36,pw=Wd-R,ph=Hd-Bm-8;if(YM){lo=YM.lo;hi=YM.hi}else{const pad=(hi-lo)*.06||P;lo-=pad;hi+=pad}FL=lo;FH=hi;FPW=pw;FPH=ph;
+ const s=getComputedStyle(document.documentElement),g=k=>s.getPropertyValue(k),M=g('--mut'),BD=g('--bd'),R=66,Bm=36,pw=Wd-R,SH=IND.stc?Math.max(60,Math.round((Hd-Bm-8)*.24)):0,ph=Hd-Bm-8-(SH?SH+10:0);if(YM){lo=YM.lo;hi=YM.hi}else{const pad=(hi-lo)*.06||P;lo-=pad;hi+=pad}FL=lo;FH=hi;FPW=pw;FPH=ph;
  const y=v=>8+ph-(v-lo)/(hi-lo)*ph,w=pw/Math.max(n,zn());x.font='11px sans-serif';x.lineWidth=1;x.setLineDash([]);
  for(let k=0;k<=6;k++){const v=lo+(hi-lo)*k/6;x.strokeStyle=BD;x.beginPath();x.moveTo(0,y(v));x.lineTo(pw,y(v));x.stroke();x.fillStyle=M;x.fillText(v.toFixed(DG),pw+5,y(v)+4)}
- const st=Math.max(1,Math.round(Math.max(n,zn())/(Wd<500?5:8)));const ab=i=>i<n?absOf(i):absOf(n-1)+(i-n+1)*(n>1?absOf(n-1)-absOf(n-2):6e4);FAB=ab;FN=n;let pd='';for(let i=0;i<Math.max(n,zn());i+=st){const cx=i*w+w/2,L=TLM(ab(i));x.strokeStyle=BD;x.beginPath();x.moveTo(cx,8);x.lineTo(cx,8+ph);x.stroke();x.fillStyle=M;x.fillText(L.t,Math.max(2,cx-14),Hd-20);if(L.d!=pd){x.fillText(L.d,Math.max(2,cx-14),Hd-6);pd=L.d}}
+ const st=Math.max(1,Math.round(Math.max(n,zn())/(Wd<500?5:8)));const ab=i=>i<n?absOf(i):absOf(n-1)+(i-n+1)*(n>1?absOf(n-1)-absOf(n-2):6e4);FAB=ab;FN=n;let pd='';for(let i=0;i<Math.max(n,zn());i+=st){const cx=i*w+w/2,L=TLM(ab(i));x.strokeStyle=BD;x.beginPath();x.moveTo(cx,8);x.lineTo(cx,8+ph+(SH?SH+10:0));x.stroke();x.fillStyle=M;x.fillText(L.t,Math.max(2,cx-14),Hd-20);if(L.d!=pd){x.fillText(L.d,Math.max(2,cx-14),Hd-6);pd=L.d}}
  CW=w;x.save();x.beginPath();x.rect(0,8,pw,ph);x.clip();
- return{x,y,w,pw,ph,Hd,lo,hi,stk:{},M,B:g('--ok'),S:g('--no'),Y:g('--wn'),A:g('--acc'),E9:g('--e9'),E21:g('--e21'),E50:g('--e50'),E200:g('--e200'),VW:g('--vw')}}
+ return{x,y,w,pw,ph,Hd,lo,hi,SH,SY:8+ph+10,stk:{},M,B:g('--ok'),S:g('--no'),Y:g('--wn'),A:g('--acc'),E9:g('--e9'),E21:g('--e21'),E50:g('--e50'),E200:g('--e200'),VW:g('--vw')}}
 function tag(f,v,col){const x=f.x,yy=Math.max(8,Math.min(8+f.ph,f.y(v)));x.setLineDash([2,3]);x.strokeStyle=col;x.beginPath();x.moveTo(0,yy);x.lineTo(f.pw,yy);x.stroke();x.setLineDash([]);x.fillStyle=col;x.fillRect(f.pw,yy-9,64,18);x.fillStyle='#fff';x.font='bold 11px sans-serif';x.fillText(v.toFixed(DG),f.pw+4,yy+4);x.font='11px sans-serif'}
 
 function axTags(f,L,last){const x=f.x,cl=v=>Math.max(17,Math.min(f.ph-1,f.y(v))),used=[cl(last)];
@@ -518,10 +518,10 @@ setInterval(()=>{if(VIEWMODE!='ai'&&VIEWMODE!='news'){if(IND.hapro)hapFetch('hap
 function candles(f,a){const x=f.x,y=f.y,w=f.w;a.forEach((c,i)=>{const cx=i*w+w/2;x.strokeStyle=x.fillStyle=c.c>=c.o?f.B:f.S;x.beginPath();x.moveTo(cx,y(c.h));x.lineTo(cx,y(c.l));x.stroke();x.fillRect(cx-w*.32,Math.min(y(c.o),y(c.c)),w*.64,Math.max(1,Math.abs(y(c.o)-y(c.c))))})}
 // ===== Thu phóng / kéo xem + bật tắt chỉ báo =====
 let ZN=null,PAN=0,DOPEN=0,CW=10,CLEN=0,YM=null,FL=0,FH=1,FPW=1,FPH=1;// YM: thang giá thủ công {lo,hi}, null = tự động
-const IND={ema9:1,ema21:1,ema50:1,ema200:1,vwap:1,fvg:1,sig:1,sltp:1,d1:1,r10:1,heikin:1,hapro:1,dcasig:1,bvw:1,tma:1};try{Object.assign(IND,JSON.parse(localStorage.getItem('ckg-ind')||'{}'))}catch(e){}
+const IND={stc:1,ema9:1,ema21:1,ema50:1,ema200:1,vwap:1,fvg:1,sig:1,sltp:1,d1:1,r10:1,heikin:1,hapro:1,dcasig:1,bvw:1,tma:1};try{Object.assign(IND,JSON.parse(localStorage.getItem('ckg-ind')||'{}'))}catch(e){}
 ['heikin','hapro','ema50','ema200','vwap','fvg','sig','sltp','d1','r10'].forEach(k=>IND[k]=0);   // đã bỏ khỏi biểu đồ
-const IND_L={heikin:['Nến Heikin Ashi','--wn'],hapro:['Tín hiệu HA Pro v5','--h2'],dcasig:['Tín hiệu DCA (bot)','--wn'],bvw:['VWAP ±σ','--vw'],tma:['TMA','--tma'],ema9:['EMA 9','--e9'],ema21:['EMA 21','--e21'],ema50:['EMA 50','--e50'],ema200:['EMA 200','--e200'],vwap:['VWAP','--vw'],fvg:['FVG',''],sig:['Tín hiệu ▲▼',''],sltp:['SL / TP',''],d1:['Giá mở D1','--mut'],r10:['Cao/Thấp 10 nến','--no']};
-function indBar(){const ks=['dcasig','bvw','tma','ema9','ema21'];$('ind').innerHTML=ks.map(k=>`<button class="chip ${IND[k]?'on':''}" onclick="togInd('${k}')" title="Bật/tắt ${IND_L[k][0]}">${IND_L[k][1]?`<i style="background:var(${IND_L[k][1]})"></i>`:''}${IND_L[k][0]}</button>`).join('')}
+const IND_L={stc:['PinYin STC','--h2'],heikin:['Nến Heikin Ashi','--wn'],hapro:['Tín hiệu HA Pro v5','--h2'],dcasig:['Tín hiệu DCA (bot)','--wn'],bvw:['VWAP ±σ','--vw'],tma:['TMA','--tma'],ema9:['EMA 9','--e9'],ema21:['EMA 21','--e21'],ema50:['EMA 50','--e50'],ema200:['EMA 200','--e200'],vwap:['VWAP','--vw'],fvg:['FVG',''],sig:['Tín hiệu ▲▼',''],sltp:['SL / TP',''],d1:['Giá mở D1','--mut'],r10:['Cao/Thấp 10 nến','--no']};
+function indBar(){const ks=['dcasig','bvw','tma','ema9','ema21','stc'];$('ind').innerHTML=ks.map(k=>`<button class="chip ${IND[k]?'on':''}" onclick="togInd('${k}')" title="Bật/tắt ${IND_L[k][0]}">${IND_L[k][1]?`<i style="background:var(${IND_L[k][1]})"></i>`:''}${IND_L[k][0]}</button>`).join('')}
 function togInd(k){IND[k]=IND[k]?0:1;try{localStorage.setItem('ckg-ind',JSON.stringify(IND))}catch(e){}indBar();redraw()}
 const zn=()=>ZN||SLN();
 function zoom(f){ZN=Math.round(Math.max(15,Math.min(400,zn()*f)));redraw()}
@@ -576,6 +576,29 @@ function drawR10(f,R,off){if(!R)return;const x=f.x,a0=Math.max(0,(R.i0-off)*f.w)
  if(a1>0){x.fillStyle='rgba(91,140,255,.10)';x.fillRect(a0,f.y(R.hi),a1-a0,f.y(R.lo)-f.y(R.hi))}
  hline(f,R.hi,f.S,[7,3],`Cao ${R.n} nến ${TF}: ${R.hi.toFixed(DG)}`,false);
  hline(f,R.lo,f.B,[7,3],`Thấp ${R.n} nến ${TF}: ${R.lo.toFixed(DG)} · biên độ ${((R.hi-R.lo)/P).toFixed(0)} pip`,false)}
+// ===== PinYin STC (Schaff Trend Cycle) — đúng Pine "PinYin STC": Length 80, Fast 20, Slow 50, hệ số 0.5 =====
+const STC_P={len:80,fast:20,slow:50,f:.5};let STC_C={k:'',v:null};
+function stcEma(a,n){const k=2/(n+1),o=new Array(a.length).fill(null);let s=null,sum=0;for(let i=0;i<a.length;i++){if(s==null){sum+=a[i];if(i==n-1)s=sum/n}else s=a[i]*k+s*(1-k);o[i]=s}return o}
+function stcCalc(cl){if(!cl||!cl.length)return[];const key=cl.length+'|'+cl[0]+'|'+cl[cl.length-1]+'|'+cl[cl.length>>1];if(STC_C.k==key)return STC_C.v;
+ const P=STC_P,n=cl.length,f1=stcEma(cl,P.fast),f2=stcEma(cl,P.slow),m=cl.map((_,i)=>f1[i]!=null&&f2[i]!=null?f1[i]-f2[i]:null);
+ const win=(a,i)=>{if(i<P.len-1)return null;let lo=Infinity,hi=-Infinity;for(let j=i-P.len+1;j<=i;j++){const v=a[j];if(v==null)return null;if(v<lo)lo=v;if(v>hi)hi=v}return[lo,hi]};
+ const pf=new Array(n).fill(null),o=new Array(n).fill(null);let c5=0,d3=null,d6=0,e5=null;
+ for(let i=0;i<n;i++){if(m[i]==null)continue;const r1=win(m,i);c5=r1&&r1[1]-r1[0]>0?(m[i]-r1[0])/(r1[1]-r1[0])*100:c5;
+  d3=d3==null?c5:d3+P.f*(c5-d3);pf[i]=d3;const r2=win(pf,i);d6=r2&&r2[1]-r2[0]>0?(d3-r2[0])/(r2[1]-r2[0])*100:d6;
+  e5=e5==null?d6:e5+P.f*(d6-e5);o[i]=r1&&r2?e5:null}
+ STC_C={k:key,v:o};return o}
+// điểm đảo chiều như alert của Pine: Red = đỉnh trên 75, Green = đáy dưới 25 (tại nến i)
+function stcSig(s,i){if(i<3||s[i]==null||s[i-3]==null)return 0;if(s[i-3]<=s[i-2]&&s[i-2]>s[i-1]&&s[i]>75)return -1;if(s[i-3]>=s[i-2]&&s[i-2]<s[i-1]&&s[i]<25)return 1;return 0}
+function drawStc(f,cl,off,end){if(!IND.stc||!f.SH)return;const x=f.x,s=stcCalc(cl),Y0=f.SY,H=f.SH,pw=f.pw,w=f.w,yy=v=>Y0+H-v/100*H;
+ x.save();x.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--bd');x.lineWidth=1;x.setLineDash([]);x.beginPath();x.moveTo(0,Y0-4);x.lineTo(pw+66,Y0-4);x.stroke();
+ x.fillStyle='rgba(79,90,192,.12)';x.fillRect(0,yy(75),pw,yy(25)-yy(75));
+ [[75,'rgb(68,16,209)'],[25,'rgb(16,216,106)']].forEach(([v,c])=>{x.strokeStyle=c;x.setLineDash([4,3]);x.beginPath();x.moveTo(0,yy(v));x.lineTo(pw,yy(v));x.stroke();x.setLineDash([]);x.fillStyle=f.M;x.font='10px sans-serif';x.fillText(String(v),pw+5,yy(v)+4)});
+ x.beginPath();x.rect(0,Y0-2,pw,H+4);x.clip();x.lineWidth=2;
+ for(let i=1;i<end-off;i++){const a=s[off+i-1],b=s[off+i];if(a==null||b==null)continue;x.strokeStyle=b>a?'rgba(34,197,94,.9)':'rgba(239,68,68,.9)';x.beginPath();x.moveTo((i-1)*w+w/2,yy(a));x.lineTo(i*w+w/2,yy(b));x.stroke()}
+ for(let i=0;i<end-off;i++){const g=stcSig(s,off+i);if(!g)continue;const cx=i*w+w/2,cy=yy(s[off+i]);x.fillStyle=g>0?'#22c55e':'#ef4444';x.beginPath();x.arc(cx,cy,3.5,0,7);x.fill()}
+ x.restore();x.font='bold 11px sans-serif';x.fillStyle=f.M;x.fillText('PinYin STC (80, 20, 50)',6,Y0+10);
+ const L=s[end-1];if(L!=null){const up=s[end-2]!=null&&L>s[end-2],c=up?'#16a34a':'#dc2626',ty=Math.max(Y0+6,Math.min(Y0+H-6,yy(L)));x.fillStyle=c;x.fillRect(pw,ty-8,64,16);x.fillStyle='#fff';x.fillText(L.toFixed(1),pw+4,ty+4)}
+ x.font='11px sans-serif'}
 function drawG(){const tc=tfc(IX),g=gsig(tc),v=view(g.c.length),off=v.off,n=v.n,a=g.c.slice(off,v.end);$('ct').textContent='Nến '+TF+' ('+SRC()+')';
  const ln=GL&&IND.sltp?[[GL.sl,'SL'],...GL.tp.map((q,i)=>[q,'TP'+(i+1)])]:[];
  const R=IND.r10?r10(g.c):null,rg=fit(a,[...ln.map(l=>l[0]),IND.vwap?GV:null,...(R?[R.hi,R.lo]:[])]),f=frame(rg[0],rg[1],n,i=>g.c[off+i].ts),x=f.x,y=f.y,w=f.w;
@@ -584,11 +607,11 @@ function drawG(){const tc=tfc(IX),g=gsig(tc),v=view(g.c.length),off=v.off,n=v.n,
  if(IND.sig)g.sg.forEach(q=>{const i=q.i-off;if(i<0||i>=n)return;x.fillStyle=q.t>0?f.B:f.S;x.font='15px sans-serif';x.fillText(q.t>0?'▲':'▼',i*w+w/2-6,q.t>0?y(a[i].l)+16:y(a[i].h)-5)});
  x.font='11px sans-serif';ln.forEach(([q,t],k)=>hline(f,q,f.M,[4,3],t+' '+q.toFixed(DG),k%2==1));
  if(IND.vwap&&GV!=null)hline(f,GV,f.VW,[6,4],'VWAP '+GV.toFixed(DG),false);
- x.restore();tag(f,a[a.length-1].c,f.A);const le=v.end-1;axTags(f,[IND.ema9?[g.E[le],f.E9,'EMA 9']:null,IND.ema21?[g.E2[le],f.E21,'EMA 21']:null,E50?[E50[le],f.E50,'EMA 50']:null,E200?[E200[le],f.E200,'EMA 200']:null].filter(Boolean),a[a.length-1].c)}
+ x.restore();tag(f,a[a.length-1].c,f.A);const le=v.end-1;axTags(f,[IND.ema9?[g.E[le],f.E9,'EMA 9']:null,IND.ema21?[g.E2[le],f.E21,'EMA 21']:null,E50?[E50[le],f.E50,'EMA 50']:null,E200?[E200[le],f.E200,'EMA 200']:null].filter(Boolean),a[a.length-1].c);drawStc(f,gcl,off,v.end)}
 function draw(open,ix){IX=ix;DOPEN=open;if(CM=='tv'){tvSync();return}if(G){drawG();return}const all=tfc(ix),v=view(all.length),a=all.slice(v.off,v.end),cl=all.map(c=>c.c),
  R=IND.r10?r10(all):null,rg=fit(a,[...(IND.d1?[open]:[]),...(R?[R.hi,R.lo]:[])]),f=frame(rg[0],rg[1],a.length,i=>a[i].ts),x=f.x;$('ct').textContent='Nến '+TF+' · giá và ngày giờ ('+SRC()+')';
  drawR10(f,R,v.off);drawBands(f,a);candles(f,IND.heikin?toHA(all).slice(v.off,v.end):a);drawHap(f,a);const EE={};[[9,'ema9'],[21,'ema21'],[50,'ema50'],[200,'ema200']].forEach(([n,k])=>{if(IND[k])EE[n]=ema(cl,n)});[200,50,21,9].forEach(n=>{if(EE[n])eline(f,EE[n].slice(v.off,v.end),f['E'+n])});
- if(IND.d1)hline(f,open,f.M,[5,4],'Giá mở cửa D1 '+open.toFixed(DG),true);x.restore();
+ if(IND.d1)hline(f,open,f.M,[5,4],'Giá mở cửa D1 '+open.toFixed(DG),true);x.restore();drawStc(f,cl,v.off,v.end);
  tag(f,a[a.length-1].c,f.A);axTags(f,[9,21,50,200].filter(n=>EE[n]).map(n=>[EE[n][v.end-1],f['E'+n],'EMA '+n]),a[a.length-1].c)}
 
 // ===== Dấu cộng (crosshair) + thước đo giá =====
@@ -1071,8 +1094,8 @@ async function aiRun(fresh){if(AIBUSY||!LV)return;AIBUSY=true;const s0=cs;[$('ai
  catch(e){$('aist').innerHTML='<span class="no">Lỗi kết nối máy chủ: '+aiEsc(e.message)+'</span>'}
  finally{AIBUSY=false;[$('aib'),$('aib2')].forEach(b=>b.disabled=false)}}
 // ===== Tab Biểu đồ toàn màn hình (Lightweight Charts của TradingView, giá thật MT5) =====
-const FC={sym:'XAUUSD',tf:'M5',ha:false,vol:true,dca:true,bvw:true,tma:true,e9:true,e21:true,rows:[],chart:null,cs:null,vs:null,e1:null,e2:null,bs:[],pl:[],sig:null,sigKey:'',sigAt:0,sigBusy:0,busy:0,key:'',lib:null,tm:null};
-const FCK=['sym','tf','ha','vol','dca','bvw','tma','e9','e21'];
+const FC={sym:'XAUUSD',tf:'M5',ha:false,vol:true,dca:true,bvw:true,tma:true,e9:true,e21:true,stc:true,sc:null,sl:null,sync:0,rows:[],chart:null,cs:null,vs:null,e1:null,e2:null,bs:[],pl:[],sig:null,sigKey:'',sigAt:0,sigBusy:0,busy:0,key:'',lib:null,tm:null};
+const FCK=['sym','tf','ha','vol','dca','bvw','tma','e9','e21','stc'];
 try{const o=JSON.parse(localStorage.getItem('ckg-fc')||'{}');FCK.forEach(k=>{if(o[k]!=null)FC[k]=o[k]})}catch(e){}
 if(!PR[FC.sym])FC.sym='XAUUSD';
 function fcSave(){try{const o={};FCK.forEach(k=>o[k]=FC[k]);localStorage.setItem('ckg-fc',JSON.stringify(o))}catch(e){}}
@@ -1084,7 +1107,7 @@ const fcVc=b=>b.c>=b.o?'rgba(38,166,154,.45)':'rgba(239,83,80,.45)';
 function fcCol(){const d=isDark();return{bg:d?'#0b0e14':'#ffffff',tx:d?'#a7b1c2':'#475467',gr:d?'rgba(42,50,68,.55)':'rgba(220,224,230,.8)',bd:d?'#222a3a':'#e3e6eb',up:'#26a69a',dn:'#ef5350'}}
 function fcBuild(){const LW=window.LightweightCharts,c=fcCol(),box=$('fcbox');box.innerHTML='';
  FC.chart=LW.createChart(box,{autoSize:true,layout:{background:{type:'solid',color:c.bg},textColor:c.tx,fontFamily:'system-ui,-apple-system,Segoe UI,Roboto,sans-serif'},
-  grid:{vertLines:{color:c.gr},horzLines:{color:c.gr}},rightPriceScale:{borderColor:c.bd,scaleMargins:{top:.08,bottom:.22}},
+  grid:{vertLines:{color:c.gr},horzLines:{color:c.gr}},rightPriceScale:{borderColor:c.bd,minimumWidth:78,scaleMargins:{top:.08,bottom:.22}},
   timeScale:{borderColor:c.bd,timeVisible:true,secondsVisible:false,rightOffset:12,barSpacing:8},crosshair:{mode:0},
   localization:{locale:'vi-VN',dateFormat:'dd/MM/yyyy'}});
  FC.cs=FC.chart.addCandlestickSeries({upColor:c.up,downColor:c.dn,borderUpColor:c.up,borderDownColor:c.dn,wickUpColor:c.up,wickDownColor:c.dn});
@@ -1095,8 +1118,31 @@ function fcBuild(){const LW=window.LightweightCharts,c=fcCol(),box=$('fcbox');bo
  // dải của bot DCA: [VWAP, +σ, −σ, TMA trên, TMA giữa, TMA dưới] (cột 1..6 của bands)
  FC.bs=[ln(vw,1.6),ln(vw,1,2),ln(vw,1,2),ln(tm,1.4),ln(tm,1,1),ln(tm,1.4)];
  FC.e1=ln(fcVar('--e9','#ef4444'),1.5);FC.e2=ln(fcVar('--e21','#3b82f6'),1.5);
- FC.chart.subscribeCrosshairMove(p=>fcLegend(p&&p.time!=null?p.time:null));dwInit()}
-function fcTheme(){if(!FC.chart)return;const c=fcCol();FC.chart.applyOptions({layout:{background:{type:'solid',color:c.bg},textColor:c.tx},grid:{vertLines:{color:c.gr},horzLines:{color:c.gr}},rightPriceScale:{borderColor:c.bd},timeScale:{borderColor:c.bd}})}
+ FC.chart.subscribeCrosshairMove(p=>fcLegend(p&&p.time!=null?p.time:null));dwInit();fcStcBuild()}
+// độ rộng vùng nến (không gồm cột giá); timeScale().width() = 0 khi ẩn trục thời gian (lúc bật STC)
+function fcPW(){try{const p=FC.chart.paneSize&&FC.chart.paneSize();if(p&&p.width)return p.width}catch(e){}const b=$('fcbox');return Math.max(0,(b?b.clientWidth:0)-FC.chart.priceScale('right').width())}
+function fcStcBuild(){const LW=window.LightweightCharts,c=fcCol();$('fcstcbox').innerHTML='';
+ FC.sc=LW.createChart($('fcstcbox'),{autoSize:true,layout:{background:{type:'solid',color:c.bg},textColor:c.tx,fontFamily:'system-ui,-apple-system,Segoe UI,Roboto,sans-serif'},
+  grid:{vertLines:{color:c.gr},horzLines:{visible:false}},rightPriceScale:{borderColor:c.bd,minimumWidth:78,scaleMargins:{top:.12,bottom:.08}},
+  timeScale:{borderColor:c.bd,timeVisible:true,secondsVisible:false,rightOffset:12,barSpacing:8},crosshair:{mode:0},localization:{locale:'vi-VN',dateFormat:'dd/MM/yyyy'}});
+ FC.sl=FC.sc.addLineSeries({lineWidth:2,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false,priceFormat:{type:'price',precision:1,minMove:.1},
+  autoscaleInfoProvider:()=>({priceRange:{minValue:0,maxValue:100}})});
+ FC.sl.createPriceLine({price:75,color:'rgb(68,16,209)',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:''});
+ FC.sl.createPriceLine({price:25,color:'rgb(16,216,106)',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:''});
+ const a=FC.chart.timeScale(),b=FC.sc.timeScale();
+ a.subscribeVisibleLogicalRangeChange(r=>{if(r&&!FC.sync){FC.sync=1;try{b.setVisibleLogicalRange(r)}catch(e){}FC.sync=0}});
+ b.subscribeVisibleLogicalRangeChange(r=>{if(r&&!FC.sync&&Date.now()-(FC.stcAct||0)<1500){FC.sync=1;try{a.setVisibleLogicalRange(r)}catch(e){}FC.sync=0}});   // chỉ khi người dùng kéo / lăn trên khung STC
+ try{new ResizeObserver(()=>fcStcSync()).observe($('fcstcbox'))}catch(e){}
+ ['pointerdown','pointermove','wheel','touchstart','touchmove'].forEach(ev=>$('fcstcbox').addEventListener(ev,e=>{if(ev!='pointermove'||e.buttons)FC.stcAct=Date.now()},{passive:true,capture:true}))}
+// dữ liệu STC theo đúng từng nến (nến chưa đủ dữ liệu = khoảng trống) để 2 biểu đồ khớp nến
+function fcStcPts(bs,from){const s=stcCalc(bs.map(b=>b.c)),o=[];for(let i=from||0;i<bs.length;i++){const t=bs[i].t+FCVN,v=s[i];o.push(v==null?{time:t}:{time:t,value:v,color:i&&s[i-1]!=null&&v<s[i-1]?'#ef4444':'#22c55e'})}return{o,s}}
+function fcStc(){if(!FC.sc)return;const on=!!FC.stc;$('fcstcw').style.display=on?'block':'none';$('fcbox').style.bottom=on?'24%':'0';$('fcov').style.height=on?'76%':'100%';
+ FC.chart.applyOptions({timeScale:{visible:!on}});if(!on){FC.sl.setData([]);FC.sl.setMarkers([]);return}
+ const bs=fcBars(),r=fcStcPts(bs),mk=[];for(let i=0;i<bs.length;i++){const g=stcSig(r.s,i);if(g)mk.push({time:bs[i].t+FCVN,position:'inBar',color:g>0?'#22c55e':'#ef4444',shape:'circle',size:.6})}
+ FC.sl.setData(r.o);FC.sl.setMarkers(mk);fcStcSync();setTimeout(fcStcSync,60);setTimeout(fcStcSync,300)}
+function fcStcSync(){if(!FC.sc||!FC.stc)return;const lr=FC.chart.timeScale().getVisibleLogicalRange();if(lr){FC.sync=1;try{FC.sc.timeScale().setVisibleLogicalRange(lr)}catch(e){}FC.sync=0}}
+function fcTheme(){if(!FC.chart)return;const c=fcCol();FC.chart.applyOptions({layout:{background:{type:'solid',color:c.bg},textColor:c.tx},grid:{vertLines:{color:c.gr},horzLines:{color:c.gr}},rightPriceScale:{borderColor:c.bd},timeScale:{borderColor:c.bd}});
+ if(FC.sc)FC.sc.applyOptions({layout:{background:{type:'solid',color:c.bg},textColor:c.tx},grid:{vertLines:{color:c.gr}},rightPriceScale:{borderColor:c.bd},timeScale:{borderColor:c.bd}})}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',fcTheme)}catch(e){}
 function fcBars(){const r=FC.rows;if(!FC.ha)return r;const o=[];let po,pc;
  r.forEach((b,i)=>{const c=(b.o+b.h+b.l+b.c)/4,op=i?(po+pc)/2:(b.o+b.c)/2;o.push({t:b.t,o:op,h:Math.max(b.h,op,c),l:Math.min(b.l,op,c),c,v:b.v});po=op;pc=c});return o}
@@ -1105,7 +1151,7 @@ const fcC=b=>({time:b.t+FCVN,open:b.o,high:b.h,low:b.l,close:b.c}),fcV=b=>({time
 function fcSet(fit){if(!FC.cs)return;const bs=fcBars(),dg=(PR[FC.sym]||{}).dg||5;
  FC.cs.applyOptions({priceFormat:{type:'price',precision:dg,minMove:Math.pow(10,-dg)}});
  FC.cs.setData(bs.map(fcC));FC.vs.setData(FC.vol?bs.map(fcV):[]);
- FC.e1.setData(FC.e9?fcEma(bs,9):[]);FC.e2.setData(FC.e21?fcEma(bs,21):[]);fcSigDraw();
+ FC.e1.setData(FC.e9?fcEma(bs,9):[]);FC.e2.setData(FC.e21?fcEma(bs,21):[]);fcSigDraw();fcStc();
  if(fit&&bs.length)fcFit();fcLegend(null)}
 // Tín hiệu DCA + VWAP ±σ + TMA: cùng số liệu với Biểu đồ PinYin (máy chủ tính theo cài đặt DCA đang lưu của bot, chỉ XAUUSD)
 async function fcSig(force){const want=FC.dca||FC.bvw||FC.tma,key=FC.sym+'|'+FC.tf;if(!LV||!FC.chart||!want||FC.sigBusy)return;
@@ -1125,7 +1171,7 @@ function fcOv(){const cv=$('fcov');if(!cv||!FC.chart)return;const W=cv.clientWid
  if(cv.width!=Math.round(W*r)||cv.height!=Math.round(H*r)){cv.width=Math.round(W*r);cv.height=Math.round(H*r)}
  const x=cv.getContext('2d');x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,W,H);try{fcCd(x,W)}catch(e){}try{dwDraw(x,W,H)}catch(e){}
  const S=FC.dca&&FC.sig&&FC.sigKey==FC.sym+'|'+FC.tf?FC.sig.sig:null;if(!S||!S.length||!FC.rows.length)return;
- const ts=FC.chart.timeScale(),pw=ts.width(),bs=fcBars(),idx=new Map(bs.map((b,i)=>[b.t,i])),py=v=>FC.cs.priceToCoordinate(v),sp=ts.options().barSpacing||8;
+ const ts=FC.chart.timeScale(),pw=fcPW(),bs=fcBars(),idx=new Map(bs.map((b,i)=>[b.t,i])),py=v=>FC.cs.priceToCoordinate(v),sp=ts.options().barSpacing||8;
  x.save();x.beginPath();x.rect(0,0,pw,H);x.clip();
  const L=S[S.length-1],x0=ts.timeToCoordinate(L.t+FCVN);
  if(x0!=null&&L.tp&&L.tp.length){const x1=Math.min(pw,x0+sp*40),ye=py(L.e),ys=py(L.sl),yt=py(L.tp[L.tp.length-1]);
@@ -1144,7 +1190,7 @@ const FCSEC={M1:60,M3:180,M5:300,M15:900,M30:1800,H1:3600,H4:14400,D:86400,W:604
 function fcCd(x,W){const bs=fcBars(),sec=FCSEC[FC.tf];if(!bs.length||!sec)return;const b=bs[bs.length-1],y=FC.cs.priceToCoordinate(b.c);if(y==null)return;
  const left=Math.floor(b.t+sec-Date.now()/1000),p=n=>String(n).padStart(2,'0');let t;
  if(left<0)t=left<-sec?'Đóng cửa':'00:00';else{const d=Math.floor(left/86400),h=Math.floor(left%86400/3600),m=Math.floor(left%3600/60),s=left%60;t=d?d+'n '+p(h)+':'+p(m):h?p(h)+':'+p(m)+':'+p(s):p(m)+':'+p(s)}
- const sw=FC.chart.priceScale('right').width(),X=FC.chart.timeScale().width(),hh=16,Y=Math.round(y)+11;if(sw<20)return;
+ const sw=FC.chart.priceScale('right').width(),X=fcPW(),hh=16,Y=Math.round(y)+11;if(sw<20)return;
  x.fillStyle=b.c>=b.o?'#26a69a':'#ef5350';x.globalAlpha=.9;x.fillRect(X+1,Y,sw-2,hh);x.globalAlpha=1;
  x.font='700 11px system-ui,-apple-system,Segoe UI,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText('⏱ '+t,X+sw/2,Y+hh/2+.5)}
 // ===== Công cụ vẽ (như MT5): lưu theo cặp, điểm neo = (thời gian nến, giá) nên đổi khung vẫn đúng chỗ =====
@@ -1177,12 +1223,12 @@ function dwL(t){const r=FC.rows,n=r.length;if(!n)return null;const s=dwSec();if(
 function dwT(l){const r=FC.rows,n=r.length,s=dwSec();if(l>=n-1)return Math.round(r[n-1].t+(l-(n-1))*s);if(l<=0)return Math.round(r[0].t+l*s);const i=Math.floor(l);return Math.round(r[i].t+(l-i)*(r[i+1].t-r[i].t))}
 function dwX(t){const l=dwL(t);return l==null?null:FC.chart.timeScale().logicalToCoordinate(l)}
 function dwY(p){return FC.cs.priceToCoordinate(p)}
-function dwPt(e){const b=$('fcbox').getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top;if(x<0||y<0||x>FC.chart.timeScale().width()||y>b.height)return null;
+function dwPt(e){const b=$('fcbox').getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top;if(x<0||y<0||x>fcPW()||y>b.height)return null;
  const l=FC.chart.timeScale().coordinateToLogical(x),p=FC.cs.coordinateToPrice(y);if(l==null||p==null)return null;return{x,y,t:dwT(Math.round(l)),p}}
 function dwP(d){return d.pts.map(q=>[q.t!=null?dwX(q.t):null,q.p!=null?dwY(q.p):null])}
 function dwSeg(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy;let u=L?((px-ax)*dx+(py-ay)*dy)/L:0;u=Math.max(0,Math.min(1,u));return Math.hypot(px-ax-u*dx,py-ay-u*dy)}
 function dwRay(a,b,pw){if(b[0]==a[0])return b;const k=(b[1]-a[1])/(b[0]-a[0]),X=b[0]>a[0]?pw:0;return[X,a[1]+k*(X-a[0])]}
-function dwNear(d,P,pt){const e=6,pw=FC.chart.timeScale().width();
+function dwNear(d,P,pt){const e=6,pw=fcPW();
  if(d.k=='h')return P[0][1]!=null&&Math.abs(pt.y-P[0][1])<e;if(d.k=='v')return P[0][0]!=null&&Math.abs(pt.x-P[0][0])<e;
  if(P.some(q=>q[0]==null||q[1]==null))return false;const a=P[0];
  if(d.k=='txt'){const w=Math.max(30,String(d.s||'').length*7.5);return pt.x>a[0]-4&&pt.x<a[0]+w&&pt.y>a[1]-20&&pt.y<a[1]+4}
@@ -1196,7 +1242,7 @@ function dwHit(pt){const s=DW.sel>=0?[DW.sel]:[];for(let i=DW.list.length-1;i>=0
 function dwDur(s){s=Math.abs(s);const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+' ngày '+h+' giờ':h?h+' giờ '+m+' phút':m+' phút'}
 function dwFmtT(t){const d=new Date((t+FCVN)*1000),p=n=>String(n).padStart(2,'0');return p(d.getUTCDate())+'/'+p(d.getUTCMonth()+1)+' '+p(d.getUTCHours())+':'+p(d.getUTCMinutes())}
 function dwInk(c){const n=parseInt((c||'#000').slice(1),16),l=(.299*(n>>16&255)+.587*(n>>8&255)+.114*(n&255));return l>150?'#111':'#fff'}
-function dwDraw(x,W,H){if(!FC.rows.length)return;const pw=FC.chart.timeScale().width(),sw=FC.chart.priceScale('right').width(),dg=(PR[FC.sym]||{}).dg||2,ax=[];
+function dwDraw(x,W,H){if(!FC.rows.length)return;const pw=fcPW(),sw=FC.chart.priceScale('right').width(),dg=(PR[FC.sym]||{}).dg||2,ax=[];
  const all=DW.list.map((d,i)=>[d,i]);if(DW.tmp)all.push([DW.tmp,-2]);
  x.save();x.beginPath();x.rect(0,0,pw,H);x.clip();x.textAlign='left';x.textBaseline='bottom';
  all.forEach(([d,i])=>{const sel=i==DW.sel||i==-2,c=d.c||DW.col,P=dwP(d);x.strokeStyle=c;x.fillStyle=c;x.lineWidth=sel?2.2:1.4;x.setLineDash([]);
@@ -1249,7 +1295,7 @@ function fcLegend(t){const el=$('fcleg'),bs=fcBars();if(!bs.length){el.innerHTML
 function fcBar(){const tfs=['M1','M3','M5','M15','M30','H1','H4','D','W'];
  dwBar();$('fcsym').innerHTML=Object.keys(PR).map(s=>`<option${s==FC.sym?' selected':''}>${s}</option>`).join('');
  $('fctf').innerHTML=tfs.map(t=>`<button class="${t==FC.tf?'on':''}" onclick="fcTF('${t}')">${t=='D'?'D1':t=='W'?'W1':t}</button>`).join('');
- ['ha','vol','dca','bvw','tma','e9','e21'].forEach(k=>$('fc'+k).classList.toggle('on',!!FC[k]))}
+ ['ha','vol','dca','bvw','tma','e9','e21','stc'].forEach(k=>$('fc'+k).classList.toggle('on',!!FC[k]))}
 function fcTF(t){FC.tf=t;fcSave();fcBar();fcLoad(true);fcSig(true)}
 function fcSym(s){FC.sym=s;fcSave();dwLoad();dwTool('cur');fcBar();fcLoad(true);fcSig(true)}
 function fcTog(k){FC[k]=!FC[k];fcSave();fcBar();fcSet(false);if(k=='dca'||k=='bvw'||k=='tma')fcSig(false)}
@@ -1270,7 +1316,8 @@ async function fcLoad(full){if(!FC.chart)return;const key=FC.sym+'|'+FC.tf;
   // chỉ vẽ lại đoạn cuối (nến đang chạy + nến mới); HA / EMA tính lại theo nến trước
   const bs=fcBars();let k=bs.length-1;while(k>0&&bs[k-1].t>=last)k--;
   for(let i=k;i<bs.length;i++){FC.cs.update(fcC(bs[i]));if(FC.vol)FC.vs.update(fcV(bs[i]))}
-  {const n=bs.length-k;if(FC.e9)fcEma(bs,9).slice(-n).forEach(x=>FC.e1.update(x));if(FC.e21)fcEma(bs,21).slice(-n).forEach(x=>FC.e2.update(x))}
+  {const n=bs.length-k;if(FC.e9)fcEma(bs,9).slice(-n).forEach(x=>FC.e1.update(x));if(FC.e21)fcEma(bs,21).slice(-n).forEach(x=>FC.e2.update(x));
+   if(FC.stc&&FC.sl)fcStcPts(bs,k).o.forEach(x=>FC.sl.update(x))}
   fcLegend(null)}catch(e){if(!FC.rows.length)fcMsg('Chưa lấy được nến (máy chủ chậm hoặc mất kết nối), đang thử lại…')}finally{FC.busy=0}}
 function fcSize(){const p=$('fcp');if(VIEWMODE!='chart'||document.fullscreenElement==p)return;p.style.height=Math.max(320,innerHeight-p.getBoundingClientRect().top-10)+'px'}
 addEventListener('resize',fcSize);
