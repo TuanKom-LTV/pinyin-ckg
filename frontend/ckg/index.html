@@ -110,6 +110,7 @@ body.v-news .w>.c:not(.keep):not(#newsp),body.v-news .w>.g,body.v-news .w>p,body
 .hbrand .logo{font-size:23px}.htitle{margin-top:6px;font-size:16px;font-weight:800;letter-spacing:.02em;background:linear-gradient(90deg,#67e8f9,#22d3ee,#a3e635);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hstat{margin-top:5px;font-size:13px;color:#c3cddd;line-height:1.6}.hstat b{font-weight:800}.hstat .sep{color:#3b4a63;margin:0 6px}
 .hside{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media(min-width:900px){.hrow1{flex-wrap:nowrap}.hbrand{flex:1 1 auto}.hside{flex:0 0 auto;margin-left:auto;justify-content:flex-end;max-width:46%}}
 .hrow2{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px}
 .hpx{display:flex;gap:18px;align-items:center;padding:10px 16px;border:1px solid #1c2a3d;border-radius:12px;background:#0a101b}
 .hsym{font-size:11px;font-weight:800;color:#c3cddd;letter-spacing:.05em}.hpx .px{font-size:30px;font-weight:900;color:#facc15;line-height:1.1;font-family:ui-monospace,Consolas,monospace}
@@ -149,8 +150,9 @@ input[type=checkbox]{width:auto}.f{display:grid;grid-template-columns:repeat(4,1
 <body>
 <div class="w">
 <div class="hero">
-<div class="hrow1"><div class="hbrand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="htitle">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div><div class="hstat" id="hstat">📊 Đang đọc thị trường…</div></div>
+<div class="hrow1"><div class="hbrand"><h1 class="logo" aria-label="PinYin CKG"><span>PinYin</span><svg viewBox="0 0 80 40" height="26" aria-hidden="true"><g fill="none" stroke="var(--tx)" stroke-width="5" stroke-linecap="round"><path d="M21.5 11.5A11 11 0 1 0 21.5 28.5"/><path d="M36 20 46 9M36 20 46 31"/><path d="M72 11.5A11 11 0 1 0 74.5 21.5H66"/></g><line x1="31" y1="3" x2="31" y2="37" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round"/><rect x="27" y="8.5" width="8" height="23" rx="1.5" fill="var(--ok)"/><line x1="74.5" y1="17" x2="74.5" y2="36" stroke="var(--no)" stroke-width="2" stroke-linecap="round"/><rect x="71.5" y="20" width="6" height="11" rx="1" fill="var(--no)"/></svg></h1><div class="htitle">HỆ THỐNG PHÂN TÍCH CKG ĐA KHUNG &amp; CỐ VẤN AI THỰC CHIẾN</div></div>
 <div class="hside"><span id="langsw"></span><span class="tag" id="src">🟡 DEMO · giá giả lập</span><div class="btns" id="thb" style="display:none"></div><span id="meb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></span></div></div>
+<div class="hstat" id="hstat">📊 Đang đọc thị trường…</div>
 <div class="hrow2"><div class="hpx"><div><div class="hsym"><span id="nm">XAUUSD</span> · SPREAD <span id="hspr">-</span></div><div class="px" id="px">-</div></div>
 <div class="hba">Bid: <b id="hbid">-</b><br>Ask: <b id="hask">-</b></div></div>
 <div class="htime"><div id="clk"></div><div id="hses" class="mut"></div></div>
